@@ -5,7 +5,7 @@ from ultralytics import YOLO
 
 # Initialize YOLO11 Nano model
 # This will download 'yolo11n.pt' on first run
-model = YOLO("yolo11n.pt") 
+model = YOLO("yolo11m.pt") 
 
 def analyze_image(image_bytes: bytes) -> dict:
     """
