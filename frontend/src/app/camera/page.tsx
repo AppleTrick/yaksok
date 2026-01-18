@@ -1,39 +1,45 @@
-
 "use client";
 
 import { useRef, useState, useEffect } from "react";
-import { ArrowLeft, Camera, Image as ImageIcon, RotateCcw, Check } from "lucide-react";
+import { ArrowLeft, Image as ImageIcon } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import "./page.css";
+import ReviewStep from "./components/ReviewStep";
+import AnalyzingStep from "./components/AnalyzingStep";
+import ErrorStep from "./components/ErrorStep";
+import ResultStep from "./components/ResultStep";
+
+type CameraStep = 'capture' | 'review' | 'analyzing' | 'error' | 'result';
 
 export default function CameraPage() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [stream, setStream] = useState<MediaStream | null>(null);
-  const [capturedImage, setCapturedImage] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const router = useRouter();
-
-  // File Input Ref
   const fileInputRef = useRef<HTMLInputElement>(null);
-
+  
+  const [stream, setStream] = useState<MediaStream | null>(null);
+  const [step, setStep] = useState<CameraStep>('capture');
+  const [capturedImage, setCapturedImage] = useState<string | null>(null);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [analysisResult, setAnalysisResult] = useState<any>(null); // TODO: Add proper type
+  
+  // ... (Camera init/stop/capture logic same as before) ...
   // Start Camera on Mount
   useEffect(() => {
-    // Check if we are in a secure context or localhost
-    if (typeof window !== 'undefined' && !window.isSecureContext && window.location.hostname !== 'localhost') {
-        setError("보안 문제로 카메라를 실행할 수 없습니다. (HTTPS 필요)");
-        return;
+    if (step === 'capture') {
+        startCamera();
+    } else {
+        stopCamera();
     }
-    startCamera();
-    return () => {
-      stopCamera();
-    };
-  }, []);
+  }, [step]);
 
   const startCamera = async () => {
-    setError(null);
+    setErrorMsg(null);
     try {
+      if (typeof window !== 'undefined' && !window.isSecureContext && window.location.hostname !== 'localhost') {
+        throw new Error("HTTPS 환경에서만 카메라를 사용할 수 있습니다.");
+      }
+
       const mediaStream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: "environment" },
         audio: false,
@@ -45,12 +51,37 @@ export default function CameraPage() {
     } catch (err: any) {
       console.error("Error accessing camera:", err);
       let msg = "카메라에 접근할 수 없습니다.";
-      if (err.name === 'NotAllowedError') msg = "카메라 권한이 거부되었습니다. 설정에서 허용해주세요.";
+      if (err.name === 'NotAllowedError') msg = "카메라 권한이 거부되었습니다.";
       else if (err.name === 'NotFoundError') msg = "카메라를 찾을 수 없습니다.";
-      else if (err.name === 'NotReadableError') msg = "카메라를 다른 앱이 사용 중입니다.";
-      else if (!window.isSecureContext) msg = "HTTPS 환경에서만 카메라를 사용할 수 있습니다.";
+      else if (err.name === 'NotReadableError') msg = "카메라가 다른 앱에서 사용 중입니다.";
+      else if (err.message) msg = err.message;
       
-      setError(msg);
+      setErrorMsg(msg);
+    }
+  };
+
+  const stopCamera = () => {
+    if (stream) {
+      stream.getTracks().forEach((track) => track.stop());
+      setStream(null);
+    }
+  };
+
+  const handleCapture = () => {
+    if (videoRef.current && canvasRef.current) {
+      const video = videoRef.current;
+      const canvas = canvasRef.current;
+      
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+
+      const context = canvas.getContext("2d");
+      if (context) {
+        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+        const imageDataUrl = canvas.toDataURL("image/jpeg", 0.9);
+        setCapturedImage(imageDataUrl);
+        setStep('review');
+      }
     }
   };
 
@@ -61,88 +92,129 @@ export default function CameraPage() {
       reader.onload = (event) => {
         if (typeof event.target?.result === 'string') {
           setCapturedImage(event.target.result);
-          stopCamera();
+          setStep('review');
         }
       };
       reader.readAsDataURL(file);
     }
   };
 
-  const triggerFileInput = () => {
-      fileInputRef.current?.click();
-  };
-
-  const stopCamera = () => {
-    if (stream) {
-      stream.getTracks().forEach((track) => track.stop());
-      setStream(null);
-    }
-  };
-
-  const capturePhoto = () => {
-    if (videoRef.current && canvasRef.current) {
-      const video = videoRef.current;
-      const canvas = canvasRef.current;
-      
-      // Set canvas dimensions to match video
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
-
-      const context = canvas.getContext("2d");
-      if (context) {
-        context.drawImage(video, 0, 0, canvas.width, canvas.height);
-        const imageDataUrl = canvas.toDataURL("image/png");
-        setCapturedImage(imageDataUrl);
-        // Stop camera stream to save battery/resources while previewing
-        // stopCamera(); // Optional: keep it running if we want fast retake? Let's stop it for now.
-      }
-    }
-  };
-
-  const retakePhoto = () => {
+  const handleRetake = () => {
     setCapturedImage(null);
-    startCamera(); // Restart camera
+    setAnalysisResult(null);
+    setStep('capture');
   };
 
-  const confirmPhoto = () => {
-    // TODO: Send to AI Server
-    alert("사진이 캡처되었습니다! (기능 구현 예정)");
-    // router.push("/result?image=...");
+  const handleConfirm = async () => {
+    if (!capturedImage) return;
+
+    setStep('analyzing');
+
+    try {
+        const response = await fetch(capturedImage);
+        const blob = await response.blob();
+        
+        const formData = new FormData();
+        formData.append("file", blob, "captured.jpg");
+
+        const apiResponse = await fetch("http://localhost:8000/api/v1/analyze", {
+            method: "POST",
+            body: formData,
+        });
+
+        if (!apiResponse.ok) {
+            throw new Error(`HTTP error! status: ${apiResponse.status}`);
+        }
+
+        const data = await apiResponse.json();
+        setAnalysisResult(data);
+        
+        // Wait a bit just to show the loading animation for UX (optional, but requested in mockups typically)
+        setTimeout(() => {
+            setStep('result');
+        }, 800);
+
+    } catch (error) {
+        console.error("Upload error:", error);
+        setStep('error');
+    }
   };
 
+  const handleRegister = () => {
+      alert("영양제가 등록되었습니다! (홈으로 이동)");
+      window.location.href = "/";
+  };
+
+  // 4. Render Steps
+  if (step === 'review' && capturedImage) {
+    return (
+        <ReviewStep 
+            imageSrc={capturedImage} 
+            onRetake={handleRetake} 
+            onConfirm={handleConfirm} 
+        />
+    );
+  }
+
+  if (step === 'analyzing' && capturedImage) {
+    return (
+        <AnalyzingStep 
+            imageSrc={capturedImage} 
+            onBack={() => setStep('review')} 
+        />
+    );
+  }
+
+  if (step === 'error') {
+    return (
+        <ErrorStep 
+            onRetake={handleRetake} 
+            onManualInput={() => alert("직접 입력 페이지로 이동 예정")} 
+            onBack={() => setStep('capture')}
+        />
+    );
+  }
+
+  if (step === 'result' && capturedImage && analysisResult) {
+      return (
+          <ResultStep 
+            imageSrc={capturedImage}
+            result={analysisResult}
+            onRetake={handleRetake}
+            onRegister={handleRegister}
+          />
+      );
+  }
+
+  // Default: Capture Step
   return (
     <div className="camera-container">
+    {/* ... (Existing Capture UI) ... */}
       {/* Top Bar */}
       <div className="camera-header">
         <Link href="/" className="icon-button">
           <ArrowLeft color="white" size={28} />
         </Link>
         <span className="camera-title">영양제 등록</span>
-        <div style={{ width: 28 }}></div> {/* Spacer for centering */}
+        <div style={{ width: 28 }}></div>
       </div>
 
       {/* Main Viewport */}
       <div className="camera-viewport">
-        {error ? (
+        {errorMsg ? (
           <div className="error-message">
-            <p>{error}</p>
+            <p>{errorMsg}</p>
             <button onClick={startCamera} className="retry-button">다시 시도</button>
           </div>
         ) : (
           <>
-            {/* Live Video Feed */}
             <video
               ref={videoRef}
               autoPlay
               playsInline
               muted
-              className={`camera-video ${capturedImage ? "hidden" : ""}`}
+              className="camera-video"
             />
-            {/* Captured Image Preview */}
-            {capturedImage && (
-              <img src={capturedImage} alt="Captured" className="captured-image" />
-            )}
-            {/* Hidden Canvas for Capture */}
             <canvas ref={canvasRef} style={{ display: "none" }} />
           </>
         )}
@@ -150,35 +222,20 @@ export default function CameraPage() {
 
       {/* Control Bar */}
       <div className="camera-controls">
-        {!capturedImage ? (
-          <>
-            <input 
-                type="file" 
-                accept="image/*" 
-                hidden 
-                ref={fileInputRef} 
-                onChange={handleFileUpload}
-            />
-            <button className="control-btn secondary" onClick={triggerFileInput}>
-              <ImageIcon size={24} color="white" />
-            </button>
-            <button className="shutter-button" onClick={capturePhoto}>
-              <div className="shutter-inner"></div>
-            </button>
-            <div style={{ width: 48 }}></div> {/* Spacer */}
-          </>
-        ) : (
-          <div className="preview-controls">
-            <button className="control-btn text-btn" onClick={retakePhoto}>
-              <RotateCcw size={20} />
-              <span>재촬영</span>
-            </button>
-            <button className="control-btn primary-btn" onClick={confirmPhoto}>
-              <Check size={24} />
-              <span>사용하기</span>
-            </button>
-          </div>
-        )}
+        <input 
+            type="file" 
+            accept="image/*" 
+            hidden 
+            ref={fileInputRef} 
+            onChange={handleFileUpload}
+        />
+        <button className="control-btn secondary" onClick={() => fileInputRef.current?.click()}>
+            <ImageIcon size={24} color="white" />
+        </button>
+        <button className="shutter-button" onClick={handleCapture}>
+            <div className="shutter-inner"></div>
+        </button>
+        <div style={{ width: 48 }}></div>
       </div>
     </div>
   );
