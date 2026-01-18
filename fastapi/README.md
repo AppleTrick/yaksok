@@ -73,3 +73,26 @@ uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 2.  **GET `/docs`**
     - **역할**: Swagger UI (자동 생성된 API 문서)
     - 여기서도 API를 직접 테스트해 볼 수 있습니다.
+
+## 5. 모델 다운로드 및 관리 (참고)
+`yolo11n.pt` 등 YOLO 모델 파일은 다음과 같은 방법으로 다운로드할 수 있습니다. 다른 프로젝트에서 사용할 때 참고하세요.
+
+### 방법 1: Python 코드 (자동)
+`ultralytics` 라이브러리는 코드를 실행할 때 모델 파일이 없으면 자동으로 최신 버전을 다운로드합니다.
+```python
+from ultralytics import YOLO
+model = YOLO("yolo11n.pt")  # Nano 모델 (가장 빠름)
+# model = YOLO("yolo11s.pt")  # Small 모델 (조금 더 정확함)
+```
+
+### 방법 2: CLI 명령어
+터미널에서 `yolo` 명령어를 사용해도 자동으로 다운로드됩니다.
+```bash
+# 가상환경 활성화 후
+yolo predict model=yolo11n.pt source='https://ultralytics.com/images/bus.jpg'
+```
+
+### 방법 3: 직접 다운로드 (GitHub)
+- **주소**: [Ultralytics Assets Releases](https://github.com/ultralytics/assets/releases)
+- 위 링크에서 원하는 버전(v11, v8 등)과 크기(n, s, m, l, x)의 `.pt` 파일을 다운로드하여 프로젝트 폴더에 넣으면 됩니다.
+
