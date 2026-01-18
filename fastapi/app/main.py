@@ -14,9 +14,29 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+from fastapi.responses import HTMLResponse
+
 @app.get("/")
 def read_root():
-    return {"message": "Welcome to Yaksok AI Server"}
+    return {"message": "Welcome to Yaksok AI Server (YOLO11)"}
+
+@app.get("/test", response_class=HTMLResponse)
+async def read_test_page():
+    return """
+    <html>
+        <head>
+            <title>Yaksok AI Test</title>
+        </head>
+        <body style="font-family: Arial; padding: 20px;">
+            <h1>🧪 API Test Page</h1>
+            <p>Upload an image to test YOLO11 analysis.</p>
+            <form action="/api/v1/analyze" method="post" enctype="multipart/form-data">
+                <input type="file" name="file" accept="image/*" required>
+                <button type="submit" style="padding: 10px 20px; background: #2563eb; color: white; border: none; border-radius: 5px; cursor: pointer;">Analyze</button>
+            </form>
+        </body>
+    </html>
+    """
 
 app.include_router(api_router, prefix="/api/v1")
 
