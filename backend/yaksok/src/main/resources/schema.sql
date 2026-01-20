@@ -1,4 +1,16 @@
 -- ========================================
+-- DROP TABLES (Reset)
+-- ========================================
+DROP TABLE IF EXISTS notification_log;
+DROP TABLE IF EXISTS notification_setting;
+DROP TABLE IF EXISTS intake_record;
+DROP TABLE IF EXISTS user_product;
+DROP TABLE IF EXISTS product_ingredient;
+DROP TABLE IF EXISTS product;
+DROP TABLE IF EXISTS ingredient;
+DROP TABLE IF EXISTS `user`;
+
+-- ========================================
 -- ingredient
 -- ========================================
 CREATE TABLE IF NOT EXISTS ingredient (
@@ -7,8 +19,7 @@ CREATE TABLE IF NOT EXISTS ingredient (
                                           min_intake_value DECIMAL,
                                           max_intake_value DECIMAL,
                                           base_unit VARCHAR(255),
-                                          display_unit VARCHAR(255),
-                                          created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+                                          display_unit VARCHAR(255)
 ) ENGINE=InnoDB;
 
 -- ========================================
@@ -19,8 +30,7 @@ CREATE TABLE IF NOT EXISTS product (
                                        PRDLST_NM VARCHAR(255),
                                        PRIMARY_FNCLTY TEXT,
                                        NTK_MTHD TEXT,
-                                       IFTKN_ATNT_MATR_CN TEXT,
-                                       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+                                       IFTKN_ATNT_MATR_CN TEXT
 ) ENGINE=InnoDB;
 
 -- ========================================
@@ -32,7 +42,6 @@ CREATE TABLE IF NOT EXISTS product_ingredient (
                                                   ingredient_id BIGINT NOT NULL,
                                                   ingredient_amount DECIMAL,
                                                   amount_unit VARCHAR(255),
-                                                  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 
                                                   CONSTRAINT uk_product_ingredient UNIQUE (product_id, ingredient_id),
                                                   CONSTRAINT fk_pi_product FOREIGN KEY (product_id) REFERENCES product(id),

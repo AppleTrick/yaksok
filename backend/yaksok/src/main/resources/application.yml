@@ -1,6 +1,8 @@
 spring:
   application:
     name: yaksok
+  profiles:
+    active: local
 
   sql:
     init:
@@ -10,7 +12,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: none
+      ddl-auto: update
     open-in-view: false
     show-sql: true
     properties:
