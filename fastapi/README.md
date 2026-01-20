@@ -26,30 +26,44 @@ fastapi/
 ## 3. 실행 방법 (Usage)
 
 ### 3-1. 가상환경 생성 및 실행
-Python 패키지 관리를 위해 가상환경(`venv`)을 사용합니다. 터미널에서 `S14P11A505/fastapi` 폴더로 이동한 뒤 아래 명령어를 차례로 입력하세요.
+Python 패키지 관리를 위해 가상환경(`venv`)을 사용합니다. 터미널 종류에 맞춰 명령어를 입력하세요.
 
 **1. 가상환경 생성 (최초 1회만)**
-```bash
-python3 -m venv venv
-```
+- **Windows / macOS / Linux 공통**:
+  ```bash
+  python -m venv venv
+  ```
 
 **2. 가상환경 활성화**
-(터미널을 껐다 켤 때마다 해줘야 합니다. 활성화되면 터미널 앞에 `(venv)`가 뜹니다.)
-```bash
-source venv/bin/activate
-```
+(터미널을 껐다 켤 때마다 실행해야 합니다. 활성화되면 터미널 앞에 `(venv)`가 표시됩니다.)
+- **Windows (PowerShell)**:
+  ```powershell
+  .\venv\Scripts\activate
+  ```
+- **macOS / Linux (Bash/Zsh)**:
+  ```bash
+  source venv/bin/activate
+  ```
 
 **3. 라이브러리 설치 (최초 1회만)**
-```bash
-pip install -r requirements.txt
-```
+- **공통**:
+  ```bash
+  pip install -r requirements.txt
+  ```
 
 ### 3-2. 서버 실행
-가상환경이 활성화된 상태에서 아래 명령어로 서버를 켭니다.
-```bash
-uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
-```
-- `--reload`: 코드를 수정하면 서버가 자동으로 재시작됩니다.
+가상환경이 활성화된 상태에서 아래 명령어로 서버를 실행합니다.
+
+- **방법 A: Uvicorn 활성 (권장 - 코드 수정 시 자동 재시작)**
+  ```bash
+  uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+  ```
+- **방법 B: 파이썬 모듈로 실행**
+  ```bash
+  python -m app.main
+  ```
+
+> **주의**: Windows PowerShell에서 실행 권한 오류 발생 시, 관리자 권한으로 터미널을 열고 `Set-ExecutionPolicy RemoteSigned` 명령을 실행해야 할 수 있습니다.
 
 ## 4. 기능 및 동작 방식
 
@@ -75,7 +89,7 @@ uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
     - 여기서도 API를 직접 테스트해 볼 수 있습니다.
 
 ## 5. 모델 다운로드 및 관리 (참고)
-`yolo11n.pt` 등 YOLO 모델 파일은 다음과 같은 방법으로 다운로드할 수 있습니다. 다른 프로젝트에서 사용할 때 참고하세요.
+`yolo11m.pt` 등 YOLO 모델 파일은 다음과 같은 방법으로 다운로드할 수 있습니다. 다른 프로젝트에서 사용할 때 참고하세요.
 
 ### 방법 1: Python 코드 (자동)
 `ultralytics` 라이브러리는 코드를 실행할 때 모델 파일이 없으면 자동으로 최신 버전을 다운로드합니다.
