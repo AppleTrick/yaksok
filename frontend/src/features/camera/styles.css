@@ -1,0 +1,193 @@
+/* Camera Container */
+.camera-container {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--foreground-color);
+    /* Dark context */
+    overflow: hidden;
+}
+
+/* Header */
+.camera-header {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 16px;
+    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.6), transparent);
+    z-index: 20;
+}
+
+.camera-title {
+    color: var(--white);
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+/* Viewport */
+.camera-viewport {
+    flex: 1;
+    position: relative;
+    width: 100%;
+    background: var(--foreground-color);
+}
+
+.camera-video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Controls */
+.camera-controls {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 140px;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.8) 0%, transparent 100%);
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    padding-bottom: 20px;
+    z-index: 20;
+}
+
+.shutter-button {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    border: 4px solid var(--white);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: transform 0.1s;
+}
+
+.shutter-inner {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: var(--white);
+}
+
+/* Analyzing Step */
+.analyzing-container {
+    background: var(--white);
+}
+
+.analyzing-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.75);
+    z-index: 1;
+}
+
+.spinner-circle {
+    position: relative;
+    width: 100px;
+    height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--white);
+    border-radius: 50%;
+    box-shadow: var(--shadow-lg);
+    margin-bottom: 30px;
+}
+
+.analyzing-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--foreground-color);
+    margin-bottom: 10px;
+}
+
+.analyzing-subtitle {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    margin-bottom: 40px;
+}
+
+.step-item.active {
+    color: var(--primary-color);
+    font-weight: 600;
+}
+
+.step-item.completed {
+    color: var(--success-color);
+}
+
+.progress-bar-container {
+    position: absolute;
+    top: 60px;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: var(--light-grey);
+    z-index: 10;
+}
+
+.progress-bar-fill {
+    height: 100%;
+    background: var(--primary-color);
+    transition: width 0.3s ease;
+}
+
+/* Error Step */
+.error-step-container {
+    background: var(--light-grey);
+}
+
+.error-content {
+    background: var(--white);
+    border-top-left-radius: 30px;
+    border-top-right-radius: 30px;
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.05);
+}
+
+.error-title {
+    color: var(--foreground-color);
+}
+
+.action-button.primary {
+    background: var(--primary-color);
+    color: var(--white);
+}
+
+.action-button.secondary {
+    background: var(--white);
+    color: var(--foreground-color);
+    border: 1px solid var(--light-grey);
+}
+
+/* Result Step */
+.result-status-bar {
+    border-bottom: 2px solid var(--primary-color);
+}
+
+.analysis-complete {
+    color: var(--primary-color);
+}
+
+.detected-list .count {
+    color: var(--primary-color);
+    background: var(--sub-background);
+}
+
+.detected-card {
+    background: var(--white);
+    border: 1px solid var(--light-grey);
+}

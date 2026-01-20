@@ -30,7 +30,7 @@ export const viewport: Viewport = {
   maximumScale: 1,
 };
 
-import BottomTabBar from "../components/BottomTabBar";
+import BottomTabBar from "../layout/BottomTabBar";
 
 export default function RootLayout({
   children,
