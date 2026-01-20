@@ -30,6 +30,8 @@ export const viewport: Viewport = {
   maximumScale: 1,
 };
 
+import BottomTabBar from "../layout/BottomTabBar";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -41,6 +43,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         {children}
+        <BottomTabBar />
       </body>
     </html>
   );
