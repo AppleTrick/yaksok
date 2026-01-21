@@ -44,10 +44,9 @@ public class IngredientDataLoader implements CommandLineRunner {
                 // 2: ingredient_name
                 // 3: min_intake_value
                 // 4: max_intake_value
-                // 5: base_unit
-                // 6: display_unit
-                // 7: created_at (IGNORE)
-                // 8: updated_at (IGNORE)
+                // 5: display_unit
+                // 6: created_at (IGNORE)
+                // 7: updated_at (IGNORE)
 
                 try {
                     String ingredientName = line[2];
@@ -60,14 +59,12 @@ public class IngredientDataLoader implements CommandLineRunner {
 
                     BigDecimal minIntakeValue = parseBigDecimal(line[3]);
                     BigDecimal maxIntakeValue = parseBigDecimal(line[4]);
-                    String baseUnit = line[5];
-                    String displayUnit = line[6];
+                    String displayUnit = line[5];
 
                     Ingredient ingredient = Ingredient.builder()
                             .ingredientName(ingredientName)
                             .minIntakeValue(minIntakeValue)
                             .maxIntakeValue(maxIntakeValue)
-                            .baseUnit(baseUnit)
                             .displayUnit(displayUnit)
                             .build();
 
