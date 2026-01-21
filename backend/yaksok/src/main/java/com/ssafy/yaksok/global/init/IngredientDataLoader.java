@@ -7,6 +7,7 @@ import com.ssafy.yaksok.ingredient.repository.IngredientRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.core.annotation.Order;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 
@@ -17,6 +18,7 @@ import java.nio.charset.StandardCharsets;
 
 @Slf4j
 @Component
+@Order(2) // Run after ProductDataLoader, before ProductIngredientDataLoader
 @RequiredArgsConstructor
 public class IngredientDataLoader implements CommandLineRunner {
 
