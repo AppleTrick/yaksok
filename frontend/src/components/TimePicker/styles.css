@@ -1,0 +1,35 @@
+.time-picker-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.time-picker-container.disabled {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+.time-label {
+    font-size: 1rem;
+    color: var(--foreground-color);
+    font-weight: 500;
+}
+
+.time-input-wrapper {
+    position: relative;
+    background: var(--light-grey);
+    border-radius: 8px;
+    padding: 8px 12px;
+}
+
+.time-input {
+    border: none;
+    background: transparent;
+    font-size: 1rem;
+    font-family: inherit;
+    color: var(--foreground-color);
+    outline: none;
+    /* Hide clock icon in some browsers to use custom tap area if needed, 
+       but standard picker is usually fine for mobile */
+}
