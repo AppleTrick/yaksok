@@ -1,0 +1,14 @@
+selenium
+webdriver-manager
+opencv-python
+pillow
+requests
+numpy
+
+# YOLO11 학습
+ultralytics
+torch
+torchvision
+
+# 라벨링 도구
+labelImg
