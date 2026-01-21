@@ -7,4 +7,5 @@ services:
     env_file:
       - .env
     environment:
+      JWT_SECRET: ${JWT_SECRET}
       SPRING_PROFILES_ACTIVE: docker
