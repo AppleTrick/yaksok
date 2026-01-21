@@ -5,7 +5,7 @@ from ultralytics import YOLO
 
 # Initialize YOLO11 model with custom weights
 # 학습한 가중치 파일 적용
-model = YOLO("best.pt") 
+model = YOLO("yolo11m.pt") 
 
 def analyze_image(image_bytes: bytes) -> dict:
     """
