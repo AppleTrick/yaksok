@@ -6,6 +6,7 @@ export interface ScheduleItem {
     id: string;
     name: string;
     detail?: string;
+    isTaken?: boolean;
 }
 
 interface ScheduleCardProps {
@@ -13,7 +14,8 @@ interface ScheduleCardProps {
     label?: string; // "1시간 후 복용"
     items: ScheduleItem[];
     status?: 'upcoming' | 'done' | 'missed';
-    onAlarmClick?: () => void;
+    onAlarmClick?: (e: React.MouseEvent) => void;
+    onCardClick?: () => void;
 }
 
 const ScheduleCard: React.FC<ScheduleCardProps> = ({
@@ -21,17 +23,21 @@ const ScheduleCard: React.FC<ScheduleCardProps> = ({
     label,
     items,
     status = 'upcoming',
-    onAlarmClick
+    onAlarmClick,
+    onCardClick
 }) => {
     return (
-        <div className={`schedule-card ${status}`}>
+        <div className={`schedule-card ${status}`} onClick={onCardClick}>
             <div className="schedule-header">
                 <div className="time-info">
                     {label && <span className="time-label">{label}</span>}
                     <h3 className="time-text">{time}</h3>
                 </div>
-                <button className="alarm-btn" onClick={onAlarmClick}>
-                    <Bell size={20} className={status === 'upcoming' ? 'active-bell' : ''} />
+                <button className="alarm-btn" onClick={(e) => {
+                    e.stopPropagation(); // Prevent card click
+                    onAlarmClick?.(e);
+                }}>
+                    <Bell size={20} className={status === 'upcoming' ? 'active-bell' : 'inactive-bell'} />
                 </button>
             </div>
 
