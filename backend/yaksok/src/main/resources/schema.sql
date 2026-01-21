@@ -49,6 +49,7 @@ CREATE TABLE IF NOT EXISTS `user` (
                                       name VARCHAR(255),
                                       role VARCHAR(255),
                                       oauth_provider VARCHAR(255),
+                                      oauth_id VARCHAR(255),
                                       status VARCHAR(255),
                                       last_login_at DATETIME,
                                       age_group VARCHAR(255),
