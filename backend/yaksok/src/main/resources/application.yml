@@ -20,3 +20,9 @@ spring:
 logging:
   level:
     org.hibernate.SQL: debug
+
+jwt:
+  secret: ${JWT_SECRET:this-is-a-very-long-jwt-secret-key-32bytes!!}
+
+cookie:
+  secure: false
