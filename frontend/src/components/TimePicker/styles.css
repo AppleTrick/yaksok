@@ -1,35 +1,127 @@
-.time-picker-container {
+/* IOS Style TimePicker */
+.time-picker-wrapper {
     display: flex;
+    flex-direction: column;
     align-items: center;
-    justify-content: space-between;
     width: 100%;
+    user-select: none;
 }
 
-.time-picker-container.disabled {
+.time-picker-label {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    margin-bottom: 0.5rem;
+    align-self: flex-start;
+}
+
+.picker-columns {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 160px;
+    /* Visible height (approx 3-5 items) */
+    width: 100%;
+    max-width: 320px;
+    background: var(--white);
+    overflow: hidden;
+    mask-image: linear-gradient(to bottom, transparent, black 20%, black 80%, transparent);
+    -webkit-mask-image: linear-gradient(to bottom, transparent, black 20%, black 80%, transparent);
+}
+
+.picker-highlight {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 40px;
+    /* Item Height */
+    transform: translateY(-50%);
+    background-color: var(--sub-background);
+    border-radius: 8px;
+    z-index: 0;
+    pointer-events: none;
+}
+
+.picker-column {
+    flex: 1;
+    height: 100%;
+    overflow-y: auto;
+    scroll-snap-type: y mandatory;
+    scrollbar-width: none;
+    /* Firefox */
+    -ms-overflow-style: none;
+    /* IE */
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.picker-column::-webkit-scrollbar {
+    display: none;
+}
+
+.picker-item {
+    height: 40px;
+    /* Fixed Height */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    font-size: 1.25rem;
+    color: var(--text-muted);
+    scroll-snap-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-weight: 400;
+}
+
+.picker-item.selected {
+    color: var(--foreground-color);
+    font-weight: 600;
+    font-size: 1.35rem;
+}
+
+.picker-spacer {
+    height: 60px;
+    /* Spacer to allow first/last items to reach center */
+    flex-shrink: 0;
+}
+
+.picker-separator {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--foreground-color);
+    padding: 0 4px;
+    z-index: 1;
+    margin-top: -2px;
+}
+
+.time-picker-wrapper.disabled {
     opacity: 0.5;
     pointer-events: none;
 }
 
-.time-label {
-    font-size: 1rem;
-    color: var(--foreground-color);
-    font-weight: 500;
+/* Input Overlay */
+.picker-input-overlay {
+    height: 100%;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--white);
+    z-index: 10;
 }
 
-.time-input-wrapper {
-    position: relative;
-    background: var(--light-grey);
+.picker-num-input {
+    width: 60px;
+    height: 40px;
+    font-size: 1.5rem;
+    font-weight: 700;
+    text-align: center;
+    border: 2px solid var(--primary-color);
     border-radius: 8px;
-    padding: 8px 12px;
-}
-
-.time-input {
-    border: none;
-    background: transparent;
-    font-size: 1rem;
-    font-family: inherit;
-    color: var(--foreground-color);
     outline: none;
-    /* Hide clock icon in some browsers to use custom tap area if needed, 
-       but standard picker is usually fine for mobile */
+    color: var(--foreground-color);
 }

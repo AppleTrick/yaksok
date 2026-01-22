@@ -1,3 +1,20 @@
+export type CycleType = 'daily' | 'weekly' | 'interval';
+
+export interface Cycle {
+    type: CycleType;
+    daysOfWeek?: number[]; // 0=Sun, 1=Mon, ..., 6=Sat (used for 'weekly')
+    interval?: number;     // e.g., 3 creates "every 3 days" (used for 'interval')
+    startDate?: string;    // ISO Date string "YYYY-MM-DD" for interval calculation
+}
+
+export interface MedicationItem {
+    id: string;
+    name: string;
+    detail?: string;
+    isTaken: boolean;
+    cycle: Cycle;
+}
+
 export interface MedicationSchedule {
     id: string;
     label: string; // "아침", "점심", "저녁", etc.

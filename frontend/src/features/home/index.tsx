@@ -1,9 +1,37 @@
+"use client";
 
 import Link from "next/link";
 import { Camera, Sun, Moon, CheckCircle } from "lucide-react";
+import DailyProgressCard from "./components/DailyProgressCard";
+import { useScheduleContext, isItemDue } from "../notification/contexts/ScheduleContext";
 import './styles.css';
+import { useState, useEffect } from "react";
 
 export default function HomeFeature() {
+    const { schedules, toggleItemTaken } = useScheduleContext();
+    const [today, setToday] = useState<Date | null>(null);
+
+    useEffect(() => {
+        setToday(new Date());
+    }, []);
+
+    // 1. Calculate Progress from Context (Based on DUE items only)
+    // If today is not set (SSR/First Render), show 0 or all? Better to show 0/loading to avoid flash.
+    const allDueItems = today ? schedules.flatMap(s =>
+        s.items.filter(item => isItemDue(item, today))
+    ) : [];
+    const totalMeds = allDueItems.length;
+    const takenMeds = allDueItems.filter(i => i.isTaken).length;
+
+    // 2. Sort/Filter Logic
+    // In a real app we might filter by time of day, but for now we iterate the schedules directly.
+    const activeSchedules = schedules.filter(s => s.isActive);
+
+    // Debug log - moved inside effect or render check
+    if (today) {
+        // console.log("HomeFeature Client Date:", today.toString());
+    }
+
     return (
         <div className="home-container">
             <header className="home-header">
@@ -12,12 +40,17 @@ export default function HomeFeature() {
                     <h1 className="greeting-main">선희 님</h1>
                     <p className="greeting-desc">오늘도 건강 약속을 지켜보세요.</p>
                 </div>
-                <div className="profile-icon">
-                    <div className="profile-placeholder">S</div>
+                <div className="header-actions">
+                    <div className="profile-icon">
+                        <div className="profile-placeholder">S</div>
+                    </div>
                 </div>
             </header>
 
-            {/* Main Action Card: Register Supplement */}
+            {/* Daily Progress Card */}
+            <DailyProgressCard total={totalMeds} taken={takenMeds} />
+
+            {/* Main Action Card */}
             <section className="action-card">
                 <div className="action-text">
                     <h2>영양제 등록하기</h2>
@@ -29,67 +62,59 @@ export default function HomeFeature() {
                 </Link>
             </section>
 
-            {/* Daily Timeline */}
+            {/* Daily Timeline (Connected to Context) */}
             <section className="timeline-section">
-                {/* Morning */}
-                <div className="time-slot">
-                    <div className="slot-header">
-                        <Sun className="slot-icon morning" size={20} />
-                        <span className="slot-title">아침</span>
-                        <span className="slot-time">오전 8:00</span>
-                    </div>
-                    <div className="med-card">
-                        <div className="med-checkbox">
-                            <input type="checkbox" id="med1" />
-                            <label htmlFor="med1"></label>
-                        </div>
-                        <div className="med-info">
-                            <h3>비타민 C (1000mg)</h3>
-                            <p>물과 함께 복용</p>
-                        </div>
-                    </div>
-                    <div className="med-card done">
-                        <div className="med-checkbox checked">
-                            <CheckCircle size={24} color="#10b981" />
-                        </div>
-                        <div className="med-info">
-                            <h3>오메가3</h3>
-                            <p>1 캡슐</p>
-                        </div>
-                    </div>
-                </div>
+                {today && activeSchedules.length > 0 ? (
+                    activeSchedules.map(schedule => {
+                        // Filter items for this schedule
+                        const dueItems = schedule.items.filter(item => isItemDue(item, today));
 
-                {/* Lunch */}
-                <div className="time-slot">
-                    <div className="slot-header">
-                        <Sun className="slot-icon lunch" size={20} />
-                        <span className="slot-title">점심</span>
-                        <span className="slot-time">오후 12:30</span>
-                    </div>
-                    <div className="med-card">
-                        <div className="med-checkbox">
-                            <input type="checkbox" id="med3" />
-                            <label htmlFor="med3"></label>
-                        </div>
-                        <div className="med-info">
-                            <h3>유산균</h3>
-                            <p>식후 30분 뒤 복용</p>
-                        </div>
-                    </div>
-                </div>
+                        // If no items in this slot are due, maybe skip slot?
+                        // Or show slot but empty? Let's skip slot if no items are due to keep it clean.
+                        if (dueItems.length === 0) return null;
 
-                {/* Dinner */}
-                <div className="time-slot">
-                    <div className="slot-header">
-                        <Moon className="slot-icon dinner" size={20} />
-                        <span className="slot-title">저녁</span>
+                        // Simple logic to determine icon based on time
+                        // Assuming rawTime is "HH:MM" 24h format
+                        const hour = parseInt(schedule.rawTime.split(':')[0]);
+                        const isNight = hour >= 18;
+                        const isLunch = hour >= 12 && hour < 18;
+                        const SlotIcon = isNight ? Moon : Sun;
+                        const slotClass = isNight ? 'dinner' : (isLunch ? 'lunch' : 'morning');
+                        const slotName = isNight ? '저녁' : (isLunch ? '점심' : '아침');
+
+                        return (
+                            <div key={schedule.id} className="time-slot">
+                                <div className="slot-header">
+                                    <SlotIcon className={`slot-icon ${slotClass}`} size={20} />
+                                    <span className="slot-title">{slotName}</span>
+                                    <span className="slot-time">{schedule.time}</span>
+                                    <span className="slot-label" style={{ marginLeft: '8px', fontSize: '0.8rem', color: '#9ca3af' }}>{schedule.label}</span>
+                                </div>
+
+                                {dueItems.map(item => (
+                                    <div
+                                        key={item.id}
+                                        className={`med-card ${item.isTaken ? 'done' : ''}`}
+                                        onClick={() => toggleItemTaken(schedule.id, item.id)}
+                                    >
+                                        <div className={`med-checkbox ${item.isTaken ? 'checked' : ''}`}>
+                                            {item.isTaken && <CheckCircle size={24} color="#10b981" />}
+                                            {!item.isTaken && <input type="checkbox" readOnly checked={false} />}
+                                        </div>
+                                        <div className="med-info">
+                                            <h3>{item.name}</h3>
+                                            <p>{item.detail || '상세 정보 없음'}</p>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        );
+                    })
+                ) : (
+                    <div className="empty-slot" style={{ textAlign: 'center', padding: '2rem' }}>
+                        <p>등록된 일정이 없습니다.</p>
                     </div>
-                    <div className="empty-slot">
-                        <Moon size={40} className="empty-icon" />
-                        <p>예정된 영양제가 없습니다.</p>
-                        <span>편안한 저녁 시간 되세요.</span>
-                    </div>
-                </div>
+                )}
             </section>
 
             {/* Spacing for Bottom Tab Bar */}
