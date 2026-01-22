@@ -19,9 +19,9 @@ spring:
       hibernate:
         format_sql: true
 
-logging:
-  level:
-    org.hibernate.SQL: debug
+#logging:
+#  level:
+#    org.hibernate.SQL: debug
 
 jwt:
   secret: ${JWT_SECRET:this-is-a-very-long-jwt-secret-key-32bytes!!}
