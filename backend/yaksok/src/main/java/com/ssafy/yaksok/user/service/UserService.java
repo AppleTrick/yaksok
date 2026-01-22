@@ -17,7 +17,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public long authenticate(String email, String rawPassword) {
+    public User authenticate(String email, String rawPassword) {
 
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
@@ -26,14 +26,13 @@ public class UserService {
             throw new BusinessException(ErrorCode.AUTH_LOGIN_FAIL);
         }
 
-        return user.getId();
+        return user;
     }
 
-    public long kakaoAuthenticate(String kakaoId){
-        User user = userRepository.findByOauthId(kakaoId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+    public User kakaoAuthenticate(String kakaoId){
 
-        return user.getId();
+        return userRepository.findByOauthId(kakaoId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
     }
 
     public String encodePassword(String password){

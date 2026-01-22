@@ -24,11 +24,11 @@ public class AuthService {
     }
 
     //쿠키 1시간
-    public long login(LoginRequest request) {
+    public User login(LoginRequest request) {
         return userService.authenticate(request.getEmail(), request.getPassword());
     }
 
-    public long KakaoLogin(String oauthId){
+    public User KakaoLogin(String oauthId){
         return userService.kakaoAuthenticate(oauthId);
     }
 
