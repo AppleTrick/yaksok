@@ -1,0 +1,8 @@
+# Version3 Supplement Detection Dataset
+path: .
+train: train/images
+val: valid/images
+test: test/images
+
+nc: 1
+names: ['supplement']
