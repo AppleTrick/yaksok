@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import { ScheduleItem } from '@/components/ScheduleCard';
+import { MedicationItem } from '@/features/notification/types';
 import ScheduleCard from '@/components/ScheduleCard';
 import TopBanner from './components/TopBanner';
 import WaterCard from './components/WaterCard';
@@ -19,7 +19,7 @@ export default function RemindersFeature() {
     };
 
     // 3. Save Changes
-    const handleSave = (newRawTime: string, newItems: ScheduleItem[]) => {
+    const handleSave = (newRawTime: string, newItems: MedicationItem[]) => {
         if (!editingId) return;
         updateSchedule(editingId, newRawTime, newItems);
         setEditingId(null);
