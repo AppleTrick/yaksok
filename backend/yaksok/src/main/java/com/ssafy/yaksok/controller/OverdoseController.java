@@ -1,11 +1,14 @@
 package com.ssafy.yaksok.controller;
 
 import com.ssafy.yaksok.domain.dto.OverdoseCheckResponse;
-import com.ssafy.yaksok.domain.dto.SimulationRequest;
+import com.ssafy.yaksok.domain.dto.SimulationProductRequest;
 import com.ssafy.yaksok.service.OverdoseCheckService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 과복용 체크 Controller
@@ -25,21 +28,19 @@ public class OverdoseController {
      */
     @GetMapping("/check")
     public ResponseEntity<OverdoseCheckResponse> checkOverdose(@RequestParam Long userId) {
+
+        List<SimulationProductRequest> list=new ArrayList<>();
+        list.add(new SimulationProductRequest(1L,3));
+        list.add(new SimulationProductRequest(2L,3));
+        OverdoseCheckResponse response = overdoseCheckService.checkOverdoseWithSimulation(userId,list);
+        return ResponseEntity.ok(response);
+    }
+    @GetMapping("/checkv2")
+    public ResponseEntity<OverdoseCheckResponse> checkOverdosev2(@RequestParam Long userId) {
+
         OverdoseCheckResponse response = overdoseCheckService.checkOverdose(userId);
         return ResponseEntity.ok(response);
     }
 
-    /**
-     * 기존 복용 정보 + 추가 제품을 함께 계산하여 과복용 시뮬레이션
-     * 
-     * @param request 시뮬레이션 요청 (userId + 추가 제품 목록)
-     * @return 성분별 과복용 boolean 목록
-     */
-    @PostMapping("/simulate")
-    public ResponseEntity<OverdoseCheckResponse> simulateOverdose(@RequestBody SimulationRequest request) {
-        OverdoseCheckResponse response = overdoseCheckService.checkOverdoseWithSimulation(
-                request.getUserId(),
-                request.getAdditionalProducts());
-        return ResponseEntity.ok(response);
-    }
+
 }
