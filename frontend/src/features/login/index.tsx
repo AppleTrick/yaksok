@@ -22,19 +22,40 @@ export default function LoginFeature() {
     const handleKakaoLogin = async (code: string) => {
         setIsLoading(true);
         try {
-            // 1. 카카오 인가 코드(Code)를 이용해 카카오 서버에서 액세스 토큰을 받아와야 함.
-            // 클라이언트(프론트)에서 직접 요청하거나, 백엔드에서 수행할 수 있음.
-            // 현재 API 스펙은 프론트에서 토큰을 넘겨주는 방식이므로, 여기서 카카오 토큰 발급 API를 호출해야 한다고 가정.
+            console.log('1. 카카오 인가 코드로 액세스 토큰 요청 중...');
 
-            // [MOCK] 실제 카카오 API 호출 대신 가짜 토큰 생성
-            console.log('카카오 코드로 토큰 교환 시도 (Mocking)...');
-            const mockKakaoAccessToken = 'mock-kakao-access-token-from-code_' + code;
+            const kakaoTokenResponse = await axios.post(
+                'https://kauth.kakao.com/oauth/token',
+                new URLSearchParams({
+                    grant_type: 'authorization_code',
+                    client_id: process.env.NEXT_PUBLIC_KAKAO_REST_API_KEY || '',
+                    redirect_uri: process.env.NEXT_PUBLIC_KAKAO_REDIRECT_URI || '',
+                    code: code,
+                }).toString(),
+                {
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8',
+                    },
+                }
+            );
 
-            // 2. 발급받은 카카오 토큰을 우리 백엔드 서버로 전송
-            const response = await axios.post('/api/v1/auth/oauth/login', {
-                provider: 'KAKAO',
-                oauthToken: mockKakaoAccessToken
-            });
+            const kakaoAccessToken = kakaoTokenResponse.data.access_token;
+            console.log('2. 카카오 액세스 토큰 발급 완료:', kakaoAccessToken);
+
+            // 3. 발급받은 카카오 토큰을 우리 백엔드 서버로 전송 (Form Data 형식)
+            console.log('3. 백엔드로 카카오 로그인 요청 중...');
+            const response = await axios.post(
+                '/api/v1/auth/oauth/login',
+                new URLSearchParams({
+                    provider: 'KAKAO',
+                    oauthToken: kakaoAccessToken,
+                }).toString(),
+                {
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                }
+            );
 
             const result = response.data;
 
@@ -45,7 +66,7 @@ export default function LoginFeature() {
                 localStorage.setItem('accessToken', result.data.accessToken);
                 localStorage.setItem('refreshToken', result.data.refreshToken);
 
-                alert(`카카오 로그인 성공! 환영합니다, ${result.data.user.nickname}님.`);
+                alert(`카카오 로그인 성공! 환영합니다, ${result.data.user.nickname || result.data.user.name}님.`);
                 router.push('/');
             } else {
                 throw new Error(result.error?.message || '카카오 로그인 실패');
@@ -56,7 +77,7 @@ export default function LoginFeature() {
             const message = error.response?.data?.error?.message || '카카오 로그인 중 오류가 발생했습니다.';
             alert(message);
         } finally {
-            // URL 정리 (코드가 노출되지 않도록)
+            // URL 정리
             router.replace('/login');
             setIsLoading(false);
         }
