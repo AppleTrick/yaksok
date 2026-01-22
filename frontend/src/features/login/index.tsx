@@ -62,11 +62,13 @@ export default function LoginFeature() {
             if (result.success) {
                 console.log('카카오 로그인 성공:', result.data);
 
-                // 토큰 저장
+                // 토큰 및 사용자 이름 저장
+                const userName = result.data.user.nickname || result.data.user.name;
                 localStorage.setItem('accessToken', result.data.accessToken);
                 localStorage.setItem('refreshToken', result.data.refreshToken);
+                localStorage.setItem('userName', userName);
 
-                alert(`카카오 로그인 성공! 환영합니다, ${result.data.user.nickname || result.data.user.name}님.`);
+                alert(`카카오 로그인 성공! 환영합니다, ${userName}님.`);
                 router.push('/');
             } else {
                 throw new Error(result.error?.message || '카카오 로그인 실패');
@@ -92,12 +94,14 @@ export default function LoginFeature() {
             if (result.success) {
                 console.log('로그인 성공:', result.data);
 
-                // 토큰 저장
+                // 토큰 및 사용자 이름 저장
+                const userName = result.data.user.name;
                 localStorage.setItem('accessToken', result.data.accessToken);
                 localStorage.setItem('refreshToken', result.data.refreshToken);
+                localStorage.setItem('userName', userName);
 
                 // 홈으로 리다이렉트
-                alert(`로그인 성공! 환영합니다, ${result.data.user.name}님.`);
+                alert(`로그인 성공! 환영합니다, ${userName}님.`);
                 router.push('/');
             } else {
                 alert(`로그인 실패: ${result.error?.message || '알 수 없는 오류'}`);
