@@ -5,6 +5,6 @@ import lombok.Getter;
 @Getter
 public class KakaoRequest {
 
-    private String accessToken;
+    private String code;
 }
 
