@@ -86,11 +86,12 @@ export default function LoginFeature() {
     const handleLogin = async (data: any) => {
         setIsLoading(true);
         try {
-            const response = await axios.post('/api/v1/auth/login', data);
+            const response = await axios.post('/api/v1/auth/login', data, { withCredentials: true });
             const result = response.data;
 
             if (result.success) {
                 console.log('로그인 성공:', result.data);
+
                 // 토큰 저장
                 localStorage.setItem('accessToken', result.data.accessToken);
                 localStorage.setItem('refreshToken', result.data.refreshToken);
