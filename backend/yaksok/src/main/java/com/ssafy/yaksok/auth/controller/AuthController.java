@@ -10,15 +10,14 @@ import com.ssafy.yaksok.global.dto.ApiResponse;
 import com.ssafy.yaksok.global.util.CookieUtil;
 import com.ssafy.yaksok.global.util.ResponseUtil;
 import com.ssafy.yaksok.security.token.JwtTokenProvider;
-import jakarta.servlet.http.Cookie;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseCookie;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+@Slf4j
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
 public class AuthController {
 
@@ -27,40 +26,62 @@ public class AuthController {
     private final JwtTokenProvider jwtTokenProvider;
     private final CookieUtil cookieUtil;
 
-    @RequestMapping("/signup")
-    public ResponseEntity<ApiResponse<Void>> signup(SignupRequest request){
+    // 회원가입
+    @PostMapping("/signup")
+    public ResponseEntity<ApiResponse<Void>> signup(
+            @RequestBody SignupRequest request
+    ) {
+
         authService.signUp(request);
         return ResponseUtil.ok();
     }
 
-    @RequestMapping("/oauth/signup")
-    public ResponseEntity<ApiResponse<Void>> oauthSignup(KakaoRequest request){
-        KakaoUserInfo kakaoUserInfo = kakaoOAuthClient.getUserInfo(request.getAccessToken());
-        authService.KaKaoSignUp(kakaoUserInfo);
+    // 카카오 회원가입
+    @PostMapping("/oauth/signup")
+    public ResponseEntity<ApiResponse<Void>> oauthSignup(
+            @RequestBody KakaoRequest request
+    ) {
+        KakaoUserInfo userInfo =
+                kakaoOAuthClient.getUserInfo(request.getAccessToken());
+
+        authService.KaKaoSignUp(userInfo);
         return ResponseUtil.ok();
     }
 
-    @RequestMapping("/login")
-    public ResponseEntity<ApiResponse<Void>> login(LoginRequest request){
+    // 로그인
+    @PostMapping("/login")
+    public ResponseEntity<ApiResponse<Void>> login(
+            @RequestBody LoginRequest request
+    ) {
         long userId = authService.login(request);
-        String token = jwtTokenProvider.createAccessToken(userId);
-        return ResponseUtil.okWithCookies(cookieUtil.createAccessToken(token));
+        String accessToken = jwtTokenProvider.createAccessToken(userId);
+
+        return ResponseUtil.okWithCookies(
+                cookieUtil.createAccessToken(accessToken)
+        );
     }
 
-    @RequestMapping("/oauth/login")
-    public ResponseEntity<ApiResponse<Void>> oauthLogin(KakaoRequest request){
-        KakaoUserInfo kakaoUserInfo = kakaoOAuthClient.getUserInfo(request.getAccessToken());
-        authService.KakaoLogin(kakaoUserInfo.getKakaoId());
+    // 카카오 로그인
+    @PostMapping("/oauth/login")
+    public ResponseEntity<ApiResponse<Void>> oauthLogin(
+            @RequestBody KakaoRequest request
+    ) {
+        KakaoUserInfo userInfo =
+                kakaoOAuthClient.getUserInfo(request.getAccessToken());
 
-        long userId = authService.KakaoLogin(kakaoUserInfo.getKakaoId());
-        String token = jwtTokenProvider.createAccessToken(userId);
+        long userId = authService.KakaoLogin(userInfo.getKakaoId());
+        String accessToken = jwtTokenProvider.createAccessToken(userId);
 
-        return ResponseUtil.okWithCookies(cookieUtil.createAccessToken(token));
+        return ResponseUtil.okWithCookies(
+                cookieUtil.createAccessToken(accessToken)
+        );
     }
 
-    @RequestMapping("/logout")
-    public ResponseEntity<ApiResponse<Void>> logout(){
-        //authService.logout(); - 리프레시 토큰 사용 시 활용.
-        return ResponseUtil.okWithCookies(cookieUtil.deleteAccessToken());
+    // 로그아웃
+    @PostMapping("/logout")
+    public ResponseEntity<ApiResponse<Void>> logout() {
+        return ResponseUtil.okWithCookies(
+                cookieUtil.deleteAccessToken()
+        );
     }
 }

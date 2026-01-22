@@ -5,9 +5,11 @@ import com.ssafy.yaksok.global.exception.ErrorCode;
 import com.ssafy.yaksok.user.entity.User;
 import com.ssafy.yaksok.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserService {
@@ -16,8 +18,9 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
 
     public long authenticate(String email, String rawPassword) {
+
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new BusinessException(ErrorCode.AUTH_LOGIN_FAIL));
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
         if (!passwordEncoder.matches(rawPassword, user.getPassword())) {
             throw new BusinessException(ErrorCode.AUTH_LOGIN_FAIL);
@@ -28,7 +31,7 @@ public class UserService {
 
     public long kakaoAuthenticate(String kakaoId){
         User user = userRepository.findByOauthId(kakaoId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.AUTH_OAUTH_LOGIN_FAIL));
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
         return user.getId();
     }
@@ -57,7 +60,6 @@ public class UserService {
                 signupUser.getAgeGroup(),
                 signupUser.getGender()
         );
-
         userRepository.save(user);
     }
 

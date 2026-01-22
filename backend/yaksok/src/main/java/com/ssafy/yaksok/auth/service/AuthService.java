@@ -9,10 +9,12 @@ import com.ssafy.yaksok.security.token.JwtTokenResolver;
 import com.ssafy.yaksok.user.entity.User;
 import com.ssafy.yaksok.user.service.UserService;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 public class AuthService {
     private final UserService userService;
@@ -34,6 +36,7 @@ public class AuthService {
         User user = User.createLocalUser(request.getEmail(),
                 request.getPassword(), request.getName(), request.getName(), request.getGender());
 
+        log.info("ser {}", user.getPassword());
         userService.signup(user);
     }
 
