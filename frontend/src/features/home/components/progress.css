@@ -1,0 +1,115 @@
+.daily-progress-card {
+    background-color: var(--white);
+    border-radius: 1.5rem;
+    padding: 1.5rem;
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 1.5rem;
+}
+
+.progress-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 0.5rem;
+}
+
+.progress-header h2 {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: var(--foreground-color);
+}
+
+.badge {
+    background-color: #E6F4F1;
+    /* Light mint/teal */
+    color: var(--primary-color);
+    padding: 0.5rem 1rem;
+    border-radius: 1rem;
+    border-bottom-left-radius: 0;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.progress-desc {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    margin-bottom: 1.5rem;
+}
+
+.progress-content {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+/* Donut Chart */
+.donut-chart-wrapper {
+    position: relative;
+    width: 100px;
+    height: 100px;
+}
+
+.donut-chart {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* Background set inline for dynamic percentage */
+}
+
+.donut-inner {
+    width: 80%;
+    height: 80%;
+    background-color: var(--white);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.percentage-text {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: var(--primary-color);
+}
+
+/* Info Side */
+.progress-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.progress-info p {
+    font-size: 1rem;
+    color: var(--foreground-color);
+    line-height: 1.4;
+}
+
+.highlight-text {
+    color: var(--primary-color);
+    font-weight: 700;
+}
+
+.view-record-btn {
+    margin-top: 0.75rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    background-color: var(--background-color);
+    color: var(--primary-color);
+    padding: 0.5rem 1rem;
+    border-radius: 0.75rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-decoration: none;
+    align-self: flex-start;
+    transition: background-color 0.2s;
+}
+
+.view-record-btn:active {
+    background-color: var(--light-grey);
+}
