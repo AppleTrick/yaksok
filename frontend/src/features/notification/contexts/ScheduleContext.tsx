@@ -1,7 +1,7 @@
 "use client";
 
-import React, { createContext, useContext, useState, ReactNode } from 'react';
-import { ScheduleItem } from '@/components/ScheduleCard';
+import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
+import { MedicationItem } from '../types';
 
 // 1. Define Types
 export interface Schedule {
@@ -10,18 +10,55 @@ export interface Schedule {
     rawTime: string; // 24h format "14:00"
     label: string;
     status: 'upcoming' | 'done' | 'missed';
-    items: ScheduleItem[];
+    items: MedicationItem[];
     isActive: boolean;
 }
 
 interface ScheduleContextType {
+    activeTab: 'daily' | 'weekly';
+    setActiveTab: (tab: 'daily' | 'weekly') => void;
+    date: Date;
+    setDate: (date: Date) => void;
     schedules: Schedule[];
     toggleAlarm: (id: string) => void;
-    updateSchedule: (id: string, newRawTime: string, newItems: ScheduleItem[]) => void;
+    updateSchedule: (id: string, newRawTime: string, newItems: MedicationItem[]) => void;
     toggleItemTaken: (scheduleId: string, itemId: string) => void;
+    toggleScheduleActive: (scheduleId: string) => void;
+    isItemDue: (item: MedicationItem, date: Date) => boolean;
 }
 
-// 2. Mock Initial Data (Moved from RemindersFeature)
+// Helper: Check if item is due on specific date
+export const isItemDue = (item: MedicationItem, date: Date): boolean => {
+    const { cycle } = item;
+
+    if (cycle.type === 'daily') return true;
+
+    if (cycle.type === 'weekly') {
+        if (!cycle.daysOfWeek || cycle.daysOfWeek.length === 0) return false;
+        const day = date.getDay(); // 0-6
+        return cycle.daysOfWeek.includes(day);
+    }
+
+    if (cycle.type === 'interval') {
+        if (!cycle.startDate || !cycle.interval) return false;
+
+        const start = new Date(cycle.startDate);
+        const target = new Date(date);
+
+        // Normalize time to 00:00:00 for correct day diff
+        start.setHours(0, 0, 0, 0);
+        target.setHours(0, 0, 0, 0);
+
+        const diffTime = target.getTime() - start.getTime();
+        const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+        return diffDays >= 0 && diffDays % cycle.interval === 0;
+    }
+
+    return false;
+};
+
+// 2. Mock Initial Data
 const INITIAL_SCHEDULES: Schedule[] = [
     {
         id: '1',
@@ -30,9 +67,9 @@ const INITIAL_SCHEDULES: Schedule[] = [
         label: '1시간 후 복용',
         status: 'upcoming',
         items: [
-            { id: '1', name: '오메가3', isTaken: false },
-            { id: '2', name: '비타민D', isTaken: false },
-            { id: '3', name: '루테인', isTaken: false }
+            { id: '1', name: '오메가3', isTaken: false, cycle: { type: 'daily' } },
+            { id: '2', name: '비타민D', isTaken: false, cycle: { type: 'daily' } },
+            { id: '3', name: '루테인', isTaken: false, cycle: { type: 'weekly', daysOfWeek: [1, 3, 5] } } // 월/수/금
         ],
         isActive: true
     },
@@ -43,8 +80,8 @@ const INITIAL_SCHEDULES: Schedule[] = [
         label: '저녁 식사 후',
         status: 'upcoming',
         items: [
-            { id: '4', name: '혈압약', isTaken: false },
-            { id: '5', name: '마그네슘', isTaken: false }
+            { id: '4', name: '혈압약', isTaken: false, cycle: { type: 'daily' } },
+            { id: '5', name: '마그네슘', isTaken: false, cycle: { type: 'interval', interval: 2, startDate: '2025-05-01' } } // 2일 간격
         ],
         isActive: true
     }
@@ -54,19 +91,50 @@ const INITIAL_SCHEDULES: Schedule[] = [
 const ScheduleContext = createContext<ScheduleContextType | undefined>(undefined);
 
 // 4. Provider Component
-export function ScheduleProvider({ children }: { children: ReactNode }) {
+export const ScheduleProvider = ({ children }: { children: ReactNode }) => {
     const [schedules, setSchedules] = useState<Schedule[]>(INITIAL_SCHEDULES);
+    const [activeTab, setActiveTab] = useState<'daily' | 'weekly'>('daily');
+    const [date, setDate] = useState<Date>(new Date());
 
-    // Action: Toggle Alarm (Bell)
+    // Load active tab and schedules from localStorage on mount
+    useEffect(() => {
+        const savedTab = localStorage.getItem('activeTab');
+        if (savedTab) {
+            setActiveTab(savedTab as 'daily' | 'weekly');
+        }
+
+        const savedSchedules = localStorage.getItem('medication_schedules');
+        if (savedSchedules) {
+            try {
+                const parsed = JSON.parse(savedSchedules);
+                setSchedules(parsed);
+            } catch (e) {
+                console.error("Failed to parse schedules from local storage", e);
+            }
+        }
+    }, []);
+
+    // Save schedules to localStorage whenever they change
+    useEffect(() => {
+        if (schedules !== INITIAL_SCHEDULES) {
+            localStorage.setItem('medication_schedules', JSON.stringify(schedules));
+        }
+    }, [schedules]);
+
+    // Save activeTab to localStorage whenever it changes
+    useEffect(() => {
+        localStorage.setItem('activeTab', activeTab);
+    }, [activeTab]);
+
+    // Action: Toggle Alarm
     const toggleAlarm = (id: string) => {
         setSchedules(prev => prev.map(s =>
             s.id === id ? { ...s, isActive: !s.isActive } : s
         ));
     };
 
-    // Action: Update Schedule (Time & Items)
-    const updateSchedule = (id: string, newRawTime: string, newItems: ScheduleItem[]) => {
-        // Convert rawTime to display time
+    // Action: Update Schedule (Time, Items)
+    const updateSchedule = (id: string, newRawTime: string, newItems: MedicationItem[]) => {
         const [h, m] = newRawTime.split(':').map(Number);
         const ampm = h < 12 ? '오전' : '오후';
         const displayHour = h === 0 ? 12 : (h > 12 ? h - 12 : h);
@@ -91,17 +159,29 @@ export function ScheduleProvider({ children }: { children: ReactNode }) {
                 item.id === itemId ? { ...item, isTaken: !item.isTaken } : item
             );
 
-            // Check if all items are taken -> update schedule status
-            const allTaken = updatedItems.every(i => i.isTaken);
-            // Simple logic: if all taken -> done, else -> upcoming (or missed logic if time passed)
-            // For now, let's keep it simple.
-
             return { ...schedule, items: updatedItems };
         }));
     };
 
+    const toggleScheduleActive = (scheduleId: string) => {
+        setSchedules(prev => prev.map(s =>
+            s.id === scheduleId ? { ...s, isActive: !s.isActive } : s
+        ));
+    };
+
     return (
-        <ScheduleContext.Provider value={{ schedules, toggleAlarm, updateSchedule, toggleItemTaken }}>
+        <ScheduleContext.Provider value={{
+            activeTab,
+            setActiveTab,
+            date,
+            setDate,
+            schedules,
+            toggleAlarm,
+            updateSchedule,
+            toggleItemTaken,
+            toggleScheduleActive,
+            isItemDue
+        }}>
             {children}
         </ScheduleContext.Provider>
     );
