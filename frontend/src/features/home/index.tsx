@@ -3,20 +3,34 @@
 import Link from "next/link";
 import { Camera, Sun, Moon, CheckCircle } from "lucide-react";
 import DailyProgressCard from "./components/DailyProgressCard";
-import { useScheduleContext } from "../notification/contexts/ScheduleContext";
+import { useScheduleContext, isItemDue } from "../notification/contexts/ScheduleContext";
 import './styles.css';
+import { useState, useEffect } from "react";
 
 export default function HomeFeature() {
     const { schedules, toggleItemTaken } = useScheduleContext();
+    const [today, setToday] = useState<Date | null>(null);
 
-    // 1. Calculate Progress from Context
-    const allItems = schedules.flatMap(s => s.items);
-    const totalMeds = allItems.length;
-    const takenMeds = allItems.filter(i => i.isTaken).length;
+    useEffect(() => {
+        setToday(new Date());
+    }, []);
+
+    // 1. Calculate Progress from Context (Based on DUE items only)
+    // If today is not set (SSR/First Render), show 0 or all? Better to show 0/loading to avoid flash.
+    const allDueItems = today ? schedules.flatMap(s =>
+        s.items.filter(item => isItemDue(item, today))
+    ) : [];
+    const totalMeds = allDueItems.length;
+    const takenMeds = allDueItems.filter(i => i.isTaken).length;
 
     // 2. Sort/Filter Logic
     // In a real app we might filter by time of day, but for now we iterate the schedules directly.
     const activeSchedules = schedules.filter(s => s.isActive);
+
+    // Debug log - moved inside effect or render check
+    if (today) {
+        // console.log("HomeFeature Client Date:", today.toString());
+    }
 
     return (
         <div className="home-container">
@@ -50,8 +64,15 @@ export default function HomeFeature() {
 
             {/* Daily Timeline (Connected to Context) */}
             <section className="timeline-section">
-                {activeSchedules.length > 0 ? (
+                {today && activeSchedules.length > 0 ? (
                     activeSchedules.map(schedule => {
+                        // Filter items for this schedule
+                        const dueItems = schedule.items.filter(item => isItemDue(item, today));
+
+                        // If no items in this slot are due, maybe skip slot?
+                        // Or show slot but empty? Let's skip slot if no items are due to keep it clean.
+                        if (dueItems.length === 0) return null;
+
                         // Simple logic to determine icon based on time
                         // Assuming rawTime is "HH:MM" 24h format
                         const hour = parseInt(schedule.rawTime.split(':')[0]);
@@ -70,26 +91,22 @@ export default function HomeFeature() {
                                     <span className="slot-label" style={{ marginLeft: '8px', fontSize: '0.8rem', color: '#9ca3af' }}>{schedule.label}</span>
                                 </div>
 
-                                {schedule.items.length > 0 ? (
-                                    schedule.items.map(item => (
-                                        <div
-                                            key={item.id}
-                                            className={`med-card ${item.isTaken ? 'done' : ''}`}
-                                            onClick={() => toggleItemTaken(schedule.id, item.id)}
-                                        >
-                                            <div className={`med-checkbox ${item.isTaken ? 'checked' : ''}`}>
-                                                {item.isTaken && <CheckCircle size={24} color="#10b981" />}
-                                                {!item.isTaken && <input type="checkbox" readOnly checked={false} />}
-                                            </div>
-                                            <div className="med-info">
-                                                <h3>{item.name}</h3>
-                                                <p>{item.detail || '상세 정보 없음'}</p>
-                                            </div>
+                                {dueItems.map(item => (
+                                    <div
+                                        key={item.id}
+                                        className={`med-card ${item.isTaken ? 'done' : ''}`}
+                                        onClick={() => toggleItemTaken(schedule.id, item.id)}
+                                    >
+                                        <div className={`med-checkbox ${item.isTaken ? 'checked' : ''}`}>
+                                            {item.isTaken && <CheckCircle size={24} color="#10b981" />}
+                                            {!item.isTaken && <input type="checkbox" readOnly checked={false} />}
                                         </div>
-                                    ))
-                                ) : (
-                                    <p className="empty-text">등록된 영양제가 없습니다.</p>
-                                )}
+                                        <div className="med-info">
+                                            <h3>{item.name}</h3>
+                                            <p>{item.detail || '상세 정보 없음'}</p>
+                                        </div>
+                                    </div>
+                                ))}
                             </div>
                         );
                     })
