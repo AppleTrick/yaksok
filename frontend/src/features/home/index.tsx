@@ -1,19 +1,43 @@
+'use client';
 
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Camera, Sun, Moon, CheckCircle } from "lucide-react";
+import { Camera, Sun, Moon, CheckCircle, LogOut } from "lucide-react";
 import './styles.css';
 
 export default function HomeFeature() {
+    const router = useRouter();
+    const [userName, setUserName] = useState("사용자");
+
+    useEffect(() => {
+        const storedName = localStorage.getItem("userName");
+        if (storedName) {
+            setUserName(storedName);
+        }
+    }, []);
+
+    const handleLogout = () => {
+        if (confirm("로그아웃 하시겠습니까?")) {
+            localStorage.removeItem("accessToken");
+            localStorage.removeItem("refreshToken");
+            localStorage.removeItem("userName");
+            alert("로그아웃 되었습니다.");
+            router.push("/login"); // 로그인 페이지로 이동
+        }
+    };
+
     return (
         <div className="home-container">
             <header className="home-header">
                 <div className="greeting-section">
                     <span className="greeting-sub">좋은 아침입니다,</span>
-                    <h1 className="greeting-main">선희 님</h1>
+                    <h1 className="greeting-main">{userName} 님</h1>
                     <p className="greeting-desc">오늘도 건강 약속을 지켜보세요.</p>
                 </div>
-                <div className="profile-icon">
-                    <div className="profile-placeholder">S</div>
+                <div className="profile-icon" onClick={handleLogout} style={{ cursor: 'pointer' }} title="로그아웃">
+                    {/* Placeholder for Profile or Logout Icon */}
+                    <LogOut size={20} color="#666" />
                 </div>
             </header>
 
