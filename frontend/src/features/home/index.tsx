@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import axios from '@/lib/axios';
 import { Camera, Sun, Moon, CheckCircle, LogOut } from "lucide-react";
 import './styles.css';
 
@@ -17,13 +18,18 @@ export default function HomeFeature() {
         }
     }, []);
 
-    const handleLogout = () => {
+    const handleLogout = async () => {
         if (confirm("로그아웃 하시겠습니까?")) {
-            localStorage.removeItem("accessToken");
-            localStorage.removeItem("refreshToken");
-            localStorage.removeItem("userName");
-            alert("로그아웃 되었습니다.");
-            router.push("/login"); // 로그인 페이지로 이동
+            try {
+                await axios.get('/api/v1/auth/logout'); // 쿠키 무효화 요청
+                alert("로그아웃 되었습니다.");
+            } catch (error) {
+                console.error("로그아웃 요청 실패:", error);
+                alert("로그아웃 중 오류가 발생했으나 로컬 로그아웃을 진행합니다.");
+            } finally {
+                localStorage.removeItem("userName");
+                router.push("/login");
+            }
         }
     };
 

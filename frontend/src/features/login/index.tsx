@@ -47,8 +47,7 @@ export default function LoginFeature() {
             const response = await axios.post(
                 '/api/v1/auth/oauth/login',
                 new URLSearchParams({
-                    provider: 'KAKAO',
-                    oauthToken: kakaoAccessToken,
+                    token: kakaoAccessToken,
                 }).toString(),
                 {
                     headers: {
@@ -63,9 +62,7 @@ export default function LoginFeature() {
                 console.log('카카오 로그인 성공:', result.data);
 
                 // 토큰 및 사용자 이름 저장
-                const userName = result.data.user.nickname || result.data.user.name;
-                localStorage.setItem('accessToken', result.data.accessToken);
-                localStorage.setItem('refreshToken', result.data.refreshToken);
+                const userName = result.data.name;
                 localStorage.setItem('userName', userName);
 
                 alert(`카카오 로그인 성공! 환영합니다, ${userName}님.`);
@@ -95,9 +92,7 @@ export default function LoginFeature() {
                 console.log('로그인 성공:', result.data);
 
                 // 토큰 및 사용자 이름 저장
-                const userName = result.data.user.name;
-                localStorage.setItem('accessToken', result.data.accessToken);
-                localStorage.setItem('refreshToken', result.data.refreshToken);
+                const userName = result.data.name;
                 localStorage.setItem('userName', userName);
 
                 // 홈으로 리다이렉트
