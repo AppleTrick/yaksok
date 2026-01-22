@@ -5,18 +5,13 @@ const axiosInstance = axios.create({
     headers: {
         'Content-Type': 'application/json',
     },
+    withCredentials: true, // 쿠키 포함 요청 설정
     timeout: 5000,
 });
 
-// 토큰을 추가하기 위한 요청 인터셉터
+// 토큰 관련 요청 인터셉터 제거 (쿠키 기반 인증 사용)
 axiosInstance.interceptors.request.use(
     (config) => {
-        if (typeof window !== 'undefined') {
-            const token = localStorage.getItem('accessToken');
-            if (token) {
-                config.headers.Authorization = `Bearer ${token}`;
-            }
-        }
         return config;
     },
     (error) => {
