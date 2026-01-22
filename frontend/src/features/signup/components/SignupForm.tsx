@@ -17,10 +17,32 @@ export default function SignupForm({ onSubmit, isLoading }: SignupFormProps) {
     const [gender, setGender] = useState<'male' | 'female' | ''>('');
     const [ageGroup, setAgeGroup] = useState<string>('');
     const [passwordError, setPasswordError] = useState('');
+    const [emailError, setEmailError] = useState('');
+
+    const validateEmail = (email: string) => {
+        const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return regex.test(email);
+    };
+
+    const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const newEmail = e.target.value;
+        setEmail(newEmail);
+        if (newEmail && !validateEmail(newEmail)) {
+            setEmailError('올바른 이메일 형식이 아닙니다.');
+        } else {
+            setEmailError('');
+        }
+    };
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         setPasswordError('');
+        setEmailError('');
+
+        if (!validateEmail(email)) {
+            setEmailError('올바른 이메일 형식이 아닙니다.');
+            return;
+        }
 
         if (password !== confirmPassword) {
             setPasswordError('비밀번호가 일치하지 않습니다.');
@@ -98,7 +120,8 @@ export default function SignupForm({ onSubmit, isLoading }: SignupFormProps) {
                     type="email"
                     placeholder="example@email.com"
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    onChange={handleEmailChange}
+                    error={emailError}
                     required
                 />
                 <InputForm
