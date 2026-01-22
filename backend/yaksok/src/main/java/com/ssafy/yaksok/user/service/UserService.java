@@ -1,5 +1,7 @@
 package com.ssafy.yaksok.user.service;
 
+import com.ssafy.yaksok.auth.dto.KakaoUserInfo;
+import com.ssafy.yaksok.auth.dto.SignupRequest;
 import com.ssafy.yaksok.global.exception.BusinessException;
 import com.ssafy.yaksok.global.exception.ErrorCode;
 import com.ssafy.yaksok.user.entity.User;
@@ -30,9 +32,8 @@ public class UserService {
     }
 
     public User kakaoAuthenticate(String kakaoId){
-
         return userRepository.findByOauthId(kakaoId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+                .orElseThrow(() -> new BusinessException(ErrorCode.AUTH_OAUTH_LOGIN_FAIL));
     }
 
     public String encodePassword(String password){
@@ -43,32 +44,35 @@ public class UserService {
         return passwordEncoder.matches(password, user.getPassword());
     }
 
+    public boolean existsEmail(String email){
+        return userRepository.existsByEmail(email);
+    }
 
+    public boolean existsOauthId(String oauthId){
+        return userRepository.existsByOauthId(oauthId);
+    }
 
     //CRUD
-    public void signup(User signupUser) {
-
-        if (userRepository.existsByEmail(signupUser.getEmail())) {
+    public void signUp(SignupRequest request){
+        if(existsEmail(request.getEmail())){
             throw new BusinessException(ErrorCode.USER_DUPLICATE_EMAIL);
         }
 
-        User user = User.createLocalUser(
-                signupUser.getEmail(),
-                passwordEncoder.encode(signupUser.getPassword()),
-                signupUser.getName(),
-                signupUser.getAgeGroup(),
-                signupUser.getGender()
-        );
+        User user = User.createLocalUser(request.getEmail(),
+                encodePassword(request.getPassword()), request.getName(), request.getName(), request.getGender());
+
         userRepository.save(user);
     }
 
-    public void KakaoSignup(User signupUser) {
-
-        if (userRepository.existsByOauthId(signupUser.getOauthId())) {
+    public void kakaoSignUp(KakaoUserInfo kakaoUserInfo){
+        if(existsOauthId(kakaoUserInfo.getKakaoId())){
             throw new BusinessException(ErrorCode.USER_DUPLICATE_OUATHID);
         }
 
-        userRepository.save(signupUser);
+        User user = User.createKakaoUser(kakaoUserInfo.getEmail(),
+                kakaoUserInfo.getNickname(), kakaoUserInfo.getKakaoId(), null, null);
+
+        userRepository.save(user);
     }
 
 
