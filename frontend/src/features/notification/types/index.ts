@@ -13,12 +13,19 @@ export interface MedicationItem {
     detail?: string;
     isTaken: boolean;
     cycle: Cycle;
+    // Extended fields for "My Supplements"
+    imageUrl?: string;
+    efficacy?: string; // e.g., "혈압 조절", "눈 건강"
+    cautions?: string; // e.g., "공복 섭취 금지"
+    category?: string; // e.g., "비타민", "유산균"
+    status?: 'taking' | 'stopped'; // Default to 'taking' if undefined
 }
 
 export interface MedicationSchedule {
     id: string;
     label: string; // "아침", "점심", "저녁", etc.
     time: string; // "HH:mm" 24h format
+    rawTime: string; // "14:00"
     isEnabled: boolean;
 }
 
@@ -32,9 +39,9 @@ export interface NotificationSettings {
 }
 
 export const DEFAULT_SCHEDULES: MedicationSchedule[] = [
-    { id: 'morning', label: '아침', time: '08:00', isEnabled: true },
-    { id: 'lunch', label: '점심', time: '13:00', isEnabled: true },
-    { id: 'dinner', label: '저녁', time: '19:00', isEnabled: true },
+    { id: 'morning', label: '아침', time: '오전 08:00', rawTime: '08:00', isEnabled: true },
+    { id: 'lunch', label: '점심', time: '오후 01:00', rawTime: '13:00', isEnabled: true },
+    { id: 'dinner', label: '저녁', time: '오후 07:00', rawTime: '19:00', isEnabled: true },
 ];
 
 export const DEFAULT_SETTINGS: NotificationSettings = {
