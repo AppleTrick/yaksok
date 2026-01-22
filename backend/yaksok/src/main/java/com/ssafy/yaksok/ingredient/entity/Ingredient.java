@@ -27,20 +27,16 @@ public class Ingredient {
     @Column(name = "max_intake_value")
     private BigDecimal maxIntakeValue;
 
-    @Column(name = "base_unit")
-    private String baseUnit;
-
     @Column(name = "display_unit")
     private String displayUnit;
 
     @Builder
     public Ingredient(Long id, String ingredientName, BigDecimal minIntakeValue, BigDecimal maxIntakeValue,
-            String baseUnit, String displayUnit) {
+            String displayUnit) {
         this.id = id;
         this.ingredientName = ingredientName;
         this.minIntakeValue = minIntakeValue;
         this.maxIntakeValue = maxIntakeValue;
-        this.baseUnit = baseUnit;
         this.displayUnit = displayUnit;
     }
 }
