@@ -18,7 +18,6 @@ CREATE TABLE IF NOT EXISTS ingredient (
                                           ingredient_name VARCHAR(255) UNIQUE,
                                           min_intake_value DECIMAL,
                                           max_intake_value DECIMAL,
-                                          base_unit VARCHAR(255),
                                           display_unit VARCHAR(255)
 ) ENGINE=InnoDB;
 
