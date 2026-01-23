@@ -25,6 +25,8 @@ interface ScheduleContextType {
     toggleItemTaken: (scheduleId: string, itemId: string) => void;
     toggleScheduleActive: (scheduleId: string) => void;
     isItemDue: (item: MedicationItem, date: Date) => boolean;
+    addMedication: (item: MedicationItem, targetRawTime: string) => void;
+    toggleMedicationStatus: (medicationName: string, newStatus: 'taking' | 'stopped') => void;
 }
 
 // Helper: Check if item is due on specific date
@@ -74,6 +76,7 @@ const INITIAL_SCHEDULES: Schedule[] = [
                 cycle: { type: 'daily' },
                 efficacy: '혈행 개선, 눈 건조 개선',
                 category: '오메가3',
+                ingredients: 'EPA 600mg, DHA 400mg, 비타민E 5mg',
                 status: 'taking'
             },
             {
@@ -83,6 +86,7 @@ const INITIAL_SCHEDULES: Schedule[] = [
                 cycle: { type: 'daily' },
                 efficacy: '뼈 건강, 면역력 증진',
                 category: '비타민',
+                ingredients: '비타민D3 1000IU (25mcg)',
                 status: 'taking'
             },
             {
@@ -92,6 +96,7 @@ const INITIAL_SCHEDULES: Schedule[] = [
                 cycle: { type: 'weekly', daysOfWeek: [1, 3, 5] }, // 월/수/금
                 efficacy: '눈 노화 방지, 황반 색소 유지',
                 category: '눈 건강',
+                ingredients: '루테인 20mg, 지아잔틴 4mg',
                 status: 'taking'
             }
         ],
@@ -112,6 +117,7 @@ const INITIAL_SCHEDULES: Schedule[] = [
                 efficacy: '혈압 조절',
                 category: '처방약',
                 cautions: '의사의 지시에 따라 매일 정해진 시간에 복용하세요. 임의로 중단하면 안 됩니다.',
+                ingredients: '로사르탄칼륨 50mg',
                 status: 'taking'
             },
             {
@@ -121,6 +127,7 @@ const INITIAL_SCHEDULES: Schedule[] = [
                 cycle: { type: 'interval', interval: 2, startDate: '2025-05-01' }, // 2일 간격
                 efficacy: '신경 과민 완화, 근육 이완',
                 category: '미네랄',
+                ingredients: '마그네슘 200mg (킬레이트)',
                 status: 'stopped' // One stopped item for testing
             }
         ],
@@ -247,6 +254,18 @@ export const ScheduleProvider = ({ children }: { children: ReactNode }) => {
         ));
     };
 
+    // Action: Toggle Medication Status (Taking <-> Stopped) globally by name
+    const toggleMedicationStatus = (medicationName: string, newStatus: 'taking' | 'stopped') => {
+        setSchedules(prev => prev.map(schedule => ({
+            ...schedule,
+            items: schedule.items.map(item =>
+                item.name === medicationName
+                    ? { ...item, status: newStatus }
+                    : item
+            )
+        })));
+    };
+
     return (
         <ScheduleContext.Provider value={{
             activeTab,
@@ -258,7 +277,9 @@ export const ScheduleProvider = ({ children }: { children: ReactNode }) => {
             updateSchedule,
             toggleItemTaken,
             toggleScheduleActive,
-            isItemDue
+            isItemDue,
+            addMedication,
+            toggleMedicationStatus
         }}>
             {children}
         </ScheduleContext.Provider>

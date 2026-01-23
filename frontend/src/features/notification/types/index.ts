@@ -18,6 +18,8 @@ export interface MedicationItem {
     efficacy?: string; // e.g., "혈압 조절", "눈 건강"
     cautions?: string; // e.g., "공복 섭취 금지"
     category?: string; // e.g., "비타민", "유산균"
+    ingredients?: string; // e.g., "비타민C 1000mg, 아연 10mg"
+    dosage?: number; // e.g., 1 (pill count)
     status?: 'taking' | 'stopped'; // Default to 'taking' if undefined
 }
 
