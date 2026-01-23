@@ -2,7 +2,7 @@ import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { MedicationItem } from '@/features/notification/types';
 import MySupplementCard from './MySupplementCard';
 import { Plus } from 'lucide-react';
-import './styles.css';
+import '../styles.css';
 
 interface SupplementListProps {
     items: MedicationItem[];

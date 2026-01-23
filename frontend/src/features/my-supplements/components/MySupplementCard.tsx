@@ -1,7 +1,7 @@
 import React from 'react';
 import { Pill, ChevronRight } from 'lucide-react';
 import { MedicationItem } from '@/features/notification/types';
-import './styles.css';
+import '../styles.css';
 
 interface MySupplementCardProps {
     item: MedicationItem;

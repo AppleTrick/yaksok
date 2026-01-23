@@ -417,6 +417,46 @@
     cursor: pointer;
 }
 
+/* Supplements Detail Modal Accordion */
+.cm-accordion {
+    width: 100%;
+}
+
+.cm-accordion-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    list-style: none;
+    /* Hide default triangle */
+}
+
+/* Hide default marker for webkit */
+.cm-accordion-header::-webkit-details-marker {
+    display: none;
+}
+
+.cm-accordion-icon {
+    transition: transform 0.2s ease;
+    color: var(--text-muted);
+}
+
+.cm-accordion[open] .cm-accordion-icon {
+    transform: rotate(90deg);
+}
+
+.cm-accordion-content {
+    margin-top: 0.75rem;
+    padding: 1rem;
+    background-color: var(--sub-background);
+    border-radius: 12px;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    color: var(--foreground-color);
+    white-space: pre-wrap;
+    /* Allow line breaks */
+}
+
 .submit-btn {
     flex: 2;
     padding: 1rem;
@@ -426,4 +466,47 @@
     font-weight: 700;
     border: none;
     cursor: pointer;
+}
+
+/* Dosage Counter Styles */
+.dosage-counter-container {
+    background-color: #FEF3C7;
+    /* Beige/Yellowish bg similar to image */
+    padding: 1rem 1.5rem;
+    border-radius: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.counter-btn {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    border: none;
+    background-color: var(--primary-color);
+    color: white;
+    font-size: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(255, 87, 34, 0.3);
+    transition: transform 0.1s, background-color 0.2s;
+}
+
+.counter-btn:active {
+    transform: scale(0.95);
+}
+
+.counter-btn:disabled {
+    background-color: var(--text-muted);
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+.dosage-value {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--foreground-color);
 }
