@@ -5,6 +5,7 @@ import com.ssafy.yaksok.auth.dto.*;
 import com.ssafy.yaksok.auth.service.AuthService;
 import com.ssafy.yaksok.global.dto.ApiResponse;
 import com.ssafy.yaksok.global.util.CookieUtil;
+import com.ssafy.yaksok.global.util.OAuthResponseUtil;
 import com.ssafy.yaksok.global.util.ResponseUtil;
 import com.ssafy.yaksok.security.token.JwtTokenProvider;
 import com.ssafy.yaksok.user.entity.User;
@@ -65,7 +66,7 @@ public class AuthController {
 
     // 카카오 로그인
     @GetMapping("/oauth/login")
-    public ResponseEntity<ApiResponse<LoginResponse>> oauthLogin(
+    public ResponseEntity<Void> oauthLogin(
             @RequestParam String code, HttpServletResponse response
     ) throws IOException {
         KakaoUserInfo userInfo =
@@ -74,15 +75,7 @@ public class AuthController {
         User user = authService.KakaoLogin(userInfo);
         String accessToken = jwtTokenProvider.createAccessToken(user.getId());
 
-        log.info(user.getName());
-        log.info("유저 이름 출력 완료");
-
-        response.sendRedirect("http://localhost:3000/");
-
-        return ResponseUtil.okWithCookies(
-                new LoginResponse(user.getName()),
-                cookieUtil.createAccessToken(accessToken)
-        );
+        return OAuthResponseUtil.redirectWithCookies("http://localhost:3000/", cookieUtil.createAccessToken(accessToken));
     }
 
     // 로그아웃
