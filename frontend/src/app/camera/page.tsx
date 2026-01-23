@@ -5,7 +5,6 @@ import "@/features/camera/styles.css";
 import CaptureStep from "@/features/camera/components/CaptureStep";
 import ReviewStep from "@/features/camera/components/ReviewStep";
 import AnalyzingStep from "@/features/camera/components/AnalyzingStep";
-import ErrorStep from "@/features/camera/components/ErrorStep";
 import ResultStep from "@/features/camera/components/ResultStep";
 
 type CameraFlowStep = 'capture' | 'review' | 'result';
