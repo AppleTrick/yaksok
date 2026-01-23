@@ -68,7 +68,7 @@ class UserServiceTest {
             setUserId(testUser, TEST_USER_ID);
 
             // when
-            long userId = userService.authenticate(TEST_EMAIL, TEST_PASSWORD);
+            long userId = userService.authenticate(TEST_EMAIL, TEST_PASSWORD).getId();
 
             // then
             assertThat(userId).isEqualTo(TEST_USER_ID);
@@ -128,7 +128,7 @@ class UserServiceTest {
             given(userRepository.findByOauthId(kakaoId)).willReturn(Optional.of(kakaoUser));
 
             // when
-            long userId = userService.kakaoAuthenticate(kakaoId);
+            long userId = userService.kakaoAuthenticate(kakaoId).getId();
 
             // then
             assertThat(userId).isEqualTo(TEST_USER_ID);
@@ -159,19 +159,17 @@ class UserServiceTest {
         @DisplayName("회원가입 성공")
         void signup_Success() {
             // given
-            User signupUser = User.createLocalUser(
-                    TEST_EMAIL,
-                    TEST_PASSWORD,
-                    TEST_NAME,
-                    "20대",
-                    "M");
+            com.ssafy.yaksok.auth.dto.SignupRequest signupRequest = new com.ssafy.yaksok.auth.dto.SignupRequest();
+            signupRequest.setEmail(TEST_EMAIL);
+            signupRequest.setPassword(TEST_PASSWORD);
+            signupRequest.setName(TEST_NAME);
+            signupRequest.setGender("M");
 
             given(userRepository.existsByEmail(TEST_EMAIL)).willReturn(false);
             given(passwordEncoder.encode(TEST_PASSWORD)).willReturn(TEST_ENCODED_PASSWORD);
-            given(userRepository.save(any(User.class))).willReturn(testUser);
 
             // when
-            userService.signup(signupUser);
+            userService.signUp(signupRequest);
 
             // then
             verify(userRepository).existsByEmail(TEST_EMAIL);
@@ -183,17 +181,13 @@ class UserServiceTest {
         @DisplayName("이미 존재하는 이메일로 회원가입 실패")
         void signup_DuplicateEmail() {
             // given
-            User signupUser = User.createLocalUser(
-                    TEST_EMAIL,
-                    TEST_PASSWORD,
-                    TEST_NAME,
-                    "20대",
-                    "M");
+            com.ssafy.yaksok.auth.dto.SignupRequest signupRequest = new com.ssafy.yaksok.auth.dto.SignupRequest();
+            signupRequest.setEmail(TEST_EMAIL);
 
             given(userRepository.existsByEmail(TEST_EMAIL)).willReturn(true);
 
             // when & then
-            assertThatThrownBy(() -> userService.signup(signupUser))
+            assertThatThrownBy(() -> userService.signUp(signupRequest))
                     .isInstanceOf(BusinessException.class)
                     .hasFieldOrPropertyWithValue("errorCode", ErrorCode.USER_DUPLICATE_EMAIL);
 
@@ -212,22 +206,17 @@ class UserServiceTest {
         void kakaoSignup_Success() {
             // given
             String kakaoId = "kakao123";
-            User kakaoUser = User.createKakaoUser(
-                    TEST_EMAIL,
-                    TEST_NAME,
-                    kakaoId,
-                    "20대",
-                    "M");
+            com.ssafy.yaksok.auth.dto.KakaoUserInfo kakaoUserInfo = new com.ssafy.yaksok.auth.dto.KakaoUserInfo(kakaoId,
+                    TEST_EMAIL, TEST_NAME);
 
             given(userRepository.existsByOauthId(kakaoId)).willReturn(false);
-            given(userRepository.save(kakaoUser)).willReturn(kakaoUser);
 
             // when
-            userService.KakaoSignup(kakaoUser);
+            userService.kakaoSignUp(kakaoUserInfo);
 
             // then
             verify(userRepository).existsByOauthId(kakaoId);
-            verify(userRepository).save(kakaoUser);
+            verify(userRepository).save(any(User.class));
         }
 
         @Test
@@ -235,17 +224,13 @@ class UserServiceTest {
         void kakaoSignup_DuplicateOAuthId() {
             // given
             String kakaoId = "kakao123";
-            User kakaoUser = User.createKakaoUser(
-                    TEST_EMAIL,
-                    TEST_NAME,
-                    kakaoId,
-                    "20대",
-                    "M");
+            com.ssafy.yaksok.auth.dto.KakaoUserInfo kakaoUserInfo = new com.ssafy.yaksok.auth.dto.KakaoUserInfo(kakaoId,
+                    TEST_EMAIL, TEST_NAME);
 
             given(userRepository.existsByOauthId(kakaoId)).willReturn(true);
 
             // when & then
-            assertThatThrownBy(() -> userService.KakaoSignup(kakaoUser))
+            assertThatThrownBy(() -> userService.kakaoSignUp(kakaoUserInfo))
                     .isInstanceOf(BusinessException.class)
                     .hasFieldOrPropertyWithValue("errorCode", ErrorCode.USER_DUPLICATE_OUATHID);
 

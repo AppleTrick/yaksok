@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(name = "users")
+@Table(name = "user")
 public class User {
 
     private static final String SOCIAL_LOGIN_PASSWORD = "SOCIAL_LOGIN";
