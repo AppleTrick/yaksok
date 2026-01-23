@@ -1,9 +1,9 @@
 import React from 'react';
-import { Pill, Clock, AlertCircle } from 'lucide-react';
+import { Pill, Clock, AlertCircle, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 import { MedicationItem, Cycle } from '@/features/notification/types';
 import Modal from '@/components/Modal';
-import './styles.css';
+import '../styles.css';
 
 interface SupplementDetailModalProps {
     isOpen: boolean;
@@ -11,6 +11,7 @@ interface SupplementDetailModalProps {
     item: MedicationItem; // Valid merged item
     relatedSchedules: { label: string; time: string; cycle: Cycle }[];
     onDelete: () => void;
+    onToggleStatus: (newStatus: 'taking' | 'stopped') => void;
 }
 
 const SupplementDetailModal: React.FC<SupplementDetailModalProps> = ({
@@ -18,7 +19,8 @@ const SupplementDetailModal: React.FC<SupplementDetailModalProps> = ({
     onClose,
     item,
     relatedSchedules,
-    onDelete
+    onDelete,
+    onToggleStatus
 }) => {
     // Helper to format cycle text
     const getCycleText = (cycle: Cycle) => {
@@ -33,6 +35,16 @@ const SupplementDetailModal: React.FC<SupplementDetailModalProps> = ({
 
     const footer = (
         <div className="modal-actions">
+            <button
+                className={`action-btn ${item.status === 'stopped' ? 'resume' : 'stop'}`}
+                onClick={() => onToggleStatus(item.status === 'stopped' ? 'taking' : 'stopped')}
+                style={{
+                    backgroundColor: item.status === 'stopped' ? '#22C55E' : '#F59E0B',
+                    color: 'white'
+                }}
+            >
+                {item.status === 'stopped' ? '복용 재개' : '복용 중단'}
+            </button>
             <button className="action-btn delete" onClick={() => {
                 if (confirm("정말 이 영양제를 모든 일정에서 삭제하시겠습니까?")) {
                     onDelete();
@@ -40,8 +52,6 @@ const SupplementDetailModal: React.FC<SupplementDetailModalProps> = ({
             }}>
                 삭제하기
             </button>
-            {/* Future: Edit button logic */}
-            {/* <button className="action-btn edit">수정하기</button> */}
         </div>
     );
 
@@ -88,6 +98,26 @@ const SupplementDetailModal: React.FC<SupplementDetailModalProps> = ({
                     </div>
                 )}
             </div>
+
+            {/* Ingredients Accordion */}
+            {item.ingredients && (
+                <div className="detail-section">
+                    <details className="cm-accordion">
+                        <summary className="cm-accordion-header">
+                            <div className="section-label" style={{ marginBottom: 0 }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                    <Pill size={16} />
+                                    <span>성분/함량 정보</span>
+                                </div>
+                            </div>
+                            <ChevronRight className="cm-accordion-icon" size={18} />
+                        </summary>
+                        <div className="cm-accordion-content">
+                            {item.ingredients}
+                        </div>
+                    </details>
+                </div>
+            )}
 
             {/* Schedule List */}
             <div className="detail-section">
