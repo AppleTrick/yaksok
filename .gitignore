@@ -1,11 +1,9 @@
 frontend/package-lock.json
-/DataPipeLine/Version1/data
-/DataPipeLine/Version1/datasets
-/DataPipeLine/Version3/test
-/DataPipeLine/Version3/vaild
-/DataPipeLine/Version3/train
-/DataPipeLine/Version2/Medicine Detection.v1i.yolov11
-/DataPipeLine/huseong
-/DataPipeLine/negative_samples
-/DataPipeLine/Version2/SAMPLE
-/DataPipeLine/Version3/valid
+
+# DataPipeLine - Data & Datasets
+/DataPipeLine/01_collection/huseong/
+/DataPipeLine/01_collection/negative_samples/
+/DataPipeLine/03_datasets/Version*
+/DataPipeLine/04_training/*.zip
+/DataPipeLine/04_training/*.pt
+/DataPipeLine/01_collection/huseong/trash/
