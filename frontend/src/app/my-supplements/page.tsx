@@ -8,10 +8,10 @@ import SupplementDetailModal from '@/features/my-supplements/components/Suppleme
 import SupplementList from '@/features/my-supplements/components/SupplementList';
 import ManualRegistrationForm from '@/features/my-supplements/components/ManualRegistrationForm';
 import Modal from '@/components/Modal';
-import '@/features/my-supplements/components/styles.css';
+import '@/features/my-supplements/styles.css';
 
 export default function MySupplementsPage() {
-    const { schedules, updateSchedule } = useScheduleContext();
+    const { schedules, updateSchedule, toggleMedicationStatus } = useScheduleContext();
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedItem, setSelectedItem] = useState<MedicationItem | null>(null);
     const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
@@ -106,6 +106,10 @@ export default function MySupplementsPage() {
                     item={selectedItem}
                     relatedSchedules={relatedSchedules}
                     onDelete={handleDelete}
+                    onToggleStatus={(newStatus) => {
+                        toggleMedicationStatus(selectedItem.name, newStatus);
+                        setSelectedItem(prev => prev ? { ...prev, status: newStatus } : null);
+                    }}
                 />
             )}
 
