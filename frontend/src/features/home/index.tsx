@@ -3,8 +3,8 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import axios from '@/lib/axios';
-import { Camera, Sun, Moon, CheckCircle, LogOut } from "lucide-react";
+import { COLORS } from '@/constants/colors';
+import { Camera, Sun, Moon, CheckCircle, User } from "lucide-react";
 import './styles.css';
 
 export default function HomeFeature() {
@@ -12,26 +12,33 @@ export default function HomeFeature() {
     const [userName, setUserName] = useState("사용자");
 
     useEffect(() => {
+        // 1. 로컬 스토리지에서 초기 로드
         const storedName = localStorage.getItem("userName");
         if (storedName) {
             setUserName(storedName);
+        } else {
+            // 이름이 없어도 쿠키가 있다면 로그인 상태일 수 있음
         }
-    }, []);
 
-    const handleLogout = async () => {
-        if (confirm("로그아웃 하시겠습니까?")) {
-            try {
-                await axios.get('/api/v1/auth/logout'); // 쿠키 무효화 요청
-                alert("로그아웃 되었습니다.");
-            } catch (error) {
-                console.error("로그아웃 요청 실패:", error);
-                alert("로그아웃 중 오류가 발생했으나 로컬 로그아웃을 진행합니다.");
-            } finally {
-                localStorage.removeItem("userName");
-                router.push("/login");
+        // 2. 최신 데이터 가져오기 및 세션 확인
+        const syncUserInfo = async () => {
+            // userService 동적 임포트
+            const { fetchUserInfo } = await import('@/services/userService');
+            const userInfo = await fetchUserInfo();
+
+            if (userInfo) {
+                setUserName(userInfo.name);
+                localStorage.setItem("userName", userInfo.name);
+            } else {
+                // API 실패 시(예: 401) 로그인 페이지로 리다이렉트 고려
+                // 하지만 "개발 단계이므로 리다이렉트 주석 처리" 요청에 따름
+                // console.log("로그인되지 않았거나 API 오류 발생");
+                // if (!storedName) router.push('/login'); // 요청에 따라 주석 처리
             }
-        }
-    };
+        };
+
+        syncUserInfo();
+    }, []);
 
     return (
         <div className="home-container">
@@ -41,10 +48,11 @@ export default function HomeFeature() {
                     <h1 className="greeting-main">{userName} 님</h1>
                     <p className="greeting-desc">오늘도 건강 약속을 지켜보세요.</p>
                 </div>
-                <div className="profile-icon" onClick={handleLogout} style={{ cursor: 'pointer' }} title="로그아웃">
-                    {/* Placeholder for Profile or Logout Icon */}
-                    <LogOut size={20} color="#666" />
-                </div>
+                <Link href="/mypage">
+                    <div className="profile-icon" title="마이페이지">
+                        <User size={28} color={COLORS.black} />
+                    </div>
+                </Link>
             </header>
 
             {/* Main Action Card: Register Supplement */}

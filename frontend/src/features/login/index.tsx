@@ -19,68 +19,38 @@ export default function LoginFeature() {
         }
     }, [searchParams]);
 
-    const handleKakaoLogin = async (code: string) => {
-        setIsLoading(true);
-        try {
-            console.log('1. 카카오 인가 코드로 액세스 토큰 요청 중...');
+const handleKakaoLogin = async (code: string) => {
+    setIsLoading(true);
+    try {
+        console.log('1. 카카오 인가 코드(code)를 백엔드로 전송합니다:', code);
 
-            const kakaoTokenResponse = await axios.post(
-                'https://kauth.kakao.com/oauth/token',
-                new URLSearchParams({
-                    grant_type: 'authorization_code',
-                    client_id: process.env.NEXT_PUBLIC_KAKAO_REST_API_KEY || '',
-                    redirect_uri: process.env.NEXT_PUBLIC_KAKAO_REDIRECT_URI || '',
-                    code: code,
-                }).toString(),
-                {
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8',
-                    },
-                }
-            );
+        const response = await axios.get('/api/v1/auth/oauth/login', {
+            params: {
+                code: code,
+            },
+        });
 
-            const kakaoAccessToken = kakaoTokenResponse.data.access_token;
-            console.log('2. 카카오 액세스 토큰 발급 완료:', kakaoAccessToken);
+        const result = response.data;
 
-            // 3. 발급받은 카카오 토큰을 우리 백엔드 서버로 전송 (Form Data 형식)
-            console.log('3. 백엔드로 카카오 로그인 요청 중...');
-            const response = await axios.post(
-                '/api/v1/auth/oauth/login',
-                new URLSearchParams({
-                    token: kakaoAccessToken,
-                }).toString(),
-                {
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                    },
-                }
-            );
-
-            const result = response.data;
-
-            if (result.success) {
-                console.log('카카오 로그인 성공:', result.data);
-
-                // 토큰 및 사용자 이름 저장
-                const userName = result.data.name;
-                localStorage.setItem('userName', userName);
-
-                alert(`카카오 로그인 성공! 환영합니다, ${userName}님.`);
-                router.push('/');
-            } else {
-                throw new Error(result.error?.message || '카카오 로그인 실패');
-            }
-
-        } catch (error: any) {
-            console.error('카카오 로그인 에러:', error);
-            const message = error.response?.data?.error?.message || '카카오 로그인 중 오류가 발생했습니다.';
-            alert(message);
-        } finally {
-            // URL 정리
-            router.replace('/login');
-            setIsLoading(false);
+        if (result.success) {
+            console.log('로그인 성공:', result.data);
+            const userName = result.data.name;
+            localStorage.setItem('userName', userName);
+            alert(`카카오 로그인 성공! 환영합니다, ${userName}님.`);
+            router.push('/');
+        } else {
+            throw new Error(result.error?.message || '카카오 로그인 실패');
         }
-    };
+
+    } catch (error: any) {
+        console.error('카카오 로그인 에러:', error);
+        const message = error.response?.data?.error?.message || '로그인 중 오류 발생';
+        alert(message);
+    } finally {
+        router.replace('/login');
+        setIsLoading(false);
+    }
+};
 
     const handleLogin = async (data: any) => {
         setIsLoading(true);

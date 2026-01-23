@@ -1,4 +1,16 @@
 -- ========================================
+-- DROP TABLES (Reset)
+-- ========================================
+DROP TABLE IF EXISTS notification_log;
+DROP TABLE IF EXISTS notification_setting;
+DROP TABLE IF EXISTS intake_record;
+DROP TABLE IF EXISTS user_product;
+DROP TABLE IF EXISTS product_ingredient;
+DROP TABLE IF EXISTS product;
+DROP TABLE IF EXISTS ingredient;
+DROP TABLE IF EXISTS `user`;
+
+-- ========================================
 -- ingredient
 -- ========================================
 CREATE TABLE IF NOT EXISTS ingredient (
@@ -6,9 +18,7 @@ CREATE TABLE IF NOT EXISTS ingredient (
                                           ingredient_name VARCHAR(255) UNIQUE,
                                           min_intake_value DECIMAL,
                                           max_intake_value DECIMAL,
-                                          base_unit VARCHAR(255),
-                                          display_unit VARCHAR(255),
-                                          created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+                                          display_unit VARCHAR(255)
 ) ENGINE=InnoDB;
 
 -- ========================================
@@ -19,8 +29,7 @@ CREATE TABLE IF NOT EXISTS product (
                                        PRDLST_NM VARCHAR(255),
                                        PRIMARY_FNCLTY TEXT,
                                        NTK_MTHD TEXT,
-                                       IFTKN_ATNT_MATR_CN TEXT,
-                                       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+                                       IFTKN_ATNT_MATR_CN TEXT
 ) ENGINE=InnoDB;
 
 -- ========================================
@@ -32,7 +41,6 @@ CREATE TABLE IF NOT EXISTS product_ingredient (
                                                   ingredient_id BIGINT NOT NULL,
                                                   ingredient_amount DECIMAL,
                                                   amount_unit VARCHAR(255),
-                                                  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 
                                                   CONSTRAINT uk_product_ingredient UNIQUE (product_id, ingredient_id),
                                                   CONSTRAINT fk_pi_product FOREIGN KEY (product_id) REFERENCES product(id),
@@ -49,6 +57,7 @@ CREATE TABLE IF NOT EXISTS `user` (
                                       name VARCHAR(255),
                                       role VARCHAR(255),
                                       oauth_provider VARCHAR(255),
+                                      oauth_id VARCHAR(255),
                                       status VARCHAR(255),
                                       last_login_at DATETIME,
                                       age_group VARCHAR(255),

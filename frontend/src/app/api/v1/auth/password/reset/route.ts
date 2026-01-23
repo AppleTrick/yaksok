@@ -34,6 +34,9 @@ export async function POST(request: Request) {
             );
         }
 
+        // 테스트 편의를 위해 고정 인증 코드 로그 출력
+        console.log(`[Mock API] '${email}'로 발송된 인증 코드: 123456`);
+
         return NextResponse.json({
             success: true,
             data: {},
