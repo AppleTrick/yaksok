@@ -9,6 +9,12 @@ spring:
     password: a505
     driver-class-name: com.mysql.cj.jdbc.Driver
 
+  sql:
+    init:
+      mode: always
+      platform: mysql
+      encoding: UTF-8
+
   jpa:
     hibernate:
       ddl-auto: update
@@ -17,12 +23,6 @@ spring:
     properties:
       hibernate:
         format_sql: true
-
-  sql:
-    init:
-      mode: always
-      platform: mysql
-      encoding: UTF-8
 
 cookie:
   secure: false
