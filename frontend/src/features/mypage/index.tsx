@@ -73,7 +73,7 @@ export default function MyPageFeature() {
             </div>
 
             <div className="menu-list">
-                <div className="menu-item">
+                <div className="menu-item" onClick={() => router.push('/mypage/edit')}>
                     <span>내 정보 수정</span>
                 </div>
                 <div className="menu-item">
