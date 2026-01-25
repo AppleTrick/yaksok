@@ -1,8 +1,9 @@
 import React from 'react';
-import { Pill, Clock, AlertCircle, ChevronRight } from 'lucide-react';
+import { Pill, Clock, AlertCircle, ChevronRight, BarChart2 } from 'lucide-react';
 import Link from 'next/link';
 import { MedicationItem, Cycle } from '@/features/notification/types';
 import Modal from '@/components/Modal';
+import NutrientProgressBar from './NutrientProgressBar';
 import '../styles.css';
 
 interface SupplementDetailModalProps {
@@ -145,6 +146,65 @@ const SupplementDetailModal: React.FC<SupplementDetailModalProps> = ({
                 <p style={{ fontSize: '0.8rem', color: '#9CA3AF', marginTop: '0.5rem', textAlign: 'center' }}>
                     일정을 누르면 알림 관리 페이지로 이동합니다.
                 </p>
+            </div>
+
+            {/* Nutrient Analysis Chart */}
+            <div className="detail-section">
+                <div className="section-label">
+                    <BarChart2 size={16} />
+                    <span>영양소 분석</span>
+                </div>
+                <div className="nutrient-chart-container" style={{ padding: '0.5rem 0' }}>
+                    {/* Mock Data Logic based on Category/Name for Demo */}
+                    {(() => {
+                        // Simple mock logic for demonstration
+                        // In real app, this data would come from `item.nutrientAnalysis`
+                        let mockNutrients = [];
+
+                        if (item.category?.includes('오메가') || item.name.includes('오메가')) {
+                            mockNutrients = [
+                                { label: 'EPA+DHA', current: 1000, max: 1000, unit: 'mg' },
+                                { label: '비타민E', current: 11, max: 11, unit: 'mgTE' }
+                            ];
+                        } else if (item.category?.includes('비타민') || item.name.includes('비타민')) {
+                            mockNutrients = [
+                                { label: '비타민D', current: 50, max: 10, unit: 'μg' }, // Overdose example
+                                { label: '비타민C', current: 1000, max: 2000, unit: 'mg' }
+                            ];
+                        } else {
+                            // Default Fallback
+                            mockNutrients = [
+                                { label: '주성분 함량', current: 100, max: 200, unit: 'mg' }
+                            ];
+                        }
+
+                        return mockNutrients.map((n, i) => (
+                            <NutrientProgressBar
+                                key={i}
+                                label={n.label}
+                                current={n.current}
+                                max={n.max}
+                                unit={n.unit}
+                            />
+                        ));
+                    })()}
+
+                    <div className="analysis-note" style={{
+                        fontSize: '0.8rem',
+                        color: '#6B7280',
+                        backgroundColor: '#F9FAFB',
+                        padding: '12px',
+                        borderRadius: '8px',
+                        marginTop: '8px'
+                    }}>
+                        <p>💡 <b>알고 계셨나요?</b></p>
+                        <p style={{ marginTop: '4px' }}>
+                            {item.name.includes('비타민')
+                                ? '비타민D는 지용성이므로 식사 후 섭취하면 흡수율이 높아집니다.'
+                                : '현재 섭취 중인 다른 영양제와 성분이 중복되지 않는지 확인하세요.'}
+                        </p>
+                    </div>
+                </div>
             </div>
         </Modal>
     );
