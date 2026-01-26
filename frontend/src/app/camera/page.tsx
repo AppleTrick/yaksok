@@ -31,7 +31,6 @@ export default function CameraPage() {
     if (!capturedImage) return;
 
     setIsAnalyzing(true);
-
     try {
       const response = await fetch(capturedImage);
       const blob = await response.blob();

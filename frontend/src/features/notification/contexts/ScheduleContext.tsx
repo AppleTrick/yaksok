@@ -25,6 +25,8 @@ interface ScheduleContextType {
     toggleItemTaken: (scheduleId: string, itemId: string) => void;
     toggleScheduleActive: (scheduleId: string) => void;
     isItemDue: (item: MedicationItem, date: Date) => boolean;
+    addMedication: (item: MedicationItem, targetRawTime: string) => void;
+    toggleMedicationStatus: (medicationName: string, newStatus: 'taking' | 'stopped') => void;
 }
 
 // Helper: Check if item is due on specific date
@@ -67,9 +69,36 @@ const INITIAL_SCHEDULES: Schedule[] = [
         label: '1시간 후 복용',
         status: 'upcoming',
         items: [
-            { id: '1', name: '오메가3', isTaken: false, cycle: { type: 'daily' } },
-            { id: '2', name: '비타민D', isTaken: false, cycle: { type: 'daily' } },
-            { id: '3', name: '루테인', isTaken: false, cycle: { type: 'weekly', daysOfWeek: [1, 3, 5] } } // 월/수/금
+            {
+                id: '1',
+                name: '뉴트리코어 식물성 오메가3',
+                isTaken: false,
+                cycle: { type: 'daily' },
+                efficacy: '혈행 개선, 눈 건조 개선',
+                category: '오메가3',
+                ingredients: 'EPA 600mg, DHA 400mg, 비타민E 5mg',
+                status: 'taking'
+            },
+            {
+                id: '2',
+                name: '솔가 비타민D3 1000IU',
+                isTaken: false,
+                cycle: { type: 'daily' },
+                efficacy: '뼈 건강, 면역력 증진',
+                category: '비타민',
+                ingredients: '비타민D3 1000IU (25mcg)',
+                status: 'taking'
+            },
+            {
+                id: '3',
+                name: '닥터베스트 루테인 지아잔틴',
+                isTaken: false,
+                cycle: { type: 'weekly', daysOfWeek: [1, 3, 5] }, // 월/수/금
+                efficacy: '눈 노화 방지, 황반 색소 유지',
+                category: '눈 건강',
+                ingredients: '루테인 20mg, 지아잔틴 4mg',
+                status: 'taking'
+            }
         ],
         isActive: true
     },
@@ -80,8 +109,27 @@ const INITIAL_SCHEDULES: Schedule[] = [
         label: '저녁 식사 후',
         status: 'upcoming',
         items: [
-            { id: '4', name: '혈압약', isTaken: false, cycle: { type: 'daily' } },
-            { id: '5', name: '마그네슘', isTaken: false, cycle: { type: 'interval', interval: 2, startDate: '2025-05-01' } } // 2일 간격
+            {
+                id: '4',
+                name: '코자정 (로사르탄칼륨)',
+                isTaken: false,
+                cycle: { type: 'daily' },
+                efficacy: '혈압 조절',
+                category: '처방약',
+                cautions: '의사의 지시에 따라 매일 정해진 시간에 복용하세요. 임의로 중단하면 안 됩니다.',
+                ingredients: '로사르탄칼륨 50mg',
+                status: 'taking'
+            },
+            {
+                id: '5',
+                name: '닥터스베스트 고흡수 마그네슘',
+                isTaken: false,
+                cycle: { type: 'interval', interval: 2, startDate: '2025-05-01' }, // 2일 간격
+                efficacy: '신경 과민 완화, 근육 이완',
+                category: '미네랄',
+                ingredients: '마그네슘 200mg (킬레이트)',
+                status: 'stopped' // One stopped item for testing
+            }
         ],
         isActive: true
     }
@@ -94,7 +142,7 @@ const ScheduleContext = createContext<ScheduleContextType | undefined>(undefined
 export const ScheduleProvider = ({ children }: { children: ReactNode }) => {
     const [schedules, setSchedules] = useState<Schedule[]>(INITIAL_SCHEDULES);
     const [activeTab, setActiveTab] = useState<'daily' | 'weekly'>('daily');
-    const [date, setDate] = useState<Date>(new Date());
+    const [date, setDate] = useState<Date>(new Date('2026-01-22'));
 
     // Load active tab and schedules from localStorage on mount
     useEffect(() => {
@@ -103,15 +151,16 @@ export const ScheduleProvider = ({ children }: { children: ReactNode }) => {
             setActiveTab(savedTab as 'daily' | 'weekly');
         }
 
-        const savedSchedules = localStorage.getItem('medication_schedules');
-        if (savedSchedules) {
-            try {
-                const parsed = JSON.parse(savedSchedules);
-                setSchedules(parsed);
-            } catch (e) {
-                console.error("Failed to parse schedules from local storage", e);
-            }
-        }
+        // Temporarily disable loading schedules from localStorage to use INITIAL_SCHEDULES
+        // const savedSchedules = localStorage.getItem('medication_schedules');
+        // if (savedSchedules) {
+        //     try {
+        //         const parsed = JSON.parse(savedSchedules);
+        //         setSchedules(parsed);
+        //     } catch (e) {
+        //         console.error("Failed to parse schedules from local storage", e);
+        //     }
+        // }
     }, []);
 
     // Save schedules to localStorage whenever they change
@@ -150,6 +199,42 @@ export const ScheduleProvider = ({ children }: { children: ReactNode }) => {
         ));
     };
 
+    // Action: Add new medication to a schedule (or create new schedule if time doesn't exist - simplified for now: add to first matching time or morning)
+    const addMedication = (item: MedicationItem, targetRawTime: string) => {
+        setSchedules(prev => {
+            const existingScheduleIndex = prev.findIndex(s => s.rawTime === targetRawTime);
+
+            if (existingScheduleIndex >= 0) {
+                // Add to existing schedule
+                const newSchedules = [...prev];
+                newSchedules[existingScheduleIndex] = {
+                    ...newSchedules[existingScheduleIndex],
+                    items: [...newSchedules[existingScheduleIndex].items, item]
+                };
+                return newSchedules;
+            } else {
+                // Create new schedule logic can be complex (sorting etc), for now let's just append or find nearest.
+                // To keep it simple for this MVP, we will only allow adding to existing defined times (Morning/Lunch/Dinner)
+                // OR we just create a new one.
+                const [h, m] = targetRawTime.split(':').map(Number);
+                const ampm = h < 12 ? '오전' : '오후';
+                const displayHour = h === 0 ? 12 : (h > 12 ? h - 12 : h);
+                const displayTime = `${ampm} ${displayHour}:${m.toString().padStart(2, '0')}`;
+
+                const newSchedule: Schedule = {
+                    id: Date.now().toString(),
+                    time: displayTime,
+                    rawTime: targetRawTime,
+                    label: '새 일정',
+                    status: 'upcoming',
+                    items: [item],
+                    isActive: true
+                };
+                return [...prev, newSchedule].sort((a, b) => a.rawTime.localeCompare(b.rawTime));
+            }
+        });
+    };
+
     // Action: Toggle Item Taken (Checkbox)
     const toggleItemTaken = (scheduleId: string, itemId: string) => {
         setSchedules(prev => prev.map(schedule => {
@@ -169,6 +254,18 @@ export const ScheduleProvider = ({ children }: { children: ReactNode }) => {
         ));
     };
 
+    // Action: Toggle Medication Status (Taking <-> Stopped) globally by name
+    const toggleMedicationStatus = (medicationName: string, newStatus: 'taking' | 'stopped') => {
+        setSchedules(prev => prev.map(schedule => ({
+            ...schedule,
+            items: schedule.items.map(item =>
+                item.name === medicationName
+                    ? { ...item, status: newStatus }
+                    : item
+            )
+        })));
+    };
+
     return (
         <ScheduleContext.Provider value={{
             activeTab,
@@ -180,7 +277,9 @@ export const ScheduleProvider = ({ children }: { children: ReactNode }) => {
             updateSchedule,
             toggleItemTaken,
             toggleScheduleActive,
-            isItemDue
+            isItemDue,
+            addMedication,
+            toggleMedicationStatus
         }}>
             {children}
         </ScheduleContext.Provider>
