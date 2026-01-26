@@ -33,6 +33,23 @@
                     .body(ApiResponse.success());
         }
 
+        public static <T> ResponseEntity<ApiResponse<T>> okWithCookies(
+                T data,
+                ResponseCookie... cookies
+        ) {
+            HttpHeaders headers = new HttpHeaders();
+            for (ResponseCookie cookie : cookies) {
+                headers.add(HttpHeaders.SET_COOKIE, cookie.toString());
+            }
+
+            return ResponseEntity
+                    .ok()
+                    .headers(headers)
+                    .body(ApiResponse.success(data));
+        }
+
+        //에러 관리
+
         public static ResponseEntity<ErrorResponse> error(ErrorCode errorCode) {
             return ResponseEntity
                     .status(errorCode.getStatus())

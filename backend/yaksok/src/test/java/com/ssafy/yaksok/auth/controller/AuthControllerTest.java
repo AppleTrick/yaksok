@@ -7,6 +7,7 @@ import com.ssafy.yaksok.auth.dto.SignupRequest;
 import com.ssafy.yaksok.auth.service.AuthService;
 import com.ssafy.yaksok.global.util.CookieUtil;
 import com.ssafy.yaksok.security.token.JwtTokenProvider;
+import com.ssafy.yaksok.user.entity.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -25,6 +26,7 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -69,7 +71,7 @@ class AuthControllerTest {
 
     // ================= 회원가입 =================
     @Nested
-    @DisplayName("POST /auth/signup")
+    @DisplayName("POST /api/v1/auth/signup")
     class SignupApiTest {
 
         @Test
@@ -78,13 +80,9 @@ class AuthControllerTest {
             SignupRequest request = createSignupRequest();
             doNothing().when(authService).signUp(any(SignupRequest.class));
 
-            mockMvc.perform(post("/auth/signup")
-                            .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                            .param("email", request.getEmail())
-                            .param("password", request.getPassword())
-                            .param("name", request.getName())
-                            .param("ageGroup", request.getAgeGroup())
-                            .param("gender", request.getGender()))
+            mockMvc.perform(post("/api/v1/auth/signup")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(request)))
                     .andDo(print())
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.success").value(true));
@@ -93,13 +91,15 @@ class AuthControllerTest {
 
     // ================= 로그인 =================
     @Nested
-    @DisplayName("POST /auth/login")
+    @DisplayName("POST /api/v1/auth/login")
     class LoginApiTest {
 
         @Test
         @DisplayName("로그인 성공 - 토큰 쿠키 반환")
         void login_Success() throws Exception {
             LoginRequest request = createLoginRequest();
+            User user = User.createLocalUser(TEST_EMAIL, TEST_PASSWORD, TEST_NAME, null, null);
+            setUserId(user, TEST_USER_ID);
 
             ResponseCookie accessTokenCookie = ResponseCookie.from("accessToken", TEST_TOKEN)
                     .httpOnly(true)
@@ -107,24 +107,24 @@ class AuthControllerTest {
                     .maxAge(3600)
                     .build();
 
-            given(authService.login(any(LoginRequest.class))).willReturn(TEST_USER_ID);
+            given(authService.login(any(LoginRequest.class))).willReturn(user);
             given(jwtTokenProvider.createAccessToken(anyLong())).willReturn(TEST_TOKEN);
             given(cookieUtil.createAccessToken(anyString())).willReturn(accessTokenCookie);
 
-            mockMvc.perform(post("/auth/login")
-                            .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                            .param("email", request.getEmail())
-                            .param("password", request.getPassword()))
+            mockMvc.perform(post("/api/v1/auth/login")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(request)))
                     .andDo(print())
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.success").value(true))
+                    .andExpect(jsonPath("$.data.name").value(TEST_NAME))
                     .andExpect(header().exists("Set-Cookie"));
         }
     }
 
     // ================= 로그아웃 =================
     @Nested
-    @DisplayName("POST /auth/logout")
+    @DisplayName("POST /api/v1/auth/logout")
     class LogoutApiTest {
 
         @Test
@@ -138,11 +138,21 @@ class AuthControllerTest {
 
             given(cookieUtil.deleteAccessToken()).willReturn(deletedCookie);
 
-            mockMvc.perform(post("/auth/logout"))
+            mockMvc.perform(post("/api/v1/auth/logout"))
                     .andDo(print())
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.success").value(true))
                     .andExpect(header().exists("Set-Cookie"));
+        }
+    }
+
+    private void setUserId(User user, Long id) {
+        try {
+            java.lang.reflect.Field idField = User.class.getDeclaredField("id");
+            idField.setAccessible(true);
+            idField.set(user, id);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 

@@ -1,89 +1,58 @@
-
-import React from 'react';
-import { ArrowLeft, CheckCircle2 } from 'lucide-react';
-import '../styles.css';
+import { RotateCcw, Sparkles } from 'lucide-react';
+import CameraHeader from './common/CameraHeader';
+import RatioBox from './common/RatioBox';
+import LoadingOverlay from './common/LoadingOverlay';
+import ActionButton from './common/ActionButton';
 
 interface ReviewStepProps {
     imageSrc: string;
+    isAnalyzing: boolean;
     onRetake: () => void;
     onConfirm: () => void;
 }
 
-export default function ReviewStep({ imageSrc, onRetake, onConfirm }: ReviewStepProps) {
+export default function ReviewStep({ imageSrc, isAnalyzing, onRetake, onConfirm }: ReviewStepProps) {
     return (
-        <div className="camera-container" style={{ background: 'white' }}>
-            {/* Header */}
-            <div className="camera-header" style={{ background: 'white', borderBottom: '1px solid #eee' }}>
-                <button onClick={onRetake} className="icon-button">
-                    <ArrowLeft color="black" size={24} />
-                </button>
-                <span className="camera-title" style={{ color: 'black' }}>Review Photo</span>
-                <div style={{ width: 24 }}></div>
-            </div>
+        <div className="camera-container theme-dark">
+            <CameraHeader
+                title="이 사진을 사용하시겠습니까?"
+                stepInfo="Step 2/3"
+                onBack={onRetake}
+            />
 
-            {/* Content */}
-            <div className="review-content" style={{ padding: 20, flex: 1, display: 'flex', flexDirection: 'column' }}>
-                {/* Image Card */}
-                <div style={{
-                    borderRadius: 16,
-                    overflow: 'hidden',
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-                    marginBottom: 24,
-                    maxHeight: '50vh'
-                }}>
+            <div className="camera-content-center">
+                <RatioBox>
                     <img
                         src={imageSrc}
-                        alt="Review"
-                        style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                        alt="Captured"
+                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                     />
-                </div>
 
-                {/* Checklist */}
-                <h3 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: 8, color: '#1F2937' }}>
-                    Check photo quality
-                </h3>
-                <p style={{ fontSize: '0.9rem', color: '#6B7280', marginBottom: 20, lineHeight: 1.5 }}>
-                    To get the best accurate AI analysis results, please ensure:
-                </p>
-
-                <div className="checklist" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                    <div className="check-item" style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-                        <div style={{ background: '#DEF7EC', padding: 4, borderRadius: '50%' }}>
-                            <CheckCircle2 size={16} color="#03543F" />
-                        </div>
-                        <span style={{ fontSize: '0.95rem', color: '#374151' }}>Text is clear and readable</span>
-                    </div>
-                    <div className="check-item" style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-                        <div style={{ background: '#DEF7EC', padding: 4, borderRadius: '50%' }}>
-                            <CheckCircle2 size={16} color="#03543F" />
-                        </div>
-                        <span style={{ fontSize: '0.95rem', color: '#374151' }}>Label details are in the frame</span>
-                    </div>
-                    <div className="check-item" style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-                        <div style={{ background: '#DEF7EC', padding: 4, borderRadius: '50%' }}>
-                            <CheckCircle2 size={16} color="#03543F" />
-                        </div>
-                        <span style={{ fontSize: '0.95rem', color: '#374151' }}>Photo is not too bright/dark</span>
-                    </div>
-                </div>
+                    <LoadingOverlay
+                        visible={isAnalyzing}
+                        message="영양제 성분을 분석하고 있습니다"
+                    />
+                </RatioBox>
             </div>
 
-            {/* Bottom Actions */}
-            <div style={{ padding: 20, display: 'flex', gap: 12, borderTop: '1px solid #f3f4f6' }}>
-                <button
+            <div className="cam-btn-row">
+                <ActionButton
                     onClick={onRetake}
-                    className="action-button secondary"
-                    style={{ flex: 1, height: 50, borderRadius: 12, border: '1px solid #E5E7EB', background: 'white', fontWeight: 600 }}
+                    variant="secondary"
+                    disabled={isAnalyzing}
                 >
-                    <span style={{ color: '#374151' }}>재촬영</span>
-                </button>
-                <button
+                    <RotateCcw size={20} />
+                    <span>재촬영</span>
+                </ActionButton>
+
+                <ActionButton
                     onClick={onConfirm}
-                    className="action-button primary"
-                    style={{ flex: 2, height: 50, borderRadius: 12, background: '#0FA5A5', color: 'white', border: 'none', fontWeight: 600 }}
+                    variant="primary"
+                    disabled={isAnalyzing}
                 >
-                    <span>분석하기</span>
-                </button>
+                    <Sparkles size={20} fill="white" />
+                    <span>탐색 시작</span>
+                </ActionButton>
             </div>
         </div>
     );
