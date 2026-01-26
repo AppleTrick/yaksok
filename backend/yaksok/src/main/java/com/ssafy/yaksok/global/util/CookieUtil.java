@@ -24,7 +24,7 @@ public class CookieUtil {
                 .secure(secure)      //환경별 적용
                 .path("/")
                 .maxAge(60 * 60)
-                .sameSite("None")
+                .sameSite(secure ? "None" : "Lax")
                 .build();
     }
 
@@ -34,7 +34,7 @@ public class CookieUtil {
                 .secure(secure)
                 .path("/")
                 .maxAge(60 * 60 * 24 * 7)
-                .sameSite("None")
+                .sameSite(secure ? "None" : "Lax")
                 .build();
     }
 
@@ -45,7 +45,7 @@ public class CookieUtil {
                 .secure(secure)
                 .path("/")
                 .maxAge(0)
-                .sameSite("None")
+                .sameSite(secure ? "None" : "Lax")
                 .build();
     }
 
@@ -54,7 +54,7 @@ public class CookieUtil {
                 .secure(secure)
                 .path("/")
                 .maxAge(0)
-                .sameSite("None")
+                .sameSite(secure ? "None" : "Lax")
                 .build();
     }
 }

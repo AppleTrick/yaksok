@@ -27,7 +27,7 @@ jwt:
   secret: ${JWT_SECRET:this-is-a-very-long-jwt-secret-key-32bytes!!}
 
 cookie:
-  secure: false
+  secure: ${COOKIE_SECURE:false}
 
 kakao:
   client-id: ${KAKAO_CLIENT_ID}
