@@ -1,0 +1,81 @@
+.cycle-selector {
+    margin-top: 0.5rem;
+    background: #f8f9fa;
+    padding: 1rem;
+    border-radius: 12px;
+}
+
+.cycle-tabs {
+    display: flex;
+    gap: 0.5rem;
+    background: #e9ecef;
+    padding: 0.25rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+}
+
+.cycle-tab {
+    flex: 1;
+    border: none;
+    background: transparent;
+    padding: 0.5rem;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #495057;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.cycle-tab.active {
+    background: white;
+    color: #228be6;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.description {
+    font-size: 0.9rem;
+    color: #868e96;
+    margin: 0;
+}
+
+.days-grid {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.25rem;
+}
+
+.day-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 1px solid #dee2e6;
+    background: white;
+    color: #495057;
+    font-size: 0.8rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.day-btn.selected {
+    background: #228be6;
+    border-color: #228be6;
+    color: white;
+}
+
+.interval-input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.interval-input {
+    width: 60px;
+    padding: 0.3rem;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    margin-right: 0.5rem;
+    text-align: center;
+}

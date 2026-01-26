@@ -1,7 +1,7 @@
 "use client";
 
-import React from 'react';
-import { ArrowLeft, Plus, Trash2, Edit2 } from 'lucide-react';
+import React, { useState } from 'react';
+import { ArrowLeft, Plus, Trash2, Edit2, X, Check } from 'lucide-react';
 import Link from 'next/link';
 
 import ToggleSwitch from '@/components/ToggleSwitch';
@@ -28,50 +28,8 @@ export default function NotificationSettingsForm() {
             </div>
 
             <div className="settings-content">
-                {/* 1. Medication Schedules */}
-                <section className="settings-card">
-                    <h2 className="card-title">복용 시간 설정</h2>
-                    <div className="schedule-list">
-                        {settings.schedules.map((schedule) => (
-                            <div key={schedule.id} className="schedule-item">
-                                <div className="schedule-info">
-                                    <span className="schedule-time">{schedule.time}</span>
-                                    <span className="schedule-label">{schedule.label}</span>
-                                </div>
-                                <div className="schedule-actions">
-                                    <ToggleSwitch
-                                        checked={schedule.isEnabled}
-                                        onChange={(checked) => updateActions.updateSchedule(schedule.id, { isEnabled: checked })}
-                                    />
-                                    {/* Edit Logic (Simple Prompt for now, better to use Modal later) */}
-                                    <button
-                                        className="action-icon-btn edit-btn"
-                                        onClick={() => {
-                                            const newTime = prompt("시간을 입력하세요 (HH:mm)", schedule.time);
-                                            if (newTime) updateActions.updateSchedule(schedule.id, { time: newTime });
-                                        }}
-                                    >
-                                        <Edit2 size={18} />
-                                    </button>
-                                    <button
-                                        className="action-icon-btn delete-btn"
-                                        onClick={() => {
-                                            if (confirm('삭제하시겠습니까?')) updateActions.removeSchedule(schedule.id);
-                                        }}
-                                    >
-                                        <Trash2 size={18} />
-                                    </button>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                    <button className="add-schedule-btn" onClick={updateActions.addSchedule}>
-                        <Plus size={20} />
-                        <span>시간 추가</span>
-                    </button>
-                </section>
 
-                {/* 2. Notification Method */}
+                {/* 1. Notification Method */}
                 <section className="settings-card">
                     <h2 className="card-title">알림 방식</h2>
                     <div className="setting-row">
@@ -90,7 +48,7 @@ export default function NotificationSettingsForm() {
                     </div>
                 </section>
 
-                {/* 3. DND Mode */}
+                {/* 2. DND Mode */}
                 <section className="settings-card">
                     <div className="card-header-row">
                         <h2 className="card-title">방해 금지 모드</h2>
@@ -104,7 +62,7 @@ export default function NotificationSettingsForm() {
                         <div className="dnd-times animated-fade-in">
                             <div className="time-row">
                                 <span>시작 시간</span>
-                                <div style={{ width: 120 }}>
+                                <div style={{ width: '100%', maxWidth: '200px' }}>
                                     <TimePicker
                                         value={settings.dndStartTime}
                                         onChange={(val) => updateActions.updateDndTime('dndStartTime', val)}
@@ -113,7 +71,7 @@ export default function NotificationSettingsForm() {
                             </div>
                             <div className="time-row">
                                 <span>종료 시간</span>
-                                <div style={{ width: 120 }}>
+                                <div style={{ width: '100%', maxWidth: '200px' }}>
                                     <TimePicker
                                         value={settings.dndEndTime}
                                         onChange={(val) => updateActions.updateDndTime('dndEndTime', val)}
@@ -123,7 +81,13 @@ export default function NotificationSettingsForm() {
                         </div>
                     )}
                 </section>
+
+                {/* Info Box */}
+                <div className="info-box" style={{ marginTop: '1rem', padding: '1rem', backgroundColor: '#F3F4F6', borderRadius: '12px', color: '#6B7280', fontSize: '0.9rem', textAlign: 'center' }}>
+                    <p>알림 시간과 영양제 목록 수정은<br /><strong>'알림' 탭</strong>에서 카드를 눌러 설정할 수 있습니다.</p>
+                </div>
             </div>
         </div>
     );
 }
+

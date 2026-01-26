@@ -66,6 +66,12 @@
     fill: currentColor;
 }
 
+.inactive-bell {
+    color: var(--text-muted);
+    fill: none;
+    opacity: 0.5;
+}
+
 .schedule-content {
     border-top: 1px solid var(--light-grey);
     padding-top: 1rem;

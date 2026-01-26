@@ -1,59 +1,51 @@
 "use client";
 
-import React from 'react';
-import { ScheduleItem } from '@/components/ScheduleCard';
+import React, { useState } from 'react';
+import { MedicationItem } from '@/features/notification/types';
 import ScheduleCard from '@/components/ScheduleCard';
 import TopBanner from './components/TopBanner';
 import WaterCard from './components/WaterCard';
+import ScheduleEditModal from './components/ScheduleEditModal';
+import { useScheduleContext } from '../notification/contexts/ScheduleContext';
 import './components/styles.css';
 
-// Mock Data
-const MOCK_SCHEDULES: {
-    id: string;
-    time: string;
-    label: string;
-    status: 'upcoming' | 'done' | 'missed';
-    items: ScheduleItem[];
-}[] = [
-        {
-            id: '1',
-            time: '오후 2:00',
-            label: '1시간 후 복용',
-            status: 'upcoming',
-            items: [
-                { id: '1', name: '오메가3' },
-                { id: '2', name: '비타민D' },
-                { id: '3', name: '루테인' }
-            ]
-        },
-        {
-            id: '2',
-            time: '오후 7:00',
-            label: '저녁 식사 후',
-            status: 'upcoming',
-            items: [
-                { id: '4', name: '혈압약' },
-                { id: '5', name: '마그네슘' }
-            ]
-        }
-    ];
-
 export default function RemindersFeature() {
+    const { schedules, toggleAlarm, updateSchedule } = useScheduleContext();
+    const [editingId, setEditingId] = useState<string | null>(null);
+
+    // 2. Open Edit Modal (Card Click)
+    const openEditModal = (id: string) => {
+        setEditingId(id);
+    };
+
+    // 3. Save Changes
+    const handleSave = (newRawTime: string, newItems: MedicationItem[]) => {
+        if (!editingId) return;
+        updateSchedule(editingId, newRawTime, newItems);
+        setEditingId(null);
+    };
+
+    const editingSchedule = schedules.find(s => s.id === editingId);
+
+    // Filter active schedules or show all (based on requirement)
+    // For now show all 
+
     return (
         <div className="reminders-container">
             {/* Top Banner */}
-            <TopBanner remainingCount={3} />
+            <TopBanner remainingCount={schedules.filter(s => s.status === 'upcoming' && s.isActive).length} />
 
             {/* Timeline */}
             <div className="timeline-list">
-                {MOCK_SCHEDULES.map(schedule => (
+                {schedules.map(schedule => (
                     <ScheduleCard
                         key={schedule.id}
                         time={schedule.time}
                         label={schedule.label}
                         items={schedule.items}
-                        status={schedule.status}
-                        onAlarmClick={() => alert(`${schedule.time} 알림 설정`)}
+                        status={!schedule.isActive ? 'missed' : schedule.status} // Visual cue for inactive
+                        onAlarmClick={(e) => toggleAlarm(schedule.id)}
+                        onCardClick={() => openEditModal(schedule.id)}
                     />
                 ))}
             </div>
@@ -62,6 +54,17 @@ export default function RemindersFeature() {
             <div style={{ marginTop: '1.5rem' }}>
                 <WaterCard />
             </div>
+
+            {/* Edit Modal */}
+            {editingSchedule && (
+                <ScheduleEditModal
+                    isOpen={!!editingId}
+                    onClose={() => setEditingId(null)}
+                    initialTime={editingSchedule.rawTime}
+                    initialItems={editingSchedule.items}
+                    onSave={handleSave}
+                />
+            )}
         </div>
     );
 }
