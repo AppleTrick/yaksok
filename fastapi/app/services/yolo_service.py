@@ -183,5 +183,6 @@ def detect_supplements(image_input, confidence_threshold: float = 0.3) -> dict:
         "detected": has_supplement,
         "objects": detected_objects,
         "count": len(detected_objects),
-        "scale_info": scale_info
+        "scale_info": scale_info,
+        "pil_image": pil_image  # 처리된 이미지 객체 반환
     }
