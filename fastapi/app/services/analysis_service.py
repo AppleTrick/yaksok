@@ -54,8 +54,12 @@ def analyze_supplement(image_bytes: bytes) -> dict:
         }
         
         # ===== 1단계: YOLO 객체탐지 (바이트 직접 전달) =====
-        # 작은 이미지는 원본 유지, 큰 이미지만 리사이징
+        # 작은 이미지는 원본 유지, 큰 이미지만 리사이징 (YOLO 내부에서 수행)
         yolo_result = detect_supplements(image_bytes)
+        
+        # 중요: pil_image는 JSON 직렬화가 안 되므로 결과 딕셔너리에서 분리
+        processed_pil = yolo_result.pop("pil_image", None)
+        
         result["yolo"] = yolo_result
         result["processing_info"] = yolo_result.get("scale_info", {})
         
@@ -65,10 +69,13 @@ def analyze_supplement(image_bytes: bytes) -> dict:
             print("⚠️ 영양제 미탐지 - 분석 종료")
             return result
         
-        # ===== 바코드/OCR을 위한 이미지 준비 =====
-        # YOLO에서 사용한 것과 동일한 방식으로 이미지 로드
-        pil_image = Image.open(io.BytesIO(image_bytes))
-        cv2_image = cv2.cvtColor(np.array(pil_image), cv2.COLOR_RGB2BGR)
+        # ===== 바코드/OCR을 위한 이미지 준비 (YOLO에서 리사이징된 이미지 재사용) =====
+        # 고해상도 이미지의 경우 리사이징된 버전을 사용하여 성능 및 메모리 효율 확보
+        if processed_pil is None:
+            # 안전장치: 혹시 이미지가 없으면 새로 로드
+            processed_pil = Image.open(io.BytesIO(image_bytes))
+            
+        cv2_image = cv2.cvtColor(np.array(processed_pil), cv2.COLOR_RGB2BGR)
         
         # ===== 2단계: 바코드 탐지 =====
         barcode_result = detect_barcode(cv2_image)
@@ -81,8 +88,9 @@ def analyze_supplement(image_bytes: bytes) -> dict:
             print("✅ 바코드 DB 조회 성공 - 분석 완료")
             return result
         
-        # ===== 3단계: OCR 텍스트 추출 =====
-        ocr_result = extract_text(cv2_image)
+        # ===== 3단계: OCR 텍스트 추출 (리사이징된 이미지 사용) =====
+        # OCR 서비스 내부에 save_image=True 옵션이 있어 SaveImage 폴더에 저장됨
+        ocr_result = extract_text(cv2_image, save_image=True)
         result["ocr"] = ocr_result
         result["step"] = "ocr"
         result["success"] = True
