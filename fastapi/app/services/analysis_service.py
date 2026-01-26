@@ -88,17 +88,16 @@ def analyze_supplement(image_bytes: bytes) -> dict:
             print("✅ 바코드 DB 조회 성공 - 분석 완료")
             return result
         
-        # ===== 3단계: OCR 텍스트 추출 (탐지된 영역 각각 크롭하여 분석) =====
-        print(f"[통합 분석] === 크롭 OCR 단계 시작 (탐지 객체 수: {len(yolo_result.get('objects', []))}) ===")
+        # ===== 3단계: 크롭 기반 바코드 및 OCR 분석 =====
+        print(f"[통합 분석] === 크롭 분석 단계 시작 (탐지 객체 수: {len(yolo_result.get('objects', []))}) ===")
         
-        ocr_results = []
+        analysis_results = []
         scale_x = result["processing_info"].get("scale_x", 1.0)
         scale_y = result["processing_info"].get("scale_y", 1.0)
         
         for i, obj in enumerate(yolo_result.get("objects", [])):
             if obj["label"] == "supplement":
-                # 1. 크롭 영역 계산 (processed_pil 크기에 맞게 좌표 환원)
-                # obj["box"]는 원본 이미지 기준 좌표 [x1, y1, x2, y2]
+                # 1. 크롭 영역 계산
                 orig_box = obj["box"]
                 crop_box = (
                     orig_box[0] / scale_x,
@@ -107,32 +106,35 @@ def analyze_supplement(image_bytes: bytes) -> dict:
                     orig_box[3] / scale_y
                 )
                 
-                # 2. 이미지 크롭
                 try:
+                    # 2. 이미지 크롭 및 변환
                     cropped_pil = processed_pil.crop(crop_box)
-                    print(f"[통합 분석] 객체 #{i} 크롭 완료: {cropped_pil.size}")
-                    
-                    # 3. OpenCV 변환 (OCR용)
                     cropped_cv2 = cv2.cvtColor(np.array(cropped_pil), cv2.COLOR_RGB2BGR)
                     
+                    # 3. 바코드 탐지 (크롭 영역에서 수행 - 해상도 확보)
+                    print(f"[통합 분석] 객체 #{i} 바코드 탐지 시도...")
+                    barcode_item = detect_barcode(cropped_cv2)
+                    
                     # 4. OCR 수행
-                    # save_image=True 옵션으로 SaveImage 폴더에 저장됨
+                    print(f"[통합 분석] 객체 #{i} OCR 추출 시도...")
                     ocr_item = extract_text(cropped_cv2, save_image=True)
                     
-                    ocr_results.append({
+                    analysis_results.append({
                         "object_index": i,
                         "label": obj["label"],
                         "confidence": obj["confidence"],
                         "box": orig_box,
+                        "barcode": barcode_item,
                         "ocr": ocr_item
                     })
                 except Exception as crop_err:
-                    print(f"[통합 분석] ❌ 객체 #{i} 크롭/OCR 실패: {crop_err}")
+                    print(f"[통합 분석] ❌ 객체 #{i} 분석 실패: {crop_err}")
         
-        result["ocr"] = ocr_results
-        result["step"] = "ocr"
+        result["ocr"] = analysis_results # 기존 ocr 필드에 통합 결과 저장 (하위 호환성)
+        result["analysis_results"] = analysis_results
+        result["step"] = "final"
         result["success"] = True
-        result["message"] = f"{len(ocr_results)}개의 탐지 영역에 대해 OCR을 수행했습니다"
+        result["message"] = f"{len(analysis_results)}개의 객체에 대해 바코드 및 OCR 분석을 완료했습니다"
         
         print("=" * 60)
         print("✅ 분석 완료")

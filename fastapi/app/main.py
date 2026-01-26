@@ -364,46 +364,56 @@ async def read_test_page():
                     `;
                 }
                 
-                // 바코드 결과
-                if (data.barcode) {
-                    const barcode = data.barcode;
-                    const badge = barcode.found 
-                        ? '<span class="badge badge-success">발견</span>'
-                        : '<span class="badge badge-warning">없음</span>';
+                // 바코드 결과 (개별 객체별 상세 정보 표시)
+                if (data.analysis_results) {
+                    const results = data.analysis_results;
+                    const foundCount = results.filter(r => r.barcode && r.barcode.found).length;
+                    const badge = foundCount > 0 
+                        ? `<span class="badge badge-success">${foundCount}개 발견</span>`
+                        : '<span class="badge badge-warning">미검출</span>';
                     
                     html += `
                         <div class="result-card card-barcode">
                             <div class="card-title">📊 2단계: 바코드 탐지 ${badge}</div>
-                            ${barcode.found 
-                                ? `<div class="text-item">
-                                       <span>바코드 데이터</span>
-                                       <span><strong>${barcode.data}</strong></span>
-                                   </div>
-                                   <p style="margin-top: 10px; color: #666; font-size: 0.9rem;">
-                                       ${barcode.db_result ? '✅ DB에서 제품 정보를 찾았습니다' : '⚠️ DB에 등록되지 않은 바코드입니다 → OCR로 진행'}
-                                   </p>`
-                                : '<p>바코드를 찾지 못했습니다 → OCR로 진행</p>'
+                            ${results.length > 0 
+                                ? results.map((obj, idx) => `
+                                    <div style="margin-bottom: 15px; padding: 12px; background: rgba(255,255,255,0.5); border-radius: 10px; border: 1px solid rgba(0,0,0,0.05);">
+                                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                                            <strong>📍 객체 #${idx + 1} (${obj.label})</strong>
+                                            ${obj.barcode && obj.barcode.found 
+                                                ? `<span style="color: #10b981; font-weight: bold;">${obj.barcode.data}</span>`
+                                                : '<span style="color: #ef4444;">Not Found</span>'}
+                                        </div>
+                                        <div style="font-size: 0.85rem; color: #444;">
+                                            <p>상태: ${obj.barcode ? obj.barcode.message : '분석 전'}</p>
+                                            <p>시도: ${obj.barcode && obj.barcode.attempts 
+                                                ? obj.barcode.attempts.map(a => `<span style="color: ${a.success ? '#10b981' : '#999'}">${a.step}${a.success ? '✅' : '❌'}</span>`).join(' → ') 
+                                                : '-'}</p>
+                                        </div>
+                                    </div>
+                                `).join('')
+                                : '<p>분석할 영양제 객체가 발견되지 않았습니다</p>'
                             }
                         </div>
                     `;
                 }
                 
-                // OCR 결과 (이제 리스트 형태)
-                if (data.ocr && Array.isArray(data.ocr)) {
-                    const ocrList = data.ocr;
-                    const totalCount = ocrList.reduce((sum, item) => sum + (item.ocr?.count || 0), 0);
-                    const badge = totalCount > 0 
-                        ? `<span class="badge badge-success">${ocrList.length}개 객체 분석 완료</span>`
+                // OCR 결과 (이제 순수하게 텍스트 정보만 표시)
+                if (data.analysis_results) {
+                    const results = data.analysis_results;
+                    const totalOCRCount = results.reduce((sum, r) => sum + (r.ocr?.count || 0), 0);
+                    const badge = totalOCRCount > 0 
+                        ? `<span class="badge badge-success">텍스트 추출 완료</span>`
                         : '<span class="badge badge-warning">텍스트 없음</span>';
                     
                     html += `
                         <div class="result-card card-ocr">
                             <div class="card-title">📝 3단계: 크롭 OCR 분석 ${badge}</div>
-                            ${ocrList.length > 0 
-                                ? ocrList.map((obj, idx) => `
+                            ${results.length > 0 
+                                ? results.map((obj, idx) => `
                                     <div style="margin-bottom: 20px; border-left: 4px solid #764ba2; padding-left: 15px;">
-                                        <p style="font-weight: 600; margin-bottom: 10px; color: #764ba2;">📍 객체 #${idx + 1} (${obj.label})</p>
-                                        ${obj.ocr.count > 0 
+                                        <p style="font-weight: 600; margin-bottom: 10px; color: #764ba2;">📍 객체 #${idx + 1} 텍스트</p>
+                                        ${obj.ocr && obj.ocr.count > 0 
                                             ? `<ul class="text-list">
                                                 ${obj.ocr.texts.map(item => `
                                                     <li class="text-item">
@@ -412,11 +422,11 @@ async def read_test_page():
                                                     </li>
                                                 `).join('')}
                                                </ul>`
-                                            : '<p>이 영역에서 추출된 텍스트가 없습니다</p>'
+                                            : '<p style="color: #999; font-size: 0.9rem;">이 영역에서 추출된 텍스트가 없습니다</p>'
                                         }
                                     </div>
                                 `).join('')
-                                : '<p>분석할 영양제 객체가 없습니다</p>'
+                                : '<p>분석할 텍스트 영역이 없습니다</p>'
                             }
                         </div>
                     `;
