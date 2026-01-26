@@ -388,26 +388,35 @@ async def read_test_page():
                     `;
                 }
                 
-                // OCR 결과
-                if (data.ocr) {
-                    const ocr = data.ocr;
-                    const badge = ocr.count > 0 
-                        ? '<span class="badge badge-success">추출 완료</span>'
+                // OCR 결과 (이제 리스트 형태)
+                if (data.ocr && Array.isArray(data.ocr)) {
+                    const ocrList = data.ocr;
+                    const totalCount = ocrList.reduce((sum, item) => sum + (item.ocr?.count || 0), 0);
+                    const badge = totalCount > 0 
+                        ? `<span class="badge badge-success">${ocrList.length}개 객체 분석 완료</span>`
                         : '<span class="badge badge-warning">텍스트 없음</span>';
                     
                     html += `
                         <div class="result-card card-ocr">
-                            <div class="card-title">📝 3단계: OCR 텍스트 추출 ${badge}</div>
-                            ${ocr.count > 0 
-                                ? `<ul class="text-list">
-                                       ${ocr.texts.map(item => `
-                                           <li class="text-item">
-                                               <span>${item.text}</span>
-                                               <span class="confidence">${Math.round(item.confidence * 100)}%</span>
-                                           </li>
-                                       `).join('')}
-                                   </ul>`
-                                : '<p>추출된 텍스트가 없습니다</p>'
+                            <div class="card-title">📝 3단계: 크롭 OCR 분석 ${badge}</div>
+                            ${ocrList.length > 0 
+                                ? ocrList.map((obj, idx) => `
+                                    <div style="margin-bottom: 20px; border-left: 4px solid #764ba2; padding-left: 15px;">
+                                        <p style="font-weight: 600; margin-bottom: 10px; color: #764ba2;">📍 객체 #${idx + 1} (${obj.label})</p>
+                                        ${obj.ocr.count > 0 
+                                            ? `<ul class="text-list">
+                                                ${obj.ocr.texts.map(item => `
+                                                    <li class="text-item">
+                                                        <span>${item.text}</span>
+                                                        <span class="confidence">${Math.round(item.confidence * 100)}%</span>
+                                                    </li>
+                                                `).join('')}
+                                               </ul>`
+                                            : '<p>이 영역에서 추출된 텍스트가 없습니다</p>'
+                                        }
+                                    </div>
+                                `).join('')
+                                : '<p>분석할 영양제 객체가 없습니다</p>'
                             }
                         </div>
                     `;
