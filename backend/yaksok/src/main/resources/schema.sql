@@ -8,6 +8,8 @@ DROP TABLE IF EXISTS user_product;
 DROP TABLE IF EXISTS product_ingredient;
 DROP TABLE IF EXISTS product;
 DROP TABLE IF EXISTS ingredient;
+DROP TABLE IF EXISTS user_disease;
+DROP TABLE IF EXISTS disease;
 DROP TABLE IF EXISTS `user`;
 
 -- ========================================
@@ -130,6 +132,27 @@ CREATE TABLE IF NOT EXISTS notification_log (
 
                                                 CONSTRAINT fk_nl_user FOREIGN KEY (user_id) REFERENCES `user`(id),
                                                 CONSTRAINT fk_nl_user_product FOREIGN KEY (user_product_id) REFERENCES user_product(id)
+) ENGINE=InnoDB;
+
+-- ========================================
+-- disease
+-- ========================================
+CREATE TABLE IF NOT EXISTS disease (
+                                       id BIGINT AUTO_INCREMENT PRIMARY KEY,
+                                       sick_name VARCHAR(255) UNIQUE
+) ENGINE=InnoDB;
+
+-- ========================================
+-- user_disease
+-- ========================================
+CREATE TABLE IF NOT EXISTS user_disease (
+                                            id BIGINT AUTO_INCREMENT PRIMARY KEY,
+                                            user_id BIGINT NOT NULL,
+                                            disease_id BIGINT NOT NULL,
+                                            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+
+                                            CONSTRAINT fk_ud_user FOREIGN KEY (user_id) REFERENCES `user`(id),
+                                            CONSTRAINT fk_ud_disease FOREIGN KEY (disease_id) REFERENCES disease(id)
 ) ENGINE=InnoDB;
 
 -- ========================================
