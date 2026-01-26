@@ -2,31 +2,6 @@ spring:
   config:
     activate:
       on-profile: local
-<<<<<<< HEAD
-
-  datasource:
-    url: jdbc:mysql://localhost:3306/yaksok?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
-    username: ssafy
-    password: a505
-    driver-class-name: com.mysql.cj.jdbc.Driver
-
-  sql:
-    init:
-      mode: always
-      platform: mysql
-      encoding: UTF-8
-
-  jpa:
-    hibernate:
-      ddl-auto: update
-    open-in-view: false
-    show-sql: true
-    properties:
-      hibernate:
-        format_sql: true
-
-=======
-
   datasource:
     url: ${DB_URL:jdbc:mysql://localhost:3306/yaksok?serverTimezone=Asia/Seoul&characterEncoding=UTF-8}
     username: ${DB_USER:ssafy}
@@ -47,8 +22,6 @@ spring:
     properties:
       hibernate:
         format_sql: true
-
->>>>>>> origin/develop
 cookie:
   secure: false
 
