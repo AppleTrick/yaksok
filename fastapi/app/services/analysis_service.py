@@ -4,20 +4,20 @@
 YOLO, 바코드, OCR 서비스를 조율하여 영양제 이미지를 종합 분석합니다.
 
 분석 파이프라인:
-1. 이미지 전처리 (EXIF 회전, 리사이징)
-2. YOLO 객체탐지 (영양제 검출)
-3. 바코드 탐지 → DB 조회
-4. OCR 텍스트 추출
+1. YOLO 객체탐지 (영양제 검출) - 바이트 직접 전달로 최고 성능 유지
+2. 바코드 탐지 → DB 조회
+3. OCR 텍스트 추출
 """
 
+import io
 from PIL import Image
 import numpy as np
+import cv2
 
 # 서비스 임포트
 from app.services.yolo_service import detect_supplements
 from app.services.barcode_service import detect_barcode
 from app.services.ocr_service import extract_text
-from app.utils import preprocess_image
 
 
 # ============================================================
@@ -29,10 +29,9 @@ def analyze_supplement(image_bytes: bytes) -> dict:
     영양제 이미지를 종합 분석합니다.
     
     분석 순서:
-    1. 이미지 전처리 (EXIF 회전, 리사이징)
-    2. YOLO 객체탐지 → 영양제가 없으면 종료
-    3. 바코드 탐지 → DB에 정보가 있으면 반환
-    4. OCR 텍스트 추출
+    1. YOLO 객체탐지 (바이트 직접 전달 - 최고 성능)
+    2. 바코드 탐지
+    3. OCR 텍스트 추출
     
     Args:
         image_bytes: 원본 이미지 바이트 데이터
@@ -45,21 +44,20 @@ def analyze_supplement(image_bytes: bytes) -> dict:
     print("=" * 60)
     
     try:
-        # ===== 1단계: 이미지 전처리 =====
-        pil_image, cv2_image, scale_info = preprocess_image(image_bytes)
-        
         result = {
             "step": None,
             "success": False,
             "yolo": None,
             "barcode": None,
             "ocr": None,
-            "processing_info": scale_info
+            "processing_info": None
         }
         
-        # ===== 2단계: YOLO 객체탐지 =====
-        yolo_result = detect_supplements(pil_image)
+        # ===== 1단계: YOLO 객체탐지 (바이트 직접 전달) =====
+        # 작은 이미지는 원본 유지, 큰 이미지만 리사이징
+        yolo_result = detect_supplements(image_bytes)
         result["yolo"] = yolo_result
+        result["processing_info"] = yolo_result.get("scale_info", {})
         
         if not yolo_result["detected"]:
             result["step"] = "yolo"
@@ -67,19 +65,23 @@ def analyze_supplement(image_bytes: bytes) -> dict:
             print("⚠️ 영양제 미탐지 - 분석 종료")
             return result
         
-        # ===== 3단계: 바코드 탐지 =====
+        # ===== 바코드/OCR을 위한 이미지 준비 =====
+        # YOLO에서 사용한 것과 동일한 방식으로 이미지 로드
+        pil_image = Image.open(io.BytesIO(image_bytes))
+        cv2_image = cv2.cvtColor(np.array(pil_image), cv2.COLOR_RGB2BGR)
+        
+        # ===== 2단계: 바코드 탐지 =====
         barcode_result = detect_barcode(cv2_image)
         result["barcode"] = barcode_result
         
         if barcode_result["found"] and barcode_result.get("db_result"):
-            # DB에서 제품 정보를 찾은 경우
             result["step"] = "barcode"
             result["success"] = True
             result["message"] = "바코드로 제품 정보를 찾았습니다"
             print("✅ 바코드 DB 조회 성공 - 분석 완료")
             return result
         
-        # ===== 4단계: OCR 텍스트 추출 =====
+        # ===== 3단계: OCR 텍스트 추출 =====
         ocr_result = extract_text(cv2_image)
         result["ocr"] = ocr_result
         result["step"] = "ocr"
@@ -104,7 +106,7 @@ def analyze_supplement(image_bytes: bytes) -> dict:
         }
 
 
-# 하위 호환성 유지 (기존 endpoints.py 지원)
+# 하위 호환성 유지
 def analyze_image(image_bytes: bytes) -> dict:
     """기존 API와의 호환성을 위한 래퍼 함수"""
     return analyze_supplement(image_bytes)
