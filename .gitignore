@@ -8,5 +8,3 @@ frontend/package-lock.json
 /DataPipeLine/04_training/*.pt
 /DataPipeLine/01_collection/huseong/trash/
 
-#frontend
-/frontend/.vscode
