@@ -4,7 +4,6 @@ import { useState } from "react";
 import "@/features/camera/styles.css";
 import CaptureStep from "@/features/camera/components/CaptureStep";
 import ReviewStep from "@/features/camera/components/ReviewStep";
-import AnalyzingStep from "@/features/camera/components/AnalyzingStep";
 import ResultStep from "@/features/camera/components/ResultStep";
 
 type CameraFlowStep = 'capture' | 'review' | 'result';
