@@ -22,14 +22,26 @@ export default function LoginPage() {
         }
     }, [searchParams]);
 
-    const handleLogin = (data: any) => {
+    const handleLogin = async (data: any) => {
         setIsLoading(true);
-        // Simulate login API call
-        setTimeout(() => {
+        try {
+            // authService uses axios internally
+            const { login } = await import('@/services/authService');
+            const result = await login(data.email, data.password);
+
+            if (result.success) {
+                console.log('Login successful:', result);
+                // Force a hard refresh to update UI state (or use context if available)
+                window.location.href = '/';
+            } else {
+                alert(result.error || '로그인에 실패했습니다.');
+            }
+        } catch (error: any) {
+            console.error('Login error:', error);
+            alert('로그인 중 오류가 발생했습니다.');
+        } finally {
             setIsLoading(false);
-            console.log('Login attempt', data);
-            // Here you would handle successful login (e.g., redirect)
-        }, 1500);
+        }
     };
 
     return <LoginForm onSubmit={handleLogin} isLoading={isLoading} />;
