@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
     // /api/v1 경로로 가는 요청에 대해서만 동작 (config에서 설정했지만 이중 체크)
     if (request.nextUrl.pathname.startsWith('/api/v1')) {
 
