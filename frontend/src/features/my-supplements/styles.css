@@ -1,0 +1,512 @@
+/* Card Styles */
+.my-supplement-card {
+    display: flex;
+    align-items: center;
+    background: white;
+    padding: 1rem;
+    border-radius: 20px;
+    margin-bottom: 1rem;
+    box-shadow: var(--shadow-sm);
+    transition: transform 0.2s;
+    cursor: pointer;
+}
+
+.my-supplement-card:active {
+    transform: scale(0.98);
+}
+
+.my-supplement-card.stopped {
+    opacity: 0.6;
+    filter: grayscale(1);
+    background-color: #f9fafb;
+}
+
+.card-custom-icon {
+    width: 50px;
+    height: 50px;
+    margin-right: 1rem;
+    flex-shrink: 0;
+}
+
+.placeholder-icon {
+    width: 100%;
+    height: 100%;
+    background-color: var(--sub-background);
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.supplement-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 16px;
+}
+
+.card-content {
+    flex: 1;
+}
+
+.supplement-name {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--foreground-color);
+    margin-bottom: 0.25rem;
+}
+
+.supplement-efficacy {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+.card-action {
+    margin-left: 0.5rem;
+}
+
+/* Page Styles (Container) */
+.my-supplements-container {
+    padding: 1.5rem;
+    padding-bottom: 100px;
+    background-color: var(--background-color);
+    min-height: 100vh;
+}
+
+.page-header {
+    margin-bottom: 2rem;
+}
+
+.header-title-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.header-title-row h1 {
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: var(--foreground-color);
+}
+
+.count-badge {
+    background-color: var(--sub-background);
+    color: var(--primary-color);
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.9rem;
+    font-weight: 700;
+}
+
+.search-bar {
+    position: relative;
+    width: 100%;
+}
+
+.search-input {
+    width: 100%;
+    padding: 1rem 1rem 1rem 3rem;
+    border-radius: 16px;
+    border: 1px solid var(--light-grey);
+    background-color: var(--light-grey);
+    font-size: 1rem;
+    color: var(--foreground-color);
+    outline: none;
+    transition: all 0.2s;
+}
+
+.search-input:focus {
+    background-color: white;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(255, 87, 34, 0.1);
+}
+
+.search-icon {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+}
+
+/* Modal Internal Content Styles */
+/* Note: Overlay, Content container, Animations are now handled by common Modal component */
+
+.modal-hero {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.modal-icon-wrapper {
+    width: 100px;
+    height: 100px;
+    background-color: var(--sub-background);
+    border-radius: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1rem;
+}
+
+.modal-title {
+    font-size: 1.5rem;
+    font-weight: 800;
+    margin-bottom: 0.5rem;
+    text-align: center;
+}
+
+.modal-badges {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.modal-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.modal-badge.efficacy {
+    background-color: #E0F2FE;
+    color: #0284C7;
+}
+
+.modal-badge.category {
+    background-color: #F3E8FF;
+    color: #9333EA;
+}
+
+.detail-section {
+    margin-bottom: 2rem;
+}
+
+.section-label {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    margin-bottom: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.info-card {
+    background-color: var(--light-grey);
+    padding: 1rem;
+    border-radius: 16px;
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+
+.caution-box {
+    background-color: #FEF2F2;
+    border: 1px solid #FECACA;
+    color: #DC2626;
+    padding: 1rem;
+    border-radius: 16px;
+    font-size: 0.9rem;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+}
+
+.schedule-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.schedule-item-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: white;
+    border: 1px solid var(--light-grey);
+    padding: 0.75rem 1rem;
+    border-radius: 12px;
+}
+
+.schedule-time {
+    font-weight: 700;
+    color: var(--primary-color);
+}
+
+.schedule-cycle {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+.modal-actions {
+    display: flex;
+    gap: 1rem;
+    /* Margin top is handled by modal-footer usually, but ensuring spacing */
+}
+
+.action-btn {
+    flex: 1;
+    padding: 1rem;
+    border-radius: 16px;
+    font-weight: 700;
+    border: none;
+    cursor: pointer;
+    transition: filter 0.2s;
+}
+
+.action-btn.edit {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.action-btn.delete {
+    background-color: var(--light-grey);
+    color: var(--error-color);
+}
+
+/* SupplementList Component Styles */
+.supplement-list-container {
+    position: relative;
+    padding-bottom: 80px;
+    /* Space for FAB */
+}
+
+.status-tabs {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.status-tab {
+    background: none;
+    border: none;
+    padding: 0.75rem 0.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    cursor: pointer;
+    position: relative;
+}
+
+.status-tab.active {
+    color: var(--primary-color);
+}
+
+.status-tab.active::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background-color: var(--primary-color);
+}
+
+.empty-state {
+    padding: 3rem 1rem;
+    text-align: center;
+    color: var(--text-muted);
+    background-color: #f9fafb;
+    border-radius: 1rem;
+    border: 1px dashed var(--light-grey);
+}
+
+.loading-trigger {
+    text-align: center;
+    padding: 1rem;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+}
+
+.fab-button {
+    position: fixed;
+    bottom: 100px;
+    /* Above bottom tab bar */
+    right: 20px;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    box-shadow: 0 4px 12px rgba(255, 87, 34, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    z-index: 50;
+}
+
+.fab-button:active {
+    transform: scale(0.95);
+    box-shadow: 0 2px 6px rgba(255, 87, 34, 0.3);
+}
+
+@media (min-width: 640px) {
+    .fab-button {
+        right: calc(50% - 300px + 20px);
+        /* Center align logic adjustment */
+    }
+}
+
+/* ManualRegistrationForm Styles */
+.manual-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.form-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    color: var(--foreground-color);
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.form-group label {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text-muted);
+}
+
+.form-input {
+    padding: 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    font-size: 1rem;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.form-input:focus {
+    border-color: var(--primary-color);
+}
+
+.time-picker-wrapper {
+    background-color: var(--sub-background);
+    padding: 1rem;
+    border-radius: 16px;
+    display: flex;
+    justify-content: center;
+}
+
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.cancel-btn {
+    flex: 1;
+    padding: 1rem;
+    border-radius: 16px;
+    background-color: var(--light-grey);
+    color: var(--text-muted);
+    font-weight: 700;
+    border: none;
+    cursor: pointer;
+}
+
+/* Supplements Detail Modal Accordion */
+.cm-accordion {
+    width: 100%;
+}
+
+.cm-accordion-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    list-style: none;
+    /* Hide default triangle */
+}
+
+/* Hide default marker for webkit */
+.cm-accordion-header::-webkit-details-marker {
+    display: none;
+}
+
+.cm-accordion-icon {
+    transition: transform 0.2s ease;
+    color: var(--text-muted);
+}
+
+.cm-accordion[open] .cm-accordion-icon {
+    transform: rotate(90deg);
+}
+
+.cm-accordion-content {
+    margin-top: 0.75rem;
+    padding: 1rem;
+    background-color: var(--sub-background);
+    border-radius: 12px;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    color: var(--foreground-color);
+    white-space: pre-wrap;
+    /* Allow line breaks */
+}
+
+.submit-btn {
+    flex: 2;
+    padding: 1rem;
+    border-radius: 16px;
+    background-color: var(--primary-color);
+    color: white;
+    font-weight: 700;
+    border: none;
+    cursor: pointer;
+}
+
+/* Dosage Counter Styles */
+.dosage-counter-container {
+    background-color: #FEF3C7;
+    /* Beige/Yellowish bg similar to image */
+    padding: 1rem 1.5rem;
+    border-radius: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.counter-btn {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    border: none;
+    background-color: var(--primary-color);
+    color: white;
+    font-size: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(255, 87, 34, 0.3);
+    transition: transform 0.1s, background-color 0.2s;
+}
+
+.counter-btn:active {
+    transform: scale(0.95);
+}
+
+.counter-btn:disabled {
+    background-color: var(--text-muted);
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+.dosage-value {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--foreground-color);
+}
