@@ -18,6 +18,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
@@ -50,17 +51,18 @@ class AuthServiceTest {
     class LoginTest {
 
         @Test
-        @DisplayName("로그인 성공 - 사용자 ID 반환")
+        @DisplayName("로그인 성공")
         void login_Success() {
             // given
             LoginRequest loginRequest = createLoginRequest();
-            given(userService.authenticate(TEST_EMAIL, TEST_PASSWORD)).willReturn(TEST_USER_ID);
+            User user = User.createLocalUser(TEST_EMAIL, TEST_PASSWORD, TEST_NAME, null, null);
+            given(userService.authenticate(TEST_EMAIL, TEST_PASSWORD)).willReturn(user);
 
             // when
-            long userId = authService.login(loginRequest);
+            User result = authService.login(loginRequest);
 
             // then
-            assertThat(userId).isEqualTo(TEST_USER_ID);
+            assertThat(result).isEqualTo(user);
             verify(userService).authenticate(TEST_EMAIL, TEST_PASSWORD);
         }
     }
@@ -70,18 +72,43 @@ class AuthServiceTest {
     class KakaoLoginTest {
 
         @Test
-        @DisplayName("카카오 로그인 성공 - 사용자 ID 반환")
-        void kakaoLogin_Success() {
+        @DisplayName("기존 사용자로 카카오 로그인 성공")
+        void kakaoLogin_ExistingUser_Success() {
             // given
-            String kakaoId = "kakao12345";
-            given(userService.kakaoAuthenticate(kakaoId)).willReturn(TEST_USER_ID);
+            KakaoUserInfo userInfo = createKakaoUserInfo();
+            User user = User.createKakaoUser(TEST_EMAIL, TEST_NAME, "kakao12345", null, null);
+
+            given(userService.existsOauthId(userInfo.getKakaoId())).willReturn(true);
+            given(userService.kakaoAuthenticate(userInfo.getKakaoId())).willReturn(user);
 
             // when
-            long userId = authService.KakaoLogin(kakaoId);
+            User result = authService.KakaoLogin(userInfo);
 
             // then
-            assertThat(userId).isEqualTo(TEST_USER_ID);
-            verify(userService).kakaoAuthenticate(kakaoId);
+            assertThat(result).isEqualTo(user);
+            verify(userService).existsOauthId(userInfo.getKakaoId());
+            verify(userService).kakaoAuthenticate(userInfo.getKakaoId());
+        }
+
+        @Test
+        @DisplayName("새로운 사용자로 카카오 로그인 및 회원가입 성공")
+        void kakaoLogin_NewUser_Success() {
+            // given
+            KakaoUserInfo userInfo = createKakaoUserInfo();
+            User user = User.createKakaoUser(TEST_EMAIL, TEST_NAME, "kakao12345", null, null);
+
+            given(userService.existsOauthId(userInfo.getKakaoId())).willReturn(false);
+            doNothing().when(userService).kakaoSignUp(userInfo);
+            given(userService.kakaoAuthenticate(userInfo.getKakaoId())).willReturn(user);
+
+            // when
+            User result = authService.KakaoLogin(userInfo);
+
+            // then
+            assertThat(result).isEqualTo(user);
+            verify(userService).existsOauthId(userInfo.getKakaoId());
+            verify(userService).kakaoSignUp(userInfo);
+            verify(userService).kakaoAuthenticate(userInfo.getKakaoId());
         }
     }
 
@@ -94,30 +121,13 @@ class AuthServiceTest {
         void signUp_Success() {
             // given
             SignupRequest signupRequest = createSignupRequest();
+            doNothing().when(userService).signUp(signupRequest);
 
             // when
             authService.signUp(signupRequest);
 
             // then
-            verify(userService).signup(any(User.class));
-        }
-    }
-
-    @Nested
-    @DisplayName("KaKaoSignUp 메서드")
-    class KakaoSignUpTest {
-
-        @Test
-        @DisplayName("카카오 회원가입 성공")
-        void kakaoSignUp_Success() {
-            // given
-            KakaoUserInfo kakaoUserInfo = createKakaoUserInfo();
-
-            // when
-            authService.KaKaoSignUp(kakaoUserInfo);
-
-            // then
-            verify(userService).signup(any(User.class));
+            verify(userService).signUp(signupRequest);
         }
     }
 
@@ -140,7 +150,6 @@ class AuthServiceTest {
     }
 
     private KakaoUserInfo createKakaoUserInfo() {
-        // KakaoUserInfo(kakaoId, email, nickname)
         return new KakaoUserInfo("kakao12345", TEST_EMAIL, TEST_NAME);
     }
 }

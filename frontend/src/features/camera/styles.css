@@ -1,193 +1,356 @@
-/* Camera Container */
-.camera-container {
-    position: relative;
-    width: 100%;
-    height: 100vh;
-    display: flex;
-    flex-direction: column;
-    background-color: var(--foreground-color);
-    /* Dark context */
-    overflow: hidden;
+/* Pro-layout & Common Component Styles */
+
+:root {
+    --cam-orange: #FF5722;
+    --cam-black: #000000;
+    --cam-surface: #121212;
+    --cam-light: #F8F9FA;
+    --cam-gray: #9CA3AF;
+    --cam-glass: rgba(255, 255, 255, 0.12);
+    --cam-border: rgba(255, 255, 255, 0.2);
+    --header-h: 70px;
+    --footer-h: 120px;
 }
 
-/* Header */
-.camera-header {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 60px;
+/* Base Body Style for Centering on Web */
+body {
+    background: #000;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    height: 100vh;
+    width: 100vw;
+}
+
+/* Main Container Shell */
+.camera-container {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100%;
+    height: 100%;
+    max-width: 500px;
+    /* Max width for web */
+    background: #000;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    font-family: 'Pretendard', -apple-system, sans-serif;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+}
+
+@media (max-width: 600px) {
+    .camera-container {
+        max-width: 100%;
+        border-radius: 0;
+    }
+}
+
+.theme-dark {
+    background: #000;
+    color: #fff;
+}
+
+.theme-light {
+    background: #fff;
+    color: #1a1a1a;
+}
+
+/* Enforced 3:4 Aspect Ratio Container */
+.camera-ratio-box {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 3 / 4;
+    background: #111;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+}
+
+.camera-content-center {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 10px 0;
+}
+
+/* Header Styles (Matching CameraHeader.tsx) */
+.cam-header-pwa {
+    height: var(--header-h);
+    padding: 0 16px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0 16px;
-    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.6), transparent);
-    z-index: 20;
-}
-
-.camera-title {
-    color: var(--white);
-    font-size: 1.1rem;
-    font-weight: 600;
-}
-
-/* Viewport */
-.camera-viewport {
-    flex: 1;
     position: relative;
-    width: 100%;
-    background: var(--foreground-color);
+    z-index: 100;
 }
 
-.camera-video {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-/* Controls */
-.camera-controls {
+.cam-header-title {
+    font-size: 1.1rem;
+    font-weight: 700;
     position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 140px;
-    background: linear-gradient(to top, rgba(0, 0, 0, 0.8) 0%, transparent 100%);
-    display: flex;
-    align-items: center;
-    justify-content: space-around;
-    padding-bottom: 20px;
-    z-index: 20;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60%;
+    text-align: center;
 }
 
-.shutter-button {
-    width: 72px;
-    height: 72px;
+.cam-btn-icon-circle {
+    width: 44px;
+    height: 44px;
     border-radius: 50%;
-    background: rgba(255, 255, 255, 0.2);
-    border: 4px solid var(--white);
+    background: var(--cam-glass);
+    border: 1px solid var(--cam-border);
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: transform 0.1s;
+    backdrop-filter: blur(8px);
+    transition: all 0.2s;
 }
 
-.shutter-inner {
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    background: var(--white);
+.cam-btn-icon-circle:active {
+    transform: scale(0.9);
 }
 
-/* Analyzing Step */
-.analyzing-container {
-    background: var(--white);
+.cam-step-badge {
+    background: var(--cam-orange);
+    color: #fff;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 800;
 }
 
-.analyzing-overlay {
+/* Viewfinder Overlay */
+.guide-box {
     position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(255, 255, 255, 0.75);
-    z-index: 1;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80%;
+    height: 80%;
+    border: 1.5px dashed rgba(255, 255, 255, 0.4);
+    border-radius: 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
 }
 
-.spinner-circle {
-    position: relative;
-    width: 100px;
-    height: 100px;
+.guide-text {
+    margin-top: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    padding: 8px 16px;
+    border-radius: 12px;
+    color: #fff;
+    font-size: 0.85rem;
+    text-align: center;
+    backdrop-filter: blur(5px);
+}
+
+.guide-text span {
+    color: var(--cam-orange);
+    font-weight: 800;
+}
+
+/* Shutter & Lower Controls */
+.pwa-controls {
+    height: var(--footer-h);
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    padding-bottom: env(safe-area-inset-bottom);
+}
+
+.shutter-ring {
+    width: 76px;
+    height: 76px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    border: 4px solid #fff;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: var(--white);
+    cursor: pointer;
+}
+
+.shutter-ball {
+    width: 60px;
+    height: 60px;
     border-radius: 50%;
-    box-shadow: var(--shadow-lg);
-    margin-bottom: 30px;
+    background: #fff;
+    transition: transform 0.1s;
 }
 
-.analyzing-title {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: var(--foreground-color);
-    margin-bottom: 10px;
+.shutter-ring:active .shutter-ball {
+    transform: scale(0.85);
+    background: #eee;
 }
 
-.analyzing-subtitle {
-    color: var(--text-muted);
-    font-size: 0.95rem;
-    margin-bottom: 40px;
+.glass-ctrl-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    background: none;
+    border: none;
+    color: #fff;
+    cursor: pointer;
+    opacity: 0.8;
 }
 
-.step-item.active {
-    color: var(--primary-color);
+.glass-ctrl-btn span {
+    font-size: 0.75rem;
     font-weight: 600;
 }
 
-.step-item.completed {
-    color: var(--success-color);
+/* Action Buttons (Row) */
+.cam-btn-row {
+    display: flex;
+    gap: 12px;
+    padding: 16px 20px;
 }
 
-.progress-bar-container {
+.cam-btn-base {
+    flex: 1;
+    height: 54px;
+    border-radius: 16px;
+    font-size: 1rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    border: none;
+    transition: all 0.2s;
+}
+
+.cam-btn-primary {
+    background: var(--cam-orange);
+    color: #fff;
+    box-shadow: 0 4px 20px rgba(255, 87, 34, 0.3);
+}
+
+.cam-btn-secondary {
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid var(--cam-border);
+    color: #fff;
+}
+
+.cam-btn-outline {
+    background: #fff;
+    border: 1px solid #eee;
+    color: #1a1a1a;
+}
+
+/* Result Page Enhancements */
+.theme-light-report {
+    background: #F8F9FA;
+}
+
+.result-scroll {
+    flex: 1;
+    overflow-y: auto;
+    padding-bottom: 120px;
+}
+
+.result-list-section {
+    padding: 24px 20px;
+    background: #fff;
+    border-top-left-radius: 32px;
+    border-top-right-radius: 32px;
+    margin-top: -30px;
+    position: relative;
+    z-index: 50;
+    box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.05);
+}
+
+.report-card {
+    display: flex;
+    gap: 16px;
+    padding: 18px;
+    margin-bottom: 16px;
+    background: #F9FAFB;
+    border: 1px solid #F3F4F6;
+    border-radius: 20px;
+}
+
+.card-idx-circle {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 0.9rem;
+    flex-shrink: 0;
+}
+
+.sticky-footer {
+    position: fixed;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 500px;
+    background: #fff;
+    border-top: 1px solid #f1f1f1;
+    padding-bottom: env(safe-area-inset-bottom);
+    z-index: 100;
+}
+
+.scan-indicator {
     position: absolute;
-    top: 60px;
+    top: 16px;
+    right: 16px;
+    background: rgba(0, 0, 0, 0.5);
+    color: #fff;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    z-index: 20;
+    backdrop-filter: blur(10px);
+}
+
+.obj-tag-v2 {
+    position: absolute;
+    width: 32px;
+    height: 32px;
+    background: var(--cam-orange);
+    color: #fff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    border: 2.5px solid #fff;
+    transform: translate(-50%, -50%);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+.cam-loading-overlay {
+    position: absolute;
+    top: 0;
     left: 0;
-    right: 0;
-    height: 4px;
-    background: var(--light-grey);
-    z-index: 10;
-}
-
-.progress-bar-fill {
+    width: 100%;
     height: 100%;
-    background: var(--primary-color);
-    transition: width 0.3s ease;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
 }
 
-/* Error Step */
-.error-step-container {
-    background: var(--light-grey);
-}
-
-.error-content {
-    background: var(--white);
-    border-top-left-radius: 30px;
-    border-top-right-radius: 30px;
-    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.05);
-}
-
-.error-title {
-    color: var(--foreground-color);
-}
-
-.action-button.primary {
-    background: var(--primary-color);
-    color: var(--white);
-}
-
-.action-button.secondary {
-    background: var(--white);
-    color: var(--foreground-color);
-    border: 1px solid var(--light-grey);
-}
-
-/* Result Step */
-.result-status-bar {
-    border-bottom: 2px solid var(--primary-color);
-}
-
-.analysis-complete {
-    color: var(--primary-color);
-}
-
-.detected-list .count {
-    color: var(--primary-color);
-    background: var(--sub-background);
-}
-
-.detected-card {
-    background: var(--white);
-    border: 1px solid var(--light-grey);
+.cam-loading-text {
+    margin-top: 16px;
+    color: #fff;
+    font-weight: 600;
 }

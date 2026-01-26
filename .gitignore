@@ -1,2 +1,9 @@
-
 frontend/package-lock.json
+
+# DataPipeLine - Data & Datasets
+/DataPipeLine/01_collection/huseong/
+/DataPipeLine/01_collection/negative_samples/
+/DataPipeLine/03_datasets/Version*
+/DataPipeLine/04_training/*.zip
+/DataPipeLine/04_training/*.pt
+/DataPipeLine/01_collection/huseong/trash/

@@ -1,13 +1,18 @@
 package com.ssafy.yaksok.user.service;
 
+import com.ssafy.yaksok.auth.dto.KakaoUserInfo;
+import com.ssafy.yaksok.auth.dto.SignupRequest;
 import com.ssafy.yaksok.global.exception.BusinessException;
 import com.ssafy.yaksok.global.exception.ErrorCode;
+import com.ssafy.yaksok.user.dto.UsernameResponse;
 import com.ssafy.yaksok.user.entity.User;
 import com.ssafy.yaksok.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserService {
@@ -15,22 +20,27 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public long authenticate(String email, String rawPassword) {
+    public User authenticate(String email, String rawPassword) {
+
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new BusinessException(ErrorCode.AUTH_LOGIN_FAIL));
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
         if (!passwordEncoder.matches(rawPassword, user.getPassword())) {
             throw new BusinessException(ErrorCode.AUTH_LOGIN_FAIL);
         }
 
-        return user.getId();
+        return user;
     }
 
-    public long kakaoAuthenticate(String kakaoId){
-        User user = userRepository.findByOauthId(kakaoId)
+    public User kakaoAuthenticate(String kakaoId){
+        return userRepository.findByOauthId(kakaoId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.AUTH_OAUTH_LOGIN_FAIL));
+    }
 
-        return user.getId();
+    public UsernameResponse getUserName(Long userId){
+        User user = findByUserId(userId);
+
+        return new UsernameResponse(user.getName());
     }
 
     public String encodePassword(String password){
@@ -41,33 +51,35 @@ public class UserService {
         return passwordEncoder.matches(password, user.getPassword());
     }
 
+    public boolean existsEmail(String email){
+        return userRepository.existsByEmail(email);
+    }
 
+    public boolean existsOauthId(String oauthId){
+        return userRepository.existsByOauthId(oauthId);
+    }
 
     //CRUD
-    public void signup(User signupUser) {
-
-        if (userRepository.existsByEmail(signupUser.getEmail())) {
+    public void signUp(SignupRequest request){
+        if(existsEmail(request.getEmail())){
             throw new BusinessException(ErrorCode.USER_DUPLICATE_EMAIL);
         }
 
-        User user = User.createLocalUser(
-                signupUser.getEmail(),
-                passwordEncoder.encode(signupUser.getPassword()),
-                signupUser.getName(),
-                signupUser.getAgeGroup(),
-                signupUser.getGender()
-        );
+        User user = User.createLocalUser(request.getEmail(),
+                encodePassword(request.getPassword()), request.getName(), request.getName(), request.getGender());
 
         userRepository.save(user);
     }
 
-    public void KakaoSignup(User signupUser) {
-
-        if (userRepository.existsByOauthId(signupUser.getOauthId())) {
+    public void kakaoSignUp(KakaoUserInfo kakaoUserInfo){
+        if(existsOauthId(kakaoUserInfo.getKakaoId())){
             throw new BusinessException(ErrorCode.USER_DUPLICATE_OUATHID);
         }
 
-        userRepository.save(signupUser);
+        User user = User.createKakaoUser(kakaoUserInfo.getEmail(),
+                kakaoUserInfo.getNickname(), kakaoUserInfo.getKakaoId(), null, null);
+
+        userRepository.save(user);
     }
 
 

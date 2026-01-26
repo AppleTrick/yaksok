@@ -8,11 +8,12 @@ import com.ssafy.yaksok.security.token.JwtTokenProvider;
 import com.ssafy.yaksok.security.token.JwtTokenResolver;
 import com.ssafy.yaksok.user.entity.User;
 import com.ssafy.yaksok.user.service.UserService;
-import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 public class AuthService {
     private final UserService userService;
@@ -22,26 +23,20 @@ public class AuthService {
     }
 
     //쿠키 1시간
-    public long login(LoginRequest request) {
+    public User login(LoginRequest request) {
         return userService.authenticate(request.getEmail(), request.getPassword());
     }
 
-    public long KakaoLogin(String oauthId){
-        return userService.kakaoAuthenticate(oauthId);
+    public User KakaoLogin(KakaoUserInfo kakaoUserInfo){
+        if(userService.existsOauthId(kakaoUserInfo.getKakaoId())){
+            return userService.kakaoAuthenticate(kakaoUserInfo.getKakaoId());
+        }
+        userService.kakaoSignUp(kakaoUserInfo);
+        return userService.kakaoAuthenticate(kakaoUserInfo.getKakaoId());
     }
 
     public void signUp(SignupRequest request){
-        User user = User.createLocalUser(request.getEmail(),
-                request.getPassword(), request.getName(), request.getName(), request.getGender());
-
-        userService.signup(user);
-    }
-
-    public void KaKaoSignUp(KakaoUserInfo kakaoUserInfo){
-        User user = User.createKakaoUser(kakaoUserInfo.getEmail(),
-                kakaoUserInfo.getNickname(), kakaoUserInfo.getKakaoId(), null, null);
-
-        userService.signup(user);
+        userService.signUp(request);
     }
 
     //만약 리프레시 토큰을 활용하면 이걸 활용해서 지우자.
