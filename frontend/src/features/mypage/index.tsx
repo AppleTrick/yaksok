@@ -8,6 +8,8 @@ import { User, LogOut, ChevronLeft } from 'lucide-react';
 import Button from '@/components/Button';
 import './styles.css';
 
+import ProfileCard from './components/ProfileCard';
+
 export default function MyPageFeature() {
     const router = useRouter();
     const [userName, setUserName] = useState('사용자');
@@ -24,7 +26,7 @@ export default function MyPageFeature() {
             // 2. API에서 최신 데이터 가져오기
             try {
                 // 직접 axios를 사용하거나 userService를 호출
-                const response = await axios.get('/api/v1/users/me');
+                const response = await axios.get('/api/v1/user/me');
                 if (response.data && response.data.success) {
                     const freshName = response.data.data.name;
                     setUserName(freshName);
@@ -64,13 +66,7 @@ export default function MyPageFeature() {
                 <div style={{ width: 24 }}></div> {/* Spacer for center alignment */}
             </header>
 
-            <div className="profile-section">
-                <div className="profile-image-wrapper">
-                    <User size={40} className="profile-icon-large" />
-                </div>
-                <h2 className="profile-name">{userName}</h2>
-                <p className="profile-email">{email}</p>
-            </div>
+            <ProfileCard userName={userName} email={email} />
 
             <div className="menu-list">
                 <div className="menu-item" onClick={() => router.push('/mypage/edit')}>

@@ -4,6 +4,7 @@ import com.ssafy.yaksok.auth.dto.KakaoUserInfo;
 import com.ssafy.yaksok.auth.dto.SignupRequest;
 import com.ssafy.yaksok.global.exception.BusinessException;
 import com.ssafy.yaksok.global.exception.ErrorCode;
+import com.ssafy.yaksok.user.dto.UsernameResponse;
 import com.ssafy.yaksok.user.entity.User;
 import com.ssafy.yaksok.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -34,6 +35,12 @@ public class UserService {
     public User kakaoAuthenticate(String kakaoId){
         return userRepository.findByOauthId(kakaoId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.AUTH_OAUTH_LOGIN_FAIL));
+    }
+
+    public UsernameResponse getUserName(Long userId){
+        User user = findByUserId(userId);
+
+        return new UsernameResponse(user.getName());
     }
 
     public String encodePassword(String password){

@@ -15,7 +15,7 @@ export interface UserUpdateData {
 
 export const fetchUserInfo = async (): Promise<UserInfo | null> => {
     try {
-        const response = await axios.get('/api/v1/users/me');
+        const response = await axios.get('/api/v1/user/me');
         if (response.status === 200 && response.data.success) {
             return response.data.data;
         }
@@ -27,7 +27,7 @@ export const fetchUserInfo = async (): Promise<UserInfo | null> => {
 
 export const updateUserInfo = async (data: UserUpdateData): Promise<boolean> => {
     try {
-        const response = await axios.put('/api/v1/users/me', data);
+        const response = await axios.put('/api/v1/user/me', data);
         if (response.status === 200 && response.data.success) {
             return true;
         }
