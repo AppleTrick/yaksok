@@ -17,14 +17,12 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class UserController {
 
-    private final UserService userService;
+        private final UserService userService;
 
-    @GetMapping("/me")
-    public ResponseEntity<ApiResponse<UsernameResponse>> getUserName(
-            @AuthenticationPrincipal UserPrincipal principal){
-        return ResponseUtil.ok(userService.getUserName(principal.getUserId()));
-    }
-
-
+        @GetMapping("/me")
+        public ResponseEntity<ApiResponse<UsernameResponse>> getUserName(
+                        @AuthenticationPrincipal UserPrincipal principal) {
+                return ResponseUtil.ok(userService.getUserName(principal.getUserId()));
+        }
 
 }

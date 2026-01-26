@@ -1,14 +1,13 @@
 'use client';
 
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import axios from '@/lib/axios';
-import SignupForm from '@/features/signup/components/SignupForm';
-import '@/features/signup/styles.css';
+import SignupForm from './components/SignupForm';
+import './styles.css';
 
-export default function SignupPage() {
+export default function SignupFeature() {
     const [isLoading, setIsLoading] = useState(false);
-
     const router = useRouter();
 
     const handleSignup = async (data: any) => {
