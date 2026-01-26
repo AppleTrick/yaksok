@@ -13,8 +13,12 @@ frontend/package-lock.json
 # IDE
 .idea/
 *.iml
+.vscode/
 
 # Environment
 .env
 .env.local
 .env.*
+
+# Build artifacts
+*.class
