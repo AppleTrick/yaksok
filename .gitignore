@@ -14,6 +14,9 @@ frontend/package-lock.json
 .idea/
 *.iml
 .vscode/
+.classpath
+.project
+.settings/
 
 # Environment
 .env
@@ -22,3 +25,6 @@ frontend/package-lock.json
 
 # Build artifacts
 *.class
+bin/
+build/
+.gradle/
