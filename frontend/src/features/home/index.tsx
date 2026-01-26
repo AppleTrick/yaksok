@@ -1,13 +1,17 @@
-"use client";
+'use client';
 
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Camera, Sun, Moon, CheckCircle } from "lucide-react";
+import { COLORS } from '@/constants/colors';
+import { Camera, Sun, Moon, CheckCircle, User } from "lucide-react";
 import DailyProgressCard from "./components/DailyProgressCard";
 import { useScheduleContext, isItemDue } from "../notification/contexts/ScheduleContext";
 import './styles.css';
-import { useState, useEffect } from "react";
 
 export default function HomeFeature() {
+    const router = useRouter();
+    const [userName, setUserName] = useState("사용자");
     const { schedules, toggleItemTaken } = useScheduleContext();
     const [today, setToday] = useState<Date | null>(null);
 
@@ -15,36 +19,49 @@ export default function HomeFeature() {
         setToday(new Date());
     }, []);
 
-    // 1. Calculate Progress from Context (Based on DUE items only)
-    // If today is not set (SSR/First Render), show 0 or all? Better to show 0/loading to avoid flash.
+    useEffect(() => {
+        // 1. 로컬 스토리지에서 초기 로드
+        const storedName = localStorage.getItem("userName");
+        if (storedName) {
+            setUserName(storedName);
+        }
+
+        // 2. 최신 데이터 가져오기 및 세션 확인
+        const syncUserInfo = async () => {
+            const { fetchUserInfo } = await import('@/services/userService');
+            const userInfo = await fetchUserInfo();
+
+            if (userInfo) {
+                setUserName(userInfo.name);
+                localStorage.setItem("userName", userInfo.name);
+            }
+        };
+
+        syncUserInfo();
+    }, []);
+
+    // Schedule Logic
     const allDueItems = today ? schedules.flatMap(s =>
         s.items.filter(item => isItemDue(item, today))
     ) : [];
     const totalMeds = allDueItems.length;
     const takenMeds = allDueItems.filter(i => i.isTaken).length;
-
-    // 2. Sort/Filter Logic
-    // In a real app we might filter by time of day, but for now we iterate the schedules directly.
     const activeSchedules = schedules.filter(s => s.isActive);
-
-    // Debug log - moved inside effect or render check
-    if (today) {
-        // console.log("HomeFeature Client Date:", today.toString());
-    }
 
     return (
         <div className="home-container">
             <header className="home-header">
                 <div className="greeting-section">
                     <span className="greeting-sub">좋은 아침입니다,</span>
-                    <h1 className="greeting-main">선희 님</h1>
+                    <h1 className="greeting-main">{userName} 님</h1>
                     <p className="greeting-desc">오늘도 건강 약속을 지켜보세요.</p>
                 </div>
-                <div className="header-actions">
-                    <div className="profile-icon">
-                        <div className="profile-placeholder">S</div>
+                {/* HEAD's Profile Link */}
+                <Link href="/mypage">
+                    <div className="profile-icon" title="마이페이지">
+                        <User size={28} color={COLORS.black} />
                     </div>
-                </div>
+                </Link>
             </header>
 
             {/* Daily Progress Card */}
