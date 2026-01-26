@@ -1,7 +1,8 @@
 "use client";
 
+
 import Link from 'next/link';
-import { Home, Pill, FileText, Settings } from 'lucide-react';
+import { Home, Pill, Settings, Bell } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import './styles.css';
 
@@ -23,9 +24,9 @@ export default function BottomTabBar() {
                 <Pill size={24} />
                 <span>내 영양제</span>
             </Link>
-            <Link href="/record" className={`tab-item ${pathname === '/record' ? 'active' : ''}`}>
-                <FileText size={24} />
-                <span>기록</span>
+            <Link href="/reminders" className={`tab-item ${pathname === '/reminders' ? 'active' : ''}`}>
+                <Bell size={24} />
+                <span>알림</span>
             </Link>
             <Link href="/settings" className={`tab-item ${pathname === '/settings' ? 'active' : ''}`}>
                 <Settings size={24} />
