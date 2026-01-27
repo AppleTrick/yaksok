@@ -21,16 +21,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/v1/user")
 @RequiredArgsConstructor
 public class UserController {
-
-<<<<<<< HEAD
-        private final UserService userService;
-
-        @GetMapping("/me")
-        public ResponseEntity<ApiResponse<UsernameResponse>> getUserName(
-                        @AuthenticationPrincipal UserPrincipal principal) {
-                return ResponseUtil.ok(userService.getUserName(principal.getUserId()));
-        }
-=======
     private final UserService userService;
 
     @GetMapping("/me")
@@ -47,6 +37,4 @@ public class UserController {
                 userService.getUserInfoRespone(principal.getUserId())
         );
     }
->>>>>>> 5baf116 (feat : 유저 정보 요청, 질병 정보 요청 api 구현)
-
 }
