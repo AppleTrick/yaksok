@@ -8,9 +8,15 @@
 """
 
 import io
+import os
 from PIL import Image
 import numpy as np
 import cv2
+
+# SaveImage 폴더 설정
+APP_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+SAVE_IMAGE_DIR = os.path.join(APP_DIR, "SaveImage")
+os.makedirs(SAVE_IMAGE_DIR, exist_ok=True)
 
 # 서비스 임포트
 from app.services.yolo_service import detect_supplements
@@ -39,27 +45,48 @@ def analyze_supplement(image_bytes: bytes) -> dict:
             }
         }
         
-        # [중요 1] 원본 이미지 로드 및 회전 처리 (여기서 기준 잡음)
-        original_pil = load_image_with_exif(image_bytes)
+        # [디버깅] 수신된 원본 바이트 저장 (SaveImage 폴더에 debug_input.jpg로 저장)
+        debug_path = os.path.join(SAVE_IMAGE_DIR, "debug_input.jpg")
+        try:
+            with open(debug_path, "wb") as f:
+                f.write(image_bytes)
+            print(f"[디버깅] 📥 수신 이미지 저장 완료: {debug_path} (Size: {len(image_bytes)} bytes)")
+        except Exception as save_err:
+            print(f"[디버깅] ⚠️ 수신 이미지 저장 실패: {save_err}")
+
+        # [1단계] 이미지 로드 및 유효성 검사
+        print(f"[1단계] 이미지 로드 시작...")
+        try:
+            original_pil = load_image_with_exif(image_bytes)
+            print(f" - 이미지 타입: {type(original_pil)}, 사이즈: {original_pil.size}")
+        except Exception as img_err:
+            print(f" - ❌ 이미지 로드 실패: {img_err}")
+            raise
+            
         orig_w, orig_h = original_pil.size
-        print(f"[통합 분석] 원본 이미지 로드 완료 (회전 적용됨): {orig_w}x{orig_h}")
         
-        # [중요 2] YOLO에 '바이트'가 아니라 'PIL 객체'를 직접 전달
-        # 이렇게 해야 YOLO가 내부적으로 또 로드하면서 회전이 풀리거나 꼬이는 걸 방지함
+        # [2단계] YOLO 탐지 실행
+        print(f"[2단계] YOLO 탐지 시작 (PIL 전달)...")
         yolo_result = detect_supplements(original_pil)
+        print(f" - 탐지 결과: {yolo_result['detected']}, 탐지수: {yolo_result['count']}")
         
         # 결과 정리
-        processed_pil = yolo_result.pop("pil_image", None) # YOLO가 리사이징해서 쓴 이미지 (필요시 사용)
+        processed_pil = yolo_result.pop("pil_image", None)
         result["yolo"] = yolo_result
         result["processing_info"] = yolo_result.get("scale_info", {})
         
         if not yolo_result["detected"]:
+            all_labels = [obj["label"] for obj in yolo_result.get("objects", [])]
             result["step"] = "yolo"
             result["message"] = "이미지에서 영양제를 찾지 못했습니다"
-            print("⚠️ 영양제 미탐지 - 분석 종료")
+            print(f"⚠️ [분석 중단] 영양제 미탐지 (검출된 모든 라벨: {all_labels})")
+            
+            # [디버깅] 영양제가 아니더라도 다른 라벨이 있다면 OCR을 시도해볼 수 있게 로그만 남김
+            if yolo_result.get("objects"):
+                print(f" - 참고: 영양제는 아니지만 다른 객체가 탐지되었습니다.")
             return result
         
-        # ===== 2단계: 전체 이미지 바코드 탐지 =====
+        print(f"[3단계] OCR 분석 단계 진입 (객체 수: {len(yolo_result.get('objects', []))})")
         # (혹시 모르니 리사이징된 버전으로 빠르게 훑기)
         if processed_pil:
             cv2_full_image = cv2.cvtColor(np.array(processed_pil), cv2.COLOR_RGB2BGR)
