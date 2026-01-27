@@ -1,5 +1,6 @@
 package com.ssafy.yaksok.user.entity;
 
+import com.ssafy.yaksok.user.enums.UserEnums;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -47,8 +48,12 @@ public class User {
     private UserStatus status;
 
     private LocalDateTime lastLoginAt;
-    private String ageGroup;
-    private String gender;
+
+    @Enumerated(EnumType.STRING)
+    private UserEnums.AgeGroup ageGroup;
+
+    @Enumerated(EnumType.STRING)
+    private UserEnums.Gender gender;
 
     @Column(updatable = false)
     private LocalDateTime createdAt;
@@ -59,8 +64,8 @@ public class User {
             String name,
             OAuthProvider oauthProvider,
             String oauthId,
-            String ageGroup,
-            String gender
+            UserEnums.AgeGroup ageGroup,
+            UserEnums.Gender gender
     ) {
         this.email = email;
         this.password = password;
@@ -82,8 +87,8 @@ public class User {
             String email,
             String encodedPassword,
             String name,
-            String ageGroup,
-            String gender
+            UserEnums.AgeGroup ageGroup,
+            UserEnums.Gender gender
     ) {
         return new User(
                 email,
@@ -100,8 +105,8 @@ public class User {
             String email,
             String name,
             String kakaoId,
-            String ageGroup,
-            String gender
+            UserEnums.AgeGroup ageGroup,
+            UserEnums.Gender gender
     ) {
         return new User(
                 email,

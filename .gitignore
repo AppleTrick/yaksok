@@ -1,5 +1,7 @@
 frontend/package-lock.json
 
+frontend/package-lock.json
+/.metadata/
 # DataPipeLine - Data & Datasets
 /DataPipeLine/01_collection/huseong/
 /DataPipeLine/01_collection/negative_samples/
@@ -8,5 +10,21 @@ frontend/package-lock.json
 /DataPipeLine/04_training/*.pt
 /DataPipeLine/01_collection/huseong/trash/
 
-#Changhee
-/Retrospective
+# IDE
+.idea/
+*.iml
+.vscode/
+.classpath
+.project
+.settings/
+
+# Environment
+.env
+.env.local
+.env.*
+
+# Build artifacts
+*.class
+bin/
+build/
+.gradle/
