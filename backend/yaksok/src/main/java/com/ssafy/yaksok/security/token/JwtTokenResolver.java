@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class JwtTokenResolver {
 
-    private static final String ACCESS_TOKEN_COOKIE = "access_token";
+    private static final String ACCESS_TOKEN_COOKIE = "ACCESS_TOKEN";
 
     public String resolve(HttpServletRequest request) {
         if (request.getCookies() == null) {

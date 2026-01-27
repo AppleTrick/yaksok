@@ -1,5 +1,7 @@
 package com.ssafy.yaksok.security.token;
 
+import com.ssafy.yaksok.global.exception.BusinessException;
+import com.ssafy.yaksok.global.exception.ErrorCode;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
@@ -18,7 +20,7 @@ import java.util.Date;
 @Component
 public class JwtTokenProvider {
 
-    private static final long ACCESS_TOKEN_EXPIRE_TIME = 1000L * 60 * 30; //30분
+    private static final long ACCESS_TOKEN_EXPIRE_TIME = 1000L * 60 * 60; //60분
     private static final long REFRESH_TOKEN_EXPIRE_TIME = 1000L * 60 * 60 * 24; //24시간
 
     private final Key key;
@@ -64,21 +66,26 @@ public class JwtTokenProvider {
                     .build()
                     .parseClaimsJws(token); // 검증 수행
 
-            return true;
-        } catch (SecurityException | MalformedJwtException e) {
-            // 서명 불일치, JWT 형식 깨짐
-            log.warn("Invalid JWT signature or malformed token");
+            return true;    } catch (SecurityException e) {
+            // 서명 불일치
+            throw new BusinessException(ErrorCode.AUTH_TOKEN_INVALID);
+
+        } catch (MalformedJwtException e) {
+            // JWT 형식 오류
+            throw new BusinessException(ErrorCode.AUTH_TOKEN_MALFORMED);
+
         } catch (ExpiredJwtException e) {
-            // 만료된 토큰
-            log.warn("Expired JWT token");
+            // 만료
+            throw new BusinessException(ErrorCode.AUTH_TOKEN_EXPIRED);
+
         } catch (UnsupportedJwtException e) {
             // 지원하지 않는 JWT
-            log.warn("Unsupported JWT token");
+            throw new BusinessException(ErrorCode.AUTH_TOKEN_UNSUPPORTED);
+
         } catch (IllegalArgumentException e) {
-            // null, empty
-            log.warn("JWT token is null or empty");
+            // null or empty
+            throw new BusinessException(ErrorCode.AUTH_TOKEN_EMPTY);
         }
-        return false;
     }
 
     public Authentication getAuthentication(String token) {
