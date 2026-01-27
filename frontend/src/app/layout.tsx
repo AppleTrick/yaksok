@@ -34,7 +34,7 @@ import BottomTabBar from "../layout/BottomTabBar";
 import NotificationManager from "@/features/notification/components/NotificationManager";
 import { ScheduleProvider } from "@/features/notification/contexts/ScheduleContext";
 
-import { MSWProvider } from "./MSWProvider";
+
 
 export default function RootLayout({
   children,
@@ -47,11 +47,9 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <ScheduleProvider>
-          <MSWProvider>
-            {children}
-            <BottomTabBar />
-            <NotificationManager />
-          </MSWProvider>
+          {children}
+          <BottomTabBar />
+          <NotificationManager />
         </ScheduleProvider>
       </body>
     </html>
