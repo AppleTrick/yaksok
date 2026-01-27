@@ -37,7 +37,7 @@ export default function CameraFeature() {
             const formData = new FormData();
             formData.append("file", blob, "captured.jpg");
 
-            const apiResponse = await fetch("http://localhost:8000/api/v1/analyze", {
+            const apiResponse = await fetch("http://localhost:8000/ai/v1/analyze", {
                 method: "POST",
                 body: formData,
             });
