@@ -1,14 +1,15 @@
-package com.ssafy.yaksok.controller;
+package com.ssafy.yaksok.analyze.controller;
 
-import com.ssafy.yaksok.domain.dto.OverdoseCheckResponse;
-import com.ssafy.yaksok.domain.dto.SimulationProductRequest;
-import com.ssafy.yaksok.service.OverdoseCheckService;
+import com.ssafy.yaksok.analyze.domain.dto.OverdoseCheckResponse;
+import com.ssafy.yaksok.analyze.domain.dto.SimulationProductRequest;
+import com.ssafy.yaksok.analyze.service.OverdoseCheckService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
+
 
 /**
  * 과복용 체크 Controller

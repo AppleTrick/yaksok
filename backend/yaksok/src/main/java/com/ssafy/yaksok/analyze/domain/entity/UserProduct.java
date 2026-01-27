@@ -1,4 +1,4 @@
-package com.ssafy.yaksok.domain.entity;
+package com.ssafy.yaksok.analyze.domain.entity;
 
 import jakarta.persistence.*;
 import lombok.*;

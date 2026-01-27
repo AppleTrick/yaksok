@@ -1,11 +1,11 @@
-package com.ssafy.yaksok.service.impl;
+package com.ssafy.yaksok.analyze.service.impl;
 
-import com.ssafy.yaksok.domain.dto.IngredientOverdoseResult;
-import com.ssafy.yaksok.domain.dto.IngredientSummary;
-import com.ssafy.yaksok.domain.dto.OverdoseCheckResponse;
-import com.ssafy.yaksok.domain.dto.SimulationProductRequest;
-import com.ssafy.yaksok.repository.UserProductRepository;
-import com.ssafy.yaksok.service.OverdoseCheckService;
+import com.ssafy.yaksok.analyze.domain.dto.IngredientOverdoseResult;
+import com.ssafy.yaksok.analyze.domain.dto.IngredientSummary;
+import com.ssafy.yaksok.analyze.domain.dto.OverdoseCheckResponse;
+import com.ssafy.yaksok.analyze.domain.dto.SimulationProductRequest;
+import com.ssafy.yaksok.analyze.repository.UserProductRepository;
+import com.ssafy.yaksok.analyze.service.OverdoseCheckService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

@@ -1,4 +1,4 @@
-package com.ssafy.yaksok.config;
+package com.ssafy.yaksok.analyze.config;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;

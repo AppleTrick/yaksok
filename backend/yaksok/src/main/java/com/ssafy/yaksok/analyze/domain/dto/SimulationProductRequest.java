@@ -1,4 +1,4 @@
-package com.ssafy.yaksok.domain.dto;
+package com.ssafy.yaksok.analyze.domain.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
