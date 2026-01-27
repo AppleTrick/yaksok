@@ -149,7 +149,6 @@ CREATE TABLE IF NOT EXISTS user_disease (
                                             id BIGINT AUTO_INCREMENT PRIMARY KEY,
                                             user_id BIGINT NOT NULL,
                                             disease_id BIGINT NOT NULL,
-                                            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 
                                             CONSTRAINT fk_ud_user FOREIGN KEY (user_id) REFERENCES `user`(id),
                                             CONSTRAINT fk_ud_disease FOREIGN KEY (disease_id) REFERENCES disease(id)
