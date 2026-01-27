@@ -16,6 +16,10 @@ export interface UserProduct {
     active: boolean;
 }
 
+export interface UserName{
+    name: string;
+}
+
 export interface UserInfo {
     userDataResponse: {
         email: string;
@@ -34,6 +38,18 @@ export interface UserUpdateData {
     gender: string;
     diseaseIds: number[];
 }
+
+export const fetchUserName = async (): Promise<UserName | null> => {
+    try {
+        const response = await axios.get('/api/v1/user/me');
+        if (response.status === 200 && response.data.success) {
+            return response.data.data;
+        }
+    } catch (error) {
+        console.error("사용자 이름을 가져오는 데 실패했습니다:", error);
+    }
+    return null;
+};
 
 export const fetchUserInfo = async (): Promise<UserInfo | null> => {
     try {

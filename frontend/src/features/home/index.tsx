@@ -27,17 +27,16 @@ export default function HomeFeature() {
         }
 
         // 2. 최신 데이터 가져오기 및 세션 확인
-        const syncUserInfo = async () => {
-            const { fetchUserInfo } = await import('@/services/userService');
-            const userInfo = await fetchUserInfo();
-
-            if (userInfo) {
-                setUserName(userInfo.userDataResponse.name);
-                localStorage.setItem("userName", userInfo.userDataResponse.name);
+        const syncUserName = async () => {
+            const { fetchUserName } = await import('@/services/userService');
+            const userName = await fetchUserName();
+            if (userName) {
+                setUserName(userName.name);
+                localStorage.setItem("userName", userName.name);
             }
         };
 
-        syncUserInfo();
+        syncUserName();
     }, []);
 
     // Schedule Logic
