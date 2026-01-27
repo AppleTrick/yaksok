@@ -1,21 +1,43 @@
 import axios from '@/lib/axios';
 
-export interface UserInfo {
+export interface Disease {
+    id: number;
     name: string;
-    ageGroup?: string;
-    gender?: string;
-    // 추후 사용 가능한 필드가 생기면 추가
+}
+
+export interface UserProduct {
+    userProductId: number;
+    productId: number;
+    productName: string;
+    nickname: string;
+    dailyDose: number;
+    doseAmount: number;
+    doseUnit: string;
+    active: boolean;
+}
+
+export interface UserInfo {
+    user: {
+        email: string;
+        name: string;
+        ageGroup: string;
+        gender: string;
+    };
+    userDiseases: Disease[];
+    allDiseases: Disease[];
+    userProducts: UserProduct[];
 }
 
 export interface UserUpdateData {
     name: string;
-    ageGroup?: string;
-    gender?: string;
+    ageGroup: string;
+    gender: string;
+    diseaseIds: number[];
 }
 
 export const fetchUserInfo = async (): Promise<UserInfo | null> => {
     try {
-        const response = await axios.get('/api/v1/user/me');
+        const response = await axios.get('/api/v1/user/info');
         if (response.status === 200 && response.data.success) {
             return response.data.data;
         }
@@ -25,14 +47,26 @@ export const fetchUserInfo = async (): Promise<UserInfo | null> => {
     return null;
 };
 
-export const updateUserInfo = async (data: UserUpdateData): Promise<boolean> => {
+export const changePassword = async (currentPassword: string, newPassword: string): Promise<boolean> => {
     try {
-        const response = await axios.put('/api/v1/user/me', data);
+        const response = await axios.put('/api/v1/user/password', { currentPassword, newPassword });
         if (response.status === 200 && response.data.success) {
             return true;
         }
     } catch (error) {
-        console.error("사용자 정보 수정 실패:", error);
+        console.error("비밀번호 변경 실패:", error);
+    }
+    return false;
+};
+
+export const withdrawUser = async (): Promise<boolean> => {
+    try {
+        const response = await axios.delete('/api/v1/user/me');
+        if (response.status === 200 && response.data.success) {
+            return true;
+        }
+    } catch (error) {
+        console.error("회원 탈퇴 실패:", error);
     }
     return false;
 };

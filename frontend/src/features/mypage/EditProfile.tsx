@@ -5,8 +5,8 @@ import { useRouter } from 'next/navigation';
 import { ChevronLeft } from 'lucide-react';
 import { COLORS } from '@/constants/colors';
 import Button from '@/components/Button';
-import { fetchUserInfo, updateUserInfo, UserInfo } from '@/services/userService';
-import './styles.css'; // Reusing mypage styles for consistency
+import { fetchUserInfo, updateUserInfo, Disease } from '@/services/userService';
+import './styles.css';
 
 export default function EditProfile() {
     const router = useRouter();
@@ -14,21 +14,31 @@ export default function EditProfile() {
     const [submitting, setSubmitting] = useState(false);
 
     const [name, setName] = useState('');
-    const [ageGroup, setAgeGroup] = useState('20~29');
-    const [gender, setGender] = useState('male');
+    const [ageGroup, setAgeGroup] = useState('THIRTY');
+    const [gender, setGender] = useState('MALE');
+    const [allDiseases, setAllDiseases] = useState<Disease[]>([]);
+    const [selectedDiseaseIds, setSelectedDiseaseIds] = useState<number[]>([]);
 
     useEffect(() => {
         const loadUser = async () => {
-            const user = await fetchUserInfo();
-            if (user) {
-                setName(user.name);
-                if (user.ageGroup) setAgeGroup(user.ageGroup);
-                if (user.gender) setGender(user.gender);
+            const data = await fetchUserInfo();
+            if (data) {
+                setName(data.user.name);
+                setAgeGroup(data.user.ageGroup);
+                setGender(data.user.gender);
+                setAllDiseases(data.allDiseases);
+                setSelectedDiseaseIds(data.userDiseases.map(d => d.id));
             }
             setLoading(false);
         };
         loadUser();
     }, []);
+
+    const toggleDisease = (id: number) => {
+        setSelectedDiseaseIds(prev =>
+            prev.includes(id) ? prev.filter(dId => dId !== id) : [...prev, id]
+        );
+    };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -41,7 +51,8 @@ export default function EditProfile() {
         const success = await updateUserInfo({
             name,
             ageGroup,
-            gender
+            gender,
+            diseaseIds: selectedDiseaseIds
         });
 
         if (success) {
@@ -53,7 +64,7 @@ export default function EditProfile() {
         setSubmitting(false);
     };
 
-    if (loading) return <div style={{ padding: 20 }}>로딩 중...</div>;
+    if (loading) return <div className="mypage-container" style={{ padding: 20 }}>로딩 중...</div>;
 
     return (
         <div className="mypage-container">
@@ -67,85 +78,71 @@ export default function EditProfile() {
 
             <form onSubmit={handleSubmit} style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
                 <div className="form-group">
-                    <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>닉네임</label>
+                    <label className="form-label">닉네임</label>
                     <input
                         type="text"
                         value={name}
                         onChange={(e) => setName(e.target.value)}
                         placeholder="닉네임을 입력하세요"
-                        style={{
-                            width: '100%',
-                            padding: '12px',
-                            borderRadius: '8px',
-                            border: `1px solid ${COLORS.lightGray}`,
-                            fontSize: '16px'
-                        }}
+                        className="form-input"
                     />
                 </div>
 
                 <div className="form-group">
-                    <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>연령대</label>
+                    <label className="form-label">연령대</label>
                     <select
                         value={ageGroup}
                         onChange={(e) => setAgeGroup(e.target.value)}
-                        style={{
-                            width: '100%',
-                            padding: '12px',
-                            borderRadius: '8px',
-                            border: `1px solid ${COLORS.lightGray}`,
-                            fontSize: '16px',
-                            backgroundColor: 'white'
-                        }}
+                        className="form-select"
                     >
-                        <option value="0~9">10대 미만</option>
-                        <option value="10~19">10대</option>
-                        <option value="20~29">20대</option>
-                        <option value="30~39">30대</option>
-                        <option value="40~49">40대</option>
-                        <option value="50~59">50대</option>
-                        <option value="60~">60대 이상</option>
+                        <option value="TEEN">10대</option>
+                        <option value="TWENTY">20대</option>
+                        <option value="THIRTY">30대</option>
+                        <option value="FORTY">40대</option>
+                        <option value="FIFTY">50대</option>
+                        <option value="SIXTY">60대 이상</option>
                     </select>
                 </div>
 
                 <div className="form-group">
-                    <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>성별</label>
+                    <label className="form-label">성별</label>
                     <div style={{ display: 'flex', gap: '10px' }}>
                         <button
                             type="button"
-                            onClick={() => setGender('male')}
-                            style={{
-                                flex: 1,
-                                padding: '12px',
-                                borderRadius: '8px',
-                                border: `1px solid ${gender === 'male' ? COLORS.primary : COLORS.lightGray}`,
-                                backgroundColor: gender === 'male' ? COLORS.primary : 'white',
-                                color: gender === 'male' ? 'white' : 'black',
-                                cursor: 'pointer'
-                            }}
+                            onClick={() => setGender('MALE')}
+                            className={`gender-button ${gender === 'MALE' ? 'active' : ''}`}
                         >
                             남성
                         </button>
                         <button
                             type="button"
-                            onClick={() => setGender('female')}
-                            style={{
-                                flex: 1,
-                                padding: '12px',
-                                borderRadius: '8px',
-                                border: `1px solid ${gender === 'female' ? COLORS.primary : COLORS.lightGray}`,
-                                backgroundColor: gender === 'female' ? COLORS.primary : 'white',
-                                color: gender === 'female' ? 'white' : 'black',
-                                cursor: 'pointer'
-                            }}
+                            onClick={() => setGender('FEMALE')}
+                            className={`gender-button ${gender === 'FEMALE' ? 'active' : ''}`}
                         >
                             여성
                         </button>
                     </div>
                 </div>
 
+                <div className="form-group">
+                    <label className="form-label">보유 질환</label>
+                    <div className="disease-selection-grid">
+                        {allDiseases.map(disease => (
+                            <button
+                                key={disease.id}
+                                type="button"
+                                onClick={() => toggleDisease(disease.id)}
+                                className={`disease-select-item ${selectedDiseaseIds.includes(disease.id) ? 'selected' : ''}`}
+                            >
+                                {disease.name}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+
                 <div style={{ marginTop: '20px' }}>
                     <Button
-                        onClick={() => { }} // Form submit handles this
+                        onClick={() => { }}
                         style={{ width: '100%' }}
                         disabled={submitting}
                     >
