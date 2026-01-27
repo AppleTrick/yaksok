@@ -38,8 +38,8 @@
 INSERT IGNORE INTO `user`
 (email, password, name, role, oauth_provider, status, age_group, gender)
 VALUES
-    ('parent@test.com', '1234', '부모님', 'PARENT', 'LOCAL', 'ACTIVE', '50S', 'F'),
-    ('child@test.com', '1234', '자녀', 'CHILD', 'LOCAL', 'ACTIVE', '20S', 'M');
+    ('parent@test.com', '1234', '부모님', 'PARENT', 'LOCAL', 'ACTIVE', 'FIFTY', 'F'),
+    ('child@test.com', '1234', '자녀', 'CHILD', 'LOCAL', 'ACTIVE', 'TWENTY', 'M');
 
 -- =========================
 -- user_product (사용자 보유 영양제)
