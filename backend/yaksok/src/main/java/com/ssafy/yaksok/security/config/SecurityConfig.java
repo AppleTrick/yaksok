@@ -44,6 +44,7 @@ public class SecurityConfig {
                 // 3. 인가 정책
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(SecurityUrls.PUBLIC).permitAll()
+                        .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
                         .anyRequest().authenticated()
                 )
 
