@@ -144,3 +144,57 @@ def resize_image_for_analysis(image_bytes: bytes) -> np.ndarray:
     """
     _, cv2_image, _ = preprocess_image(image_bytes)
     return cv2_image
+def clean_save_image_directory(max_age_minutes: int = 60):
+    """
+    SaveImage 디렉토리의 오래된 이미지 파일들을 삭제합니다.
+    
+    Args:
+        max_age_minutes: 파일의 최대 수명(분). 0이면 모든 파일 삭제.
+    """
+    import os
+    import time
+    
+    # SaveImage 경로는 app 디렉토리 하위에 위치
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    save_dir = os.path.join(current_dir, "SaveImage")
+    
+    if not os.path.exists(save_dir):
+        print(f"[정리] 디렉토리가 존재하지 않습니다: {save_dir}")
+        return
+
+    print(f"[정리] SaveImage 디렉토리 정리 시작 (기준: {max_age_minutes}분)")
+    
+    now = time.time()
+    count = 0
+    
+    try:
+        for filename in os.listdir(save_dir):
+            # README.md는 제외
+            if filename.lower() == "readme.md":
+                continue
+                
+            file_path = os.path.join(save_dir, filename)
+            
+            # 파일만 처리 (디렉토리 제외)
+            if not os.path.isfile(file_path):
+                continue
+                
+            # 시간 기반 필터링
+            if max_age_minutes > 0:
+                file_age_minutes = (now - os.path.getmtime(file_path)) / 60
+                if file_age_minutes < max_age_minutes:
+                    continue
+            
+            try:
+                os.remove(file_path)
+                count += 1
+            except Exception as e:
+                print(f"[정리] 파일 삭제 실패 ({filename}): {e}")
+                
+        if count > 0:
+            print(f"[정리] ✅ 총 {count}개의 파일이 삭제되었습니다.")
+        else:
+            print(f"[정리] 삭제할 파일이 없습니다.")
+            
+    except Exception as e:
+        print(f"[정리] ❌ 디렉토리 읽기 실패: {e}")

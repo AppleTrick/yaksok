@@ -11,6 +11,8 @@ from fastapi.responses import HTMLResponse
 from fastapi.concurrency import run_in_threadpool
 from app.api.endpoints import router as api_router
 from app.services.analysis_service import analyze_supplement
+import asyncio
+from app.utils import clean_save_image_directory
 
 # ============================================================
 # FastAPI 앱 초기화
@@ -30,6 +32,34 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# ============================================================
+# 백그라운드 작업 및 수명 주기 관리
+# ============================================================
+
+async def periodic_cleanup():
+    """30분마다 오래된 이미지를 정리하는 백그라운드 루프"""
+    while True:
+        await asyncio.sleep(1800) # 30분
+        try:
+            # 60분 이상 된 파일 정리
+            clean_save_image_directory(max_age_minutes=60)
+        except Exception as e:
+            print(f"[백그라운드] 정리 작업 중 오류: {e}")
+
+@app.on_event("startup")
+async def startup_event():
+    """서버 시작 시 실행되는 로직"""
+    print("[서버] 🚀 Yaksok AI Server 기동 중...")
+    
+    # 1. 시작 시 SaveImage 폴더 전체 비우기 (README.md 제외)
+    try:
+        clean_save_image_directory(max_age_minutes=0)
+    except Exception as e:
+        print(f"[서버] 시작 시 정리 작업 실패: {e}")
+        
+    # 2. 주기적 정리 백그라운드 태스크 시작
+    asyncio.create_task(periodic_cleanup())
 
 # ============================================================
 # API 엔드포인트
