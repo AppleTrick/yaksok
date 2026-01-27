@@ -38,7 +38,7 @@ export default function CameraPage() {
       const formData = new FormData();
       formData.append("file", blob, "captured.jpg");
 
-      const apiResponse = await fetch("http://localhost:8000/ai/v1/analyze", {
+      const apiResponse = await fetch("/ai/v1/analyze", {
         method: "POST",
         body: formData,
       });
