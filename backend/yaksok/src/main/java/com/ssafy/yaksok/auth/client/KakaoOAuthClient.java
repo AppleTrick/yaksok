@@ -51,7 +51,7 @@ public class KakaoOAuthClient {
                 .block();
 
         if (response == null || response.getAccessToken() == null) {
-            throw new BusinessException(ErrorCode.AUTH_UNAUTHORIZED);
+            throw new BusinessException(ErrorCode.AUTH_TOKEN_EMPTY);
         }
 
         System.out.println("Kakao access_token = " + response.getAccessToken());
@@ -69,7 +69,7 @@ public class KakaoOAuthClient {
                 .block();
 
         if (response == null) {
-            throw new BusinessException(ErrorCode.AUTH_UNAUTHORIZED);
+            throw new BusinessException(ErrorCode.AUTH_TOKEN_EMPTY);
         }
 
         return new KakaoUserInfo(
