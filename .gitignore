@@ -16,6 +16,15 @@ frontend/package-lock.json
 .vscode/
 .classpath
 .project
+/Retrospective
+
+# PWA 서비스 워커 파일 제외
+public/sw.js
+public/sw.js.map
+public/workbox-*.js
+public/workbox-*.js.map
+public/swe-worker-*.js
+public/swe-worker-*.js.map
 .settings/
 
 # Environment
