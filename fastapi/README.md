@@ -1,112 +1,82 @@
 # 약속 (Yaksok) AI Server
 
 이 디렉토리는 약/영양제 객체 탐지 및 성분 분석을 위한 **FastAPI** 기반의 AI 서버입니다.
-Python 환경에 익숙하지 않더라도 아래 가이드를 따르면 쉽게 실행하고 테스트할 수 있습니다.
+분석 파이프라인(YOLO 객체탐지 → 바코드 인식 → OCR 텍스트 추출)을 통해 사용자에게 정확한 정보를 제공합니다.
 
-## 1. 사용된 기술 및 모델
-- **Framework**: FastAPI (고성능 비동기 Python 웹 프레임워크)
-- **AI Model**: **YOLO11** (Ultralytics YOLOv11 Nano)
-    - 최신 객체 탐지 모델로, 빠르고 정확하게 이미지 속 물체를 인식합니다.
-    - 서버 최초 실행 시 `yolo11n.pt` 모델 파일을 자동으로 다운로드합니다.
-- **Library**: `ultralytics`, `opencv`, `pillow` (이미지 처리)
+## 🚀 1. 핵심 기술 및 모델
+- **Framework**: `FastAPI` (High Performance Async Framework)
+- **AI Model**: `YOLO11` (Ultralytics YOLOv11 Nano/Medium)
+    - 최신 객체 탐지 모델로 이미지 속 물체를 실시간으로 인식합니다.
+- **Analysis Pipeline**:
+    - **YOLO11**: 영양제 형태(Bottle, Box 등) 탐지
+    - **PyZbar**: 바코드 추출 및 상품 데이터 매칭
+    - **OCR (PaddleOCR)**: 제품명 및 성분 텍스트 추출
+- **Libraries**: `ultralytics`, `opencv-python-headless`, `paddleocr`, `pyzbar`
 
-## 2. 프로젝트 구조
+## 📂 2. 프로젝트 구조
 ```bash
 fastapi/
 ├── app/
 │   ├── api/
-│   │   └── endpoints.py   # API 라우터 정의 (실제 요청 처리)
+│   │   └── endpoints.py     # API 라우터 (실제 요청 처리)
 │   ├── services/
-│   │   └── ai_service.py  # AI 모델 로드 및 추론 로직 (YOLO11)
-│   └── main.py            # 서버 실행 진입점 및 테스트 페이지 설정
-├── requirements.txt       # 필요한 파이썬 라이브러리 목록
-└── README.md              # 설명서 (현재 파일)
+│   │   ├── yolo_service.py   # YOLO11 모델 로직
+│   │   ├── ocr_service.py    # PaddleOCR 텍스트 추출 로직
+│   │   └── analysis_service.py # 전체 통합 분석 파이프라인
+│   └── main.py              # 서버 실행 및 앱 설정
+├── venv/                    # 가상환경 (배포 환경)
+├── requirements.txt         # 종속성 목록
+└── README.md                # 분석 서버 가이드
 ```
 
-## 3. 실행 방법 (Usage)
+## 🛠️ 3. 설치 및 실행 (Setup & Run)
 
-### 3-1. 가상환경 생성 및 실행
-Python 패키지 관리를 위해 가상환경(`venv`)을 사용합니다. 터미널 종류에 맞춰 명령어를 입력하세요.
+### 3-1. 가상환경 구성
+```bash
+# 가상환경 생성
+python -m venv venv
 
-**1. 가상환경 생성 (최초 1회만)**
-- **Windows / macOS / Linux 공통**:
-  ```bash
-  python -m venv venv
-  ```
+# 가상환경 활성화 (Windows)
+.\venv\Scripts\activate
+# 가상환경 활성화 (macOS/Linux)
+source venv/bin/activate
 
-**2. 가상환경 활성화**
-(터미널을 껐다 켤 때마다 실행해야 합니다. 활성화되면 터미널 앞에 `(venv)`가 표시됩니다.)
-- **Windows (PowerShell)**:
-  ```powershell
-  .\venv\Scripts\activate
-  ```
-- **macOS / Linux (Bash/Zsh)**:
-  ```bash
-  source venv/bin/activate
-  ```
-
-**3. 라이브러리 설치 (최초 1회만)**
-- **공통**:
-  ```bash
-  pip install -r requirements.txt
-  ```
+# 패키지 설치
+pip install -r requirements.txt
+```
 
 ### 3-2. 서버 실행
-가상환경이 활성화된 상태에서 아래 명령어로 서버를 실행합니다.
-
-- **방법 A: Uvicorn 활성 (권장 - 코드 수정 시 자동 재시작)**
-  ```bash
-  uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
-  ```
-- **방법 B: 파이썬 모듈로 실행**
-  ```bash
-  python -m app.main
-  ```
-
-> **주의**: Windows PowerShell에서 실행 권한 오류 발생 시, 관리자 권한으로 터미널을 열고 `Set-ExecutionPolicy RemoteSigned` 명령을 실행해야 할 수 있습니다.
-
-## 4. 기능 및 동작 방식
-
-### 💡 API 테스트 페이지 (Frontend 없이 확인)
-서버가 켜져 있다면 브라우저에서 아래 주소로 접속해 보세요.
-- **주소**: [http://localhost:8000/test](http://localhost:8000/test)
-- **기능**: 이미지 파일 업로드 폼을 제공합니다.
-- **확인**: '파일 선택' -> 이미지 업로드 -> 'Analyze' 클릭 -> JSON 분석 결과 확인.
-
-### 🔌 API 엔드포인트
-
-1.  **POST `/api/v1/analyze`**
-    - **역할**: 프론트엔드(Next.js)에서 보낸 사진을 받아 분석합니다.
-    - **입력**: `multipart/form-data` 형식의 이미지 파일 (`file`)
-    - **동작**:
-        1. 이미지를 메모리로 읽어옵니다.
-        2. YOLO11 모델에 주입하여 객체를 탐지합니다.
-        3. 탐지된 객체(label, confidence, 좌표)를 JSON으로 반환합니다.
-        4. (현재 로직): 'bottle', 'cup', 'orange' 등이 감지되면 '영양제(is_supplement: true)'로 판단하는 임시 로직이 들어있습니다.
-
-2.  **GET `/docs`**
-    - **역할**: Swagger UI (자동 생성된 API 문서)
-    - 여기서도 API를 직접 테스트해 볼 수 있습니다.
-
-## 5. 모델 다운로드 및 관리 (참고)
-`yolo11m.pt` 등 YOLO 모델 파일은 다음과 같은 방법으로 다운로드할 수 있습니다. 다른 프로젝트에서 사용할 때 참고하세요.
-
-### 방법 1: Python 코드 (자동)
-`ultralytics` 라이브러리는 코드를 실행할 때 모델 파일이 없으면 자동으로 최신 버전을 다운로드합니다.
-```python
-from ultralytics import YOLO
-model = YOLO("yolo11n.pt")  # Nano 모델 (가장 빠름)
-# model = YOLO("yolo11s.pt")  # Small 모델 (조금 더 정확함)
-```
-
-### 방법 2: CLI 명령어
-터미널에서 `yolo` 명령어를 사용해도 자동으로 다운로드됩니다.
 ```bash
-# 가상환경 활성화 후
-yolo predict model=yolo11n.pt source='https://ultralytics.com/images/bus.jpg'
+# Uvicorn을 이용한 실행 (재시작 모드)
+uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
-### 방법 3: 직접 다운로드 (GitHub)
-- **주소**: [Ultralytics Assets Releases](https://github.com/ultralytics/assets/releases)
-- 위 링크에서 원하는 버전(v11, v8 등)과 크기(n, s, m, l, x)의 `.pt` 파일을 다운로드하여 프로젝트 폴더에 넣으면 됩니다.
+## 🔌 4. API 명세 (API Specification)
+
+### [POST] `/ai/v1/analyze`
+프론트엔드에서 업로드한 이미지를 분석하여 결과를 반환합니다.
+
+- **Request Body**: `multipart/form-data`
+  - `file`: 이미지 파일 (JPEG, PNG 등)
+- **Response**: `application/json`
+  ```json
+  {
+    "status": "success",
+    "result": {
+      "is_supplement": true,
+      "detected_objects": [...],
+      "ocr_text": "타이레놀 500mg",
+      "barcode": "8806418001234"
+    }
+  }
+  ```
+
+### [GET] `/test`
+- 브라우저에서 직접 이미지를 업로드하고 결과를 확인할 수 있는 테스트 페이지를 제공합니다.
+
+### [GET] `/docs` (Swagger UI)
+- 자동 생성된 API 문서를 통해 모든 엔드포인트를 확인하고 직접 실행해 볼 수 있습니다.
+
+## 📦 5. 모델 관리
+`yolo11m.pt` 등 모델 파일은 서버 실행 시 `app/services/` 경로 혹은 루트 경로에서 자동으로 로드됩니다. 파일이 없을 경우 Ultralytics 공식 Repo에서 자동으로 다운로드됩니다.
 
