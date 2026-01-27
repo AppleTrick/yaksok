@@ -96,6 +96,8 @@ def detect_supplements(image_input, confidence_threshold: float = 0.3) -> dict:
                     coords[3] * scale_info["scale_y"]
                 ]
             
+            print(f"[YOLO] 탐지 객체: {label} (conf: {conf:.2f})")
+            
             detected_objects.append({
                 "label": label,
                 "confidence": round(conf, 2),

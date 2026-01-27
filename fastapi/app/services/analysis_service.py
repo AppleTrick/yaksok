@@ -40,7 +40,12 @@ def analyze_supplement(image_bytes: bytes) -> dict:
         }
         
         # [중요 1] 원본 이미지 로드 및 회전 처리 (여기서 기준 잡음)
-        original_pil = load_image_with_exif(image_bytes)
+        try:
+            original_pil = load_image_with_exif(image_bytes)
+        except Exception as img_err:
+            print(f"[통합 분석] ❌ 이미지 로드 실패 (파일 손상 가능성): {img_err}")
+            raise ValueError(f"유효하지 않은 이미지 파일입니다. (Size: {len(image_bytes)} bytes)")
+            
         orig_w, orig_h = original_pil.size
         print(f"[통합 분석] 원본 이미지 로드 완료 (회전 적용됨): {orig_w}x{orig_h}")
         
@@ -54,9 +59,10 @@ def analyze_supplement(image_bytes: bytes) -> dict:
         result["processing_info"] = yolo_result.get("scale_info", {})
         
         if not yolo_result["detected"]:
+            all_labels = [obj["label"] for obj in yolo_result.get("objects", [])]
             result["step"] = "yolo"
             result["message"] = "이미지에서 영양제를 찾지 못했습니다"
-            print("⚠️ 영양제 미탐지 - 분석 종료")
+            print(f"⚠️ 영양제 미탐지 (검출된 모든 라벨: {all_labels}) - 분석 종료")
             return result
         
         # ===== 2단계: 전체 이미지 바코드 탐지 =====
