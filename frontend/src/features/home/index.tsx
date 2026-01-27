@@ -32,8 +32,8 @@ export default function HomeFeature() {
             const userInfo = await fetchUserInfo();
 
             if (userInfo) {
-                setUserName(userInfo.name);
-                localStorage.setItem("userName", userInfo.name);
+                setUserName(userInfo.user.name);
+                localStorage.setItem("userName", userInfo.user.name);
             }
         };
 
