@@ -47,6 +47,18 @@ export const fetchUserInfo = async (): Promise<UserInfo | null> => {
     return null;
 };
 
+export const updateUserInfo = async (data: UserUpdateData): Promise<boolean> => {
+    // try {
+    //     const response = await axios.put('/api/v1/user/info', data);
+    //     if (response.status === 200 && response.data.success) {
+    //         return true;
+    //     }
+    // } catch (error) {
+    //     console.error("사용자 정보 수정 실패:", error);
+    // }
+    return false;
+};
+
 export const changePassword = async (currentPassword: string, newPassword: string): Promise<boolean> => {
     try {
         const response = await axios.put('/api/v1/user/password', { currentPassword, newPassword });
