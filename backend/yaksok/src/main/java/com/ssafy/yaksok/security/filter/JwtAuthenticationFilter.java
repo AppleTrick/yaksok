@@ -1,5 +1,10 @@
 package com.ssafy.yaksok.security.filter;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ssafy.yaksok.global.dto.ErrorResponse;
+import com.ssafy.yaksok.global.exception.BusinessException;
+import com.ssafy.yaksok.global.exception.ErrorCode;
+import com.ssafy.yaksok.global.util.CookieUtil;
 import com.ssafy.yaksok.security.token.JwtTokenProvider;
 import com.ssafy.yaksok.security.token.JwtTokenResolver;
 import jakarta.servlet.FilterChain;
@@ -20,6 +25,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtTokenResolver jwtTokenResolver;
     private final JwtTokenProvider jwtTokenProvider;
+    private final CookieUtil cookieUtil;
 
     @Override
     protected void doFilterInternal(
@@ -28,21 +34,34 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             FilterChain filterChain
     ) throws ServletException, IOException {
 
-        // 요청에서 JWT 추출 (쿠키)
-        String token = jwtTokenResolver.resolve(request);
+        try {
+            String token = jwtTokenResolver.resolve(request);
 
-        // 토큰이 있고, 유효하면 인증 처리
-        if (token != null && jwtTokenProvider.validateToken(token)) {
+            if (token != null && jwtTokenProvider.validateToken(token)) {
+                Authentication authentication =
+                        jwtTokenProvider.getAuthentication(token);
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+            }
 
-            Authentication authentication =
-                    jwtTokenProvider.getAuthentication(token);
+            filterChain.doFilter(request, response);
 
-            // SecurityContext에 인증 정보 저장
-            SecurityContextHolder.getContext()
-                    .setAuthentication(authentication);
+        } catch (BusinessException e) {
+            ErrorCode errorCode = e.getErrorCode();
+
+            ErrorResponse errorResponse = ErrorResponse.of(errorCode);
+
+            response.setStatus(errorCode.getStatus().value());
+            response.setContentType("application/json;charset=UTF-8");
+
+            response.addHeader(
+                    "Set-Cookie",
+                    cookieUtil.deleteAccessToken().toString()
+            );
+
+            new ObjectMapper().writeValue(
+                    response.getWriter(),
+                    errorResponse
+            );
         }
-
-        // 다음 필터로 이동
-        filterChain.doFilter(request, response);
     }
 }
