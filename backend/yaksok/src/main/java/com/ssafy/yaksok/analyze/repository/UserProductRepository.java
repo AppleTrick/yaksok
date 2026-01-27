@@ -1,6 +1,6 @@
-package com.ssafy.yaksok.repository;
+package com.ssafy.yaksok.analyze.repository;
 
-import com.ssafy.yaksok.domain.entity.UserProduct;
+import com.ssafy.yaksok.analyze.domain.entity.UserProduct;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

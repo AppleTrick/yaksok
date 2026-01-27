@@ -1,10 +1,10 @@
-package com.ssafy.yaksok.repository;
+package com.ssafy.yaksok.analyze.repository;
 
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import com.ssafy.yaksok.domain.dto.IngredientSummary;
+import com.ssafy.yaksok.analyze.domain.dto.IngredientSummary;
 import com.ssafy.yaksok.domain.entity.QIngredient;
 import com.ssafy.yaksok.domain.entity.QProductIngredient;
 import com.ssafy.yaksok.domain.entity.QUserProduct;
