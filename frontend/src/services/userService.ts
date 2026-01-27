@@ -17,7 +17,7 @@ export interface UserProduct {
 }
 
 export interface UserInfo {
-    user: {
+    userDataResponse: {
         email: string;
         name: string;
         ageGroup: string;

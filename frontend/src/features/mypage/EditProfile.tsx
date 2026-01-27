@@ -23,9 +23,9 @@ export default function EditProfile() {
         const loadUser = async () => {
             const data = await fetchUserInfo();
             if (data) {
-                setName(data.user.name);
-                setAgeGroup(data.user.ageGroup);
-                setGender(data.user.gender);
+                setName(data.userDataResponse.name);
+                setAgeGroup(data.userDataResponse.ageGroup);
+                setGender(data.userDataResponse.gender);
                 setAllDiseases(data.allDiseases);
                 setSelectedDiseaseIds(data.userDiseases.map(d => d.id));
             }
