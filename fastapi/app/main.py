@@ -498,7 +498,7 @@ async def read_test_page():
 # ============================================================
 
 # 기존 API 라우터 등록 (하위 호환성)
-app.include_router(api_router, prefix="/api/v1")
+app.include_router(api_router, prefix="/ai/v1")
 
 if __name__ == "__main__":
     import uvicorn
