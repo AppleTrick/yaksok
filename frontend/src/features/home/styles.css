@@ -56,8 +56,12 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    font-weight: bold;
-    color: var(--primary-color);
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.profile-icon:hover {
+    background-color: #e2e8f0;
 }
 
 /* Action Card */

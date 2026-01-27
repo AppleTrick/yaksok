@@ -84,6 +84,11 @@
     line-height: 1.5;
 }
 
+.med-name {
+    white-space: normal;
+    word-break: break-word;
+}
+
 .no-meds {
     color: var(--text-muted);
     font-size: 0.9rem;

@@ -1,0 +1,293 @@
+.mypage-container {
+    padding: 0;
+    /* Remove padding to allow full-width header/backgrounds */
+    min-height: 100vh;
+    background-color: var(--background-color);
+    display: flex;
+    flex-direction: column;
+    padding-bottom: 100px;
+    /* Account for BottomTabBar height */
+    overflow-y: auto;
+}
+
+.mypage-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.5rem 1.25rem;
+    background-color: transparent;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.header-title {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: var(--foreground-color);
+    margin: 0;
+}
+
+.back-button,
+.settings-button {
+    background-color: var(--white);
+    border: none;
+    cursor: pointer;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--foreground-color);
+    box-shadow: var(--shadow-sm);
+    transition: transform 0.1s;
+}
+
+.back-button:active,
+.settings-button:active {
+    transform: scale(0.9);
+}
+
+/* Glassmorphism Configuration */
+.glass-container {
+    background: var(--glass-bg);
+    backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--shadow-premium);
+}
+
+/* Profile Section Overhaul */
+.profile-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: linear-gradient(135deg, #FFF3E0 0%, #FFE0B2 100%);
+    /* Option 2: Warm Beige */
+    padding: 2rem 1.5rem;
+    /* Standardized padding */
+    border-radius: var(--radius-xl);
+    /* Rounded all corners */
+    margin: 0 1.25rem 1.5rem 1.25rem;
+    /* Margins to match other cards, positive bottom margin */
+    box-shadow: var(--shadow-premium);
+    position: relative;
+    z-index: 5;
+}
+
+.profile-image-wrapper {
+    width: 80px;
+    /* Reduced from 100px */
+    height: 80px;
+    /* Reduced from 100px */
+    border-radius: 50%;
+    /* Make it circular for better proportion */
+    background-color: var(--white);
+    /* White background for cleanliness */
+    backdrop-filter: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 0.75rem;
+    box-shadow: var(--shadow-sm);
+    border: 3px solid var(--white);
+}
+
+.profile-icon-large {
+    color: var(--primary-color);
+    /* Orange accent on beige */
+    width: 40px;
+    height: 40px;
+}
+
+.profile-name {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--foreground-color);
+    margin: 0;
+}
+
+.profile-email {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    margin-top: 0.25rem;
+}
+
+/* Info Sections */
+.info-sections {
+    padding: 0 1.25rem;
+    margin-bottom: 2rem;
+}
+
+.info-section {
+    background: var(--glass-bg);
+    backdrop-filter: var(--glass-blur);
+    border-radius: var(--radius-xl);
+    padding: 1.5rem;
+    box-shadow: var(--shadow-premium);
+    border: 1px solid var(--glass-border);
+    position: relative;
+    z-index: 4;
+}
+
+.section-title {
+    font-size: 1rem;
+    font-weight: 800;
+    margin-bottom: 1rem;
+    color: var(--foreground-color);
+}
+
+.disease-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+.disease-tag {
+    background-color: var(--sub-background);
+    color: var(--success-color);
+    padding: 0.5rem 1rem;
+    border-radius: 1rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.empty-text {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+/* Menu List */
+.menu-list {
+    margin: 0 1.25rem 2rem 1.25rem;
+    background: var(--glass-bg);
+    backdrop-filter: var(--glass-blur);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-premium);
+    overflow: hidden;
+    border: 1px solid var(--white);
+    position: relative;
+    z-index: 4;
+}
+
+.menu-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--light-grey);
+    font-weight: 600;
+    color: var(--foreground-color);
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.menu-item:last-child {
+    border-bottom: none;
+}
+
+.menu-item:active {
+    background-color: var(--light-grey);
+}
+
+.menu-label {
+    font-size: 0.95rem;
+}
+
+/* Logout */
+.logout-section {
+    padding: 0 1.25rem 2rem 1.25rem;
+}
+
+.logout-button-full {
+    width: 100%;
+    padding: 1.25rem;
+    background-color: #FFF5F5;
+    /* Very soft red tint */
+    color: var(--error-color);
+    border: 1px solid #FFEBEB;
+    border-radius: var(--radius-xl);
+    font-size: 1rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    transition: background-color 0.2s, transform 0.1s;
+}
+
+.logout-button-full:active {
+    transform: scale(0.98);
+    background-color: #FEE2E2;
+}
+
+/* Edit Mode Shared Styles */
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-label {
+    display: block;
+    margin-bottom: 0.75rem;
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: var(--foreground-color);
+}
+
+.form-input,
+.form-select {
+    width: 100%;
+    padding: 1rem;
+    border-radius: 1rem;
+    border: 2px solid var(--light-grey);
+    font-size: 1rem;
+    font-family: var(--font-main);
+    transition: border-color 0.2s;
+}
+
+.form-input:focus,
+.form-select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
+
+.gender-button {
+    flex: 1;
+    padding: 1rem;
+    border-radius: 1rem;
+    border: 2px solid var(--light-grey);
+    background-color: var(--white);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.gender-button.active {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    color: var(--white);
+}
+
+.disease-selection-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.disease-select-item {
+    padding: 0.6rem 1rem;
+    border-radius: 1rem;
+    border: 2px solid var(--light-grey);
+    background-color: var(--white);
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.disease-select-item.selected {
+    border-color: var(--primary-color);
+    background-color: var(--sub-background);
+    color: var(--primary-color);
+}

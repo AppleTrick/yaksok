@@ -62,6 +62,7 @@ export function useNotificationSettings() {
             id: newId,
             label: '새 복용 시간',
             time: '09:00',
+            rawTime: '09:00',
             isEnabled: true
         };
         save({ ...settings, schedules: [...settings.schedules, newSchedule] });

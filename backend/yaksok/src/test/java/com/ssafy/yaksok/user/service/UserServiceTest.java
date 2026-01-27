@@ -3,6 +3,7 @@ package com.ssafy.yaksok.user.service;
 import com.ssafy.yaksok.global.exception.BusinessException;
 import com.ssafy.yaksok.global.exception.ErrorCode;
 import com.ssafy.yaksok.user.entity.User;
+import com.ssafy.yaksok.user.enums.UserEnums;
 import com.ssafy.yaksok.user.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -49,8 +50,8 @@ class UserServiceTest {
                 TEST_EMAIL,
                 TEST_ENCODED_PASSWORD,
                 TEST_NAME,
-                "20대",
-                "M");
+                UserEnums.AgeGroup.TWENTY,
+                UserEnums.Gender.MALE);
     }
 
     @Nested
@@ -121,8 +122,8 @@ class UserServiceTest {
                     TEST_EMAIL,
                     TEST_NAME,
                     kakaoId,
-                    "20대",
-                    "M");
+                    UserEnums.AgeGroup.TWENTY,
+                    UserEnums.Gender.MALE);
             setUserId(kakaoUser, TEST_USER_ID);
 
             given(userRepository.findByOauthId(kakaoId)).willReturn(Optional.of(kakaoUser));
