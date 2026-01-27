@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Bell } from 'lucide-react';
 import { MedicationItem } from '@/features/notification/types';
-import { isItemDue } from '@/features/notification/contexts/ScheduleContext';
+import { useScheduleContext } from '@/features/notification/contexts/ScheduleContext';
 import './styles.css';
 
 interface ScheduleCardProps {
@@ -21,14 +21,14 @@ const ScheduleCard: React.FC<ScheduleCardProps> = ({
     onAlarmClick,
     onCardClick
 }) => {
+    const { isItemDue, date } = useScheduleContext();
     // Filter items that are due today
     const [dueItems, setDueItems] = useState<MedicationItem[]>([]);
 
     useEffect(() => {
-        const today = new Date();
-        const filtered = items.filter(item => isItemDue(item, today));
+        const filtered = items.filter(item => isItemDue(item, date));
         setDueItems(filtered);
-    }, [items]);
+    }, [items, date, isItemDue]);
 
     // If no items are due today, maybe we shouldn't even show the card?
     // Or just show "No meds today"?

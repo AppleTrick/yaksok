@@ -34,6 +34,8 @@ import BottomTabBar from "../layout/BottomTabBar";
 import NotificationManager from "@/features/notification/components/NotificationManager";
 import { ScheduleProvider } from "@/features/notification/contexts/ScheduleContext";
 
+
+
 export default function RootLayout({
   children,
 }: Readonly<{

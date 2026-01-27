@@ -38,8 +38,8 @@
 INSERT IGNORE INTO `user`
 (email, password, name, role, oauth_provider, status, age_group, gender)
 VALUES
-    ('parent@test.com', '1234', '부모님', 'PARENT', 'LOCAL', 'ACTIVE', '50S', 'F'),
-    ('child@test.com', '1234', '자녀', 'CHILD', 'LOCAL', 'ACTIVE', '20S', 'M');
+    ('parent@test.com', '1234', '부모님', 'PARENT', 'LOCAL', 'ACTIVE', 'FIFTY', 'F'),
+    ('child@test.com', '1234', '자녀', 'CHILD', 'LOCAL', 'ACTIVE', 'TWENTY', 'M');
 
 -- =========================
 -- user_product (사용자 보유 영양제)
@@ -64,9 +64,9 @@ VALUES
     (3, '2026-01-19', '20:00:00', 'TAKEN');
 
 -- =========================
--- notification_setting (알림 설정)
+-- alert
 -- =========================
-INSERT IGNORE INTO notification_setting
+INSERT IGNORE INTO alert
 (user_product_id, intake_time, before_after,
  grace_minutes, quiet_start, quiet_end, enabled)
 VALUES
@@ -75,10 +75,10 @@ VALUES
     (3, '20:00:00', 'BEFORE', 5, NULL, NULL, true);
 
 -- =========================
--- notification_log (알림 로그)
+-- alert_log (알림 로그)
 -- =========================
-INSERT IGNORE INTO notification_log
-(user_id, user_product_id, notification_type, sent_at)
+INSERT IGNORE INTO alert_log
+(user_id, user_product_id, alert_type, sent_at)
 VALUES
     (1, 1, 'INTAKE_REMINDER', '2026-01-19 07:50:00'),
     (1, 2, 'INTAKE_MISSED', '2026-01-19 09:20:00'),
