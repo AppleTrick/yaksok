@@ -1,11 +1,11 @@
 """
-OCR 텍스트 추출 서비스 (Rotation Retry + Clean Version)
+OCR 텍스트 추출 서비스 (Universal Size Adaption)
 
-[핵심 전략]
-1. 불필요한 파라미터(show_log, use_dilation) 제거.
-2. '풍차돌리기(Rotation Retry)': 원본 -> 90도 회전 -> 270도 회전 순서로 다 읽어보고,
-   가장 결과가 좋은(신뢰도 높은) 데이터를 채택함. -> 누워있는 영양제 해결.
-3. 이미지 리사이징(640px) 유지.
+[최종 수정 사항]
+1. 이미지 크기 자동 보정 로직 강화 (preprocess_image)
+   - 너무 작은 이미지(<400px): 2~3배 확대 (Upscaling) -> 작은 글씨 깨짐 방지
+   - 너무 큰 이미지(>960px): 축소 (Downscaling) -> 거대 로고 인식 불가 방지
+2. PP-OCRv3 + 회전 로직 + 접착제 옵션 유지
 """
 
 import os
@@ -23,12 +23,13 @@ try:
     ocr_model = PaddleOCR(
         lang='korean',              
         use_angle_cls=True,         
-        enable_mkldnn=False,
+        enable_mkldnn=False,        
+        ocr_version='PP-OCRv3',     # 한국어 최강 v3
         
         # [옵션 튜닝]
         det_db_thresh=0.3,          
         det_db_box_thresh=0.5,      
-        det_db_unclip_ratio=2.5,    # 접착제 강도 2.5 유지
+        det_db_unclip_ratio=2.5,    # 접착제 강도
     )
     print("[OCR 서비스] ✅ PaddleOCR 모델 로드 완료")
 except Exception as e:
@@ -44,24 +45,43 @@ os.makedirs(SAVE_IMAGE_DIR, exist_ok=True)
 
 
 def preprocess_image(image: np.ndarray) -> np.ndarray:
-    """이미지 리사이징 (640px 기준)"""
+    """
+    이미지 크기에 따른 자동 보정 (돋보기 & 망원경)
+    """
     h, w = image.shape[:2]
-    max_dim = 640 
-    if h > max_dim or w > max_dim:
+    
+    # 1. 이미지가 너무 작을 때 (Upscaling) - 너의 이번 케이스
+    # 최소 600px 정도는 확보해야 글자가 뭉개지지 않음
+    if h < 600 or w < 600:
+        scale = 2.0
+        if h < 300 or w < 300: # 진짜 너무 작으면 3배 뻥튀기
+            scale = 3.0
+            
+        new_w = int(w * scale)
+        new_h = int(h * scale)
+        # CUBIC 보간법이 확대할 때 깨짐을 좀 막아줌
+        image = cv2.resize(image, (new_w, new_h), interpolation=cv2.INTER_CUBIC)
+        # print(f"[OCR] 돋보기 작동: {w}x{h} -> {new_w}x{new_h}")
+
+    # 2. 이미지가 너무 클 때 (Downscaling) - 아까 센트룸 케이스
+    # 960px 넘어가면 줄임
+    elif h > 960 or w > 960:
+        max_dim = 960
         scale = max_dim / max(h, w)
         new_w = int(w * scale)
         new_h = int(h * scale)
         image = cv2.resize(image, (new_w, new_h), interpolation=cv2.INTER_AREA)
+        # print(f"[OCR] 축소 작동: {w}x{h} -> {new_w}x{new_h}")
+        
     return image
 
 def parse_ocr_result(result):
-    """PaddleOCR 결과(v3 dict/list 혼용)를 표준 리스트로 파싱"""
+    """PaddleOCR 결과 표준화 파싱"""
     parsed_items = []
     if not result: return parsed_items
     
     data = result[0]
     
-    # [CASE A] 딕셔너리
     if isinstance(data, dict) and 'rec_texts' in data:
         rec_texts = data.get('rec_texts', [])
         rec_scores = data.get('rec_scores', [])
@@ -85,7 +105,6 @@ def parse_ocr_result(result):
             
             parsed_items.append({"text": text, "confidence": confidence, "height": height, "box": coords})
 
-    # [CASE B] 리스트
     elif isinstance(data, list):
         for line in data:
             try:
@@ -111,29 +130,24 @@ def extract_text(cv2_image: np.ndarray, save_image: bool = False) -> dict:
         return {"texts": [], "error": "PaddleOCR 모델이 로드되지 않았습니다"}
     
     try:
-        # 1. 기본 전처리 (리사이징)
+        # 1. 지능형 전처리 (확대/축소)
         base_image = preprocess_image(cv2_image)
         
-        candidates = [] # (점수, 결과리스트, 이미지경로) 저장
+        candidates = []
         
-        # 2. 회전 로직 (0도, 90도, 270도 시도)
+        # 2. 회전 로직
         rotations = [
-            (0, base_image, "original"),
-            (90, cv2.rotate(base_image, cv2.ROTATE_90_CLOCKWISE), "rot90"),
-            (270, cv2.rotate(base_image, cv2.ROTATE_90_COUNTERCLOCKWISE), "rot270")
+            (0, base_image),
+            (90, cv2.rotate(base_image, cv2.ROTATE_90_CLOCKWISE)),
+            (270, cv2.rotate(base_image, cv2.ROTATE_90_COUNTERCLOCKWISE))
         ]
         
-        print("[OCR] 🔄 최적의 방향 탐색 시작...")
-        
-        for angle, img, label in rotations:
-            # OCR 실행
+        for angle, img in rotations:
             result = ocr_model.ocr(img)
             parsed = parse_ocr_result(result)
             
-            # 점수 계산: (글자 수 * 평균 신뢰도) -> 글자가 많고 선명할수록 점수 높음
             if len(parsed) > 0:
                 avg_conf = sum([item['confidence'] for item in parsed]) / len(parsed)
-                # 너무 짧은 글자(1~2자)만 있는 건 노이즈일 확률 높음 -> 가중치 낮춤
                 score = len(parsed) * avg_conf
             else:
                 score = 0
@@ -144,29 +158,23 @@ def extract_text(cv2_image: np.ndarray, save_image: bool = False) -> dict:
                 "data": parsed,
                 "image": img
             })
-            # print(f" - [각도 {angle}도] 검출: {len(parsed)}개, 점수: {score:.2f}")
 
-        # 3. 최적의 결과 선택
-        # 점수가 가장 높은 후보 선택
+        # 3. 최적 결과 선택
         best_candidate = max(candidates, key=lambda x: x['score'])
-        
         texts = best_candidate['data']
-        # print(f"[OCR] 🏆 최종 선택: {best_candidate['angle']}도 회전 데이터 (점수: {best_candidate['score']:.2f})")
         
-        # 디버깅 이미지 저장 (최종 선택된 이미지만 저장)
         if save_image:
             from datetime import datetime
             import uuid
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             unique_id = str(uuid.uuid4())[:8]
-            image_filename = f"ocr_final_{best_candidate['angle']}deg_{timestamp}_{unique_id}.jpg"
+            image_filename = f"ocr_universal_{best_candidate['angle']}deg_{timestamp}_{unique_id}.jpg"
             image_path = os.path.join(SAVE_IMAGE_DIR, image_filename)
             cv2.imwrite(image_path, best_candidate['image'])
 
-        # 정렬 및 반환
         texts.sort(key=lambda x: x['height'], reverse=True)
         
-        print(f"[OCR] 최종 {len(texts)}개 텍스트 검출됨")
+        print(f"[OCR] 최종 {len(texts)}개 텍스트 검출됨 (v3, {best_candidate['angle']}도)")
         if len(texts) > 0:
             preview = [t['text'] for t in texts[:5]]
             print(f" - 상위 결과: {preview}")
@@ -175,6 +183,4 @@ def extract_text(cv2_image: np.ndarray, save_image: bool = False) -> dict:
         
     except Exception as e:
         print(f"[OCR] ❌ 처리 중 오류 발생: {e}")
-        import traceback
-        traceback.print_exc()
         return {"texts": [], "error": str(e)}
