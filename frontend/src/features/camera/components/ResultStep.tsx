@@ -9,14 +9,18 @@ import RatioBox from './common/RatioBox';
 import ActionButton from './common/ActionButton';
 
 interface DetectedObject {
-    label: string;
+    name: string;
+    barcode: string | null;
     confidence: number;
     box: number[]; // [x1, y1, x2, y2]
 }
 
 interface AnalysisResult {
-    is_supplement: boolean;
-    detected_objects: DetectedObject[];
+    success: boolean;
+    frontend_data: {
+        object_count: number;
+        products: DetectedObject[];
+    };
     message: string;
 }
 
@@ -73,7 +77,7 @@ export default function ResultStep({ imageSrc, result, onRetake, onRegister }: R
                         </div>
 
                         {/* Bounding Boxes & Tags */}
-                        {imageSize.width > 0 && result.detected_objects.map((obj, idx) => {
+                        {imageSize.width > 0 && result.frontend_data?.products?.map((obj, idx) => {
                             const img = imageRef.current;
                             if (!img) return null;
 
@@ -131,47 +135,53 @@ export default function ResultStep({ imageSrc, result, onRetake, onRegister }: R
                 {/* Detected List */}
                 <div className="result-list-section">
                     <div className="section-title-row">
-                        <h3 className="card-item-title" style={{ fontSize: '1.4rem' }}>인식된 영양제</h3>
-                        <span className="count-badge">{result.detected_objects.length}개 발견</span>
+                        <h3 className="card-item-title" style={{ fontSize: '1.4rem', color: '#1A1A1A' }}>인식된 영양제</h3>
+                        <span className="count-badge">{result.frontend_data?.object_count || 0}개 발견</span>
                     </div>
 
-                    {result.detected_objects.map((obj, idx) => (
+                    {(result.frontend_data?.products || []).map((obj, idx) => (
                         <div key={idx} className="report-card">
                             <div className="card-idx-circle" style={{
-                                background: idx === 1 ? '#FFF9E1' : '#FFF5F2',
-                                color: idx === 1 ? '#FFB300' : '#FF8A65'
+                                background: idx === 0 ? 'var(--cam-mint)' : '#FFF9E1',
+                                color: idx === 0 ? 'var(--cam-green)' : '#F59E0B'
                             }}>
                                 {idx + 1}
                             </div>
-                            <div className="card-main-info">
+                            <div className="card-main-info" style={{ flex: 1 }}>
                                 <div className="card-header-line">
-                                    <h4 className="card-item-title">{obj.label}</h4>
-                                    <button className="btn-edit-small">수정하기</button>
+                                    <h4 className="card-item-title" style={{ fontSize: '1.1rem', fontWeight: 800 }}>{obj.name}</h4>
+                                    <button className="btn-edit-small">수정</button>
                                 </div>
+                                {obj.barcode && (
+                                    <div style={{ fontSize: '0.8rem', color: '#888', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                        <Info size={12} />
+                                        코드: {obj.barcode}
+                                    </div>
+                                )}
 
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                                    <span style={{ fontSize: '0.85rem', color: '#666', width: '40px' }}>일치도</span>
-                                    <div style={{ flex: 1, height: 6, background: '#f1f5f9', borderRadius: 3, overflow: 'hidden' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
+                                    <div style={{ flex: 1, height: 6, background: '#f1f5f9', borderRadius: 10, overflow: 'hidden' }}>
                                         <div style={{
                                             width: `${obj.confidence * 100}%`,
                                             height: '100%',
-                                            background: idx === 1 ? '#FFB300' : '#FF5722'
+                                            background: obj.confidence > 0.7 ? 'var(--cam-green)' : 'var(--cam-orange)',
+                                            borderRadius: 10
                                         }}></div>
                                     </div>
-                                    <span style={{ fontSize: '0.85rem', fontWeight: 700, width: '35px' }}>
+                                    <span style={{ fontSize: '0.85rem', fontWeight: 800, color: '#333' }}>
                                         {Math.round(obj.confidence * 100)}%
                                     </span>
                                 </div>
 
-                                {idx === 0 ? (
+                                {obj.confidence > 0.7 ? (
                                     <div className="matching-pill">
                                         <ShieldCheck size={14} />
-                                        제품 정보 일치
+                                        정보가 정확합니다
                                     </div>
                                 ) : (
                                     <div className="matching-pill warning-pill">
                                         <Info size={14} />
-                                        확인 필요
+                                        확인이 필요해요
                                     </div>
                                 )}
                             </div>
