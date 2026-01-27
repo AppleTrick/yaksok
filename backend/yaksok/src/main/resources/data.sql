@@ -64,9 +64,9 @@ VALUES
     (3, '2026-01-19', '20:00:00', 'TAKEN');
 
 -- =========================
--- notification_setting (알림 설정)
+-- alert
 -- =========================
-INSERT IGNORE INTO notification_setting
+INSERT IGNORE INTO alert
 (user_product_id, intake_time, before_after,
  grace_minutes, quiet_start, quiet_end, enabled)
 VALUES
@@ -75,10 +75,10 @@ VALUES
     (3, '20:00:00', 'BEFORE', 5, NULL, NULL, true);
 
 -- =========================
--- notification_log (알림 로그)
+-- alert_log (알림 로그)
 -- =========================
-INSERT IGNORE INTO notification_log
-(user_id, user_product_id, notification_type, sent_at)
+INSERT IGNORE INTO alert_log
+(user_id, user_product_id, alert_type, sent_at)
 VALUES
     (1, 1, 'INTAKE_REMINDER', '2026-01-19 07:50:00'),
     (1, 2, 'INTAKE_MISSED', '2026-01-19 09:20:00'),
