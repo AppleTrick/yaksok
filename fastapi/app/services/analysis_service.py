@@ -1,12 +1,10 @@
 """
-통합 분석 서비스 (오케스트레이터)
+통합 분석 서비스 (오케스트레이터) - FINAL FIXED VERSION
 
-YOLO, 바코드, OCR 서비스를 조율하여 영양제 이미지를 종합 분석합니다.
-
-분석 파이프라인:
-1. YOLO 객체탐지 (영양제 검출) - 바이트 직접 전달로 최고 성능 유지
-2. 바코드 탐지 → DB 조회
-3. OCR 텍스트 추출
+[핵심 수정 사항]
+1. 이미지 로드 시점 통일: analysis_service에서 로드한 PIL 객체를 YOLO에 전달 (좌표계 동기화)
+2. Crop 좌표 보정: 정수 변환 및 Padding 추가
+3. 에러 핸들링 강화
 """
 
 import io
@@ -18,29 +16,13 @@ import cv2
 from app.services.yolo_service import detect_supplements
 from app.services.barcode_service import detect_barcode
 from app.services.ocr_service import extract_text
+# 유틸리티 임포트
+from app.utils import load_image_with_exif
 
-
-# ============================================================
-# 통합 분석 함수
-# ============================================================
 
 def analyze_supplement(image_bytes: bytes) -> dict:
-    """
-    영양제 이미지를 종합 분석합니다.
-    
-    분석 순서:
-    1. YOLO 객체탐지 (바이트 직접 전달 - 최고 성능)
-    2. 바코드 탐지
-    3. OCR 텍스트 추출
-    
-    Args:
-        image_bytes: 원본 이미지 바이트 데이터
-        
-    Returns:
-        종합 분석 결과 딕셔너리
-    """
     print("\n" + "=" * 60)
-    print("🔬 영양제 종합 분석 시작")
+    print("🔬 영양제 종합 분석 시작 (좌표 동기화 & 안전 모드)")
     print("=" * 60)
     
     try:
@@ -53,13 +35,17 @@ def analyze_supplement(image_bytes: bytes) -> dict:
             "processing_info": None
         }
         
-        # ===== 1단계: YOLO 객체탐지 (바이트 직접 전달) =====
-        # 작은 이미지는 원본 유지, 큰 이미지만 리사이징 (YOLO 내부에서 수행)
-        yolo_result = detect_supplements(image_bytes)
+        # [중요 1] 원본 이미지 로드 및 회전 처리 (여기서 기준 잡음)
+        original_pil = load_image_with_exif(image_bytes)
+        orig_w, orig_h = original_pil.size
+        print(f"[통합 분석] 원본 이미지 로드 완료 (회전 적용됨): {orig_w}x{orig_h}")
         
-        # 중요: pil_image는 JSON 직렬화가 안 되므로 결과 딕셔너리에서 분리
-        processed_pil = yolo_result.pop("pil_image", None)
+        # [중요 2] YOLO에 '바이트'가 아니라 'PIL 객체'를 직접 전달
+        # 이렇게 해야 YOLO가 내부적으로 또 로드하면서 회전이 풀리거나 꼬이는 걸 방지함
+        yolo_result = detect_supplements(original_pil)
         
+        # 결과 정리
+        processed_pil = yolo_result.pop("pil_image", None) # YOLO가 리사이징해서 쓴 이미지 (필요시 사용)
         result["yolo"] = yolo_result
         result["processing_info"] = yolo_result.get("scale_info", {})
         
@@ -69,72 +55,69 @@ def analyze_supplement(image_bytes: bytes) -> dict:
             print("⚠️ 영양제 미탐지 - 분석 종료")
             return result
         
-        # ===== 바코드/OCR을 위한 이미지 준비 (YOLO에서 리사이징된 이미지 재사용) =====
-        # 고해상도 이미지의 경우 리사이징된 버전을 사용하여 성능 및 메모리 효율 확보
-        if processed_pil is None:
-            # 안전장치: 혹시 이미지가 없으면 새로 로드
-            processed_pil = Image.open(io.BytesIO(image_bytes))
+        # ===== 2단계: 전체 이미지 바코드 탐지 =====
+        # (혹시 모르니 리사이징된 버전으로 빠르게 훑기)
+        if processed_pil:
+            cv2_full_image = cv2.cvtColor(np.array(processed_pil), cv2.COLOR_RGB2BGR)
+            barcode_result = detect_barcode(cv2_full_image)
+            result["barcode"] = barcode_result
             
-        cv2_image = cv2.cvtColor(np.array(processed_pil), cv2.COLOR_RGB2BGR)
+            if barcode_result["found"] and barcode_result.get("db_result"):
+                result["step"] = "barcode"
+                result["success"] = True
+                result["message"] = "바코드로 제품 정보를 찾았습니다"
+                return result
         
-        # ===== 2단계: 바코드 탐지 =====
-        barcode_result = detect_barcode(cv2_image)
-        result["barcode"] = barcode_result
-        
-        if barcode_result["found"] and barcode_result.get("db_result"):
-            result["step"] = "barcode"
-            result["success"] = True
-            result["message"] = "바코드로 제품 정보를 찾았습니다"
-            print("✅ 바코드 DB 조회 성공 - 분석 완료")
-            return result
-        
-        # ===== 3단계: 크롭 기반 바코드 및 OCR 분석 =====
-        print(f"[통합 분석] === 크롭 분석 단계 시작 (탐지 객체 수: {len(yolo_result.get('objects', []))}) ===")
+        # ===== 3단계: 크롭 기반 OCR 분석 (좌표 동기화됨) =====
+        print(f"[통합 분석] === 크롭 분석 단계 시작 (객체 수: {len(yolo_result.get('objects', []))}) ===")
         
         analysis_results = []
-        scale_x = result["processing_info"].get("scale_x", 1.0)
-        scale_y = result["processing_info"].get("scale_y", 1.0)
         
         for i, obj in enumerate(yolo_result.get("objects", [])):
             if obj["label"] == "supplement":
-                # 1. 크롭 영역 계산
-                orig_box = obj["box"]
-                crop_box = (
-                    orig_box[0] / scale_x,
-                    orig_box[1] / scale_y,
-                    orig_box[2] / scale_x,
-                    orig_box[3] / scale_y
-                )
+                # YOLO가 준 좌표 (이제 original_pil 기준과 100% 일치함)
+                box = obj["box"] # [x1, y1, x2, y2]
                 
                 try:
-                    # 2. 이미지 크롭 및 변환
-                    cropped_pil = processed_pil.crop(crop_box)
+                    # [중요 3] 좌표 정수 변환 및 Padding
+                    # 박스를 너무 타이트하게 자르면 글자가 잘릴 수 있으니 여유(padding)를 줌
+                    padding = 15 
+                    x1 = max(0, int(box[0]) - padding)
+                    y1 = max(0, int(box[1]) - padding)
+                    x2 = min(orig_w, int(box[2]) + padding)
+                    y2 = min(orig_h, int(box[3]) + padding)
+
+                    # Crop 수행 (원본 고화질에서 자름)
+                    cropped_pil = original_pil.crop((x1, y1, x2, y2))
+                    
+                    # PaddleOCR용 OpenCV 포맷 변환
                     cropped_cv2 = cv2.cvtColor(np.array(cropped_pil), cv2.COLOR_RGB2BGR)
                     
-                    # 3. 바코드 탐지 (크롭 영역에서 수행 - 해상도 확보)
-                    print(f"[통합 분석] 객체 #{i} 바코드 탐지 시도...")
+                    # 바코드 재탐지
                     barcode_item = detect_barcode(cropped_cv2)
                     
-                    # 4. OCR 수행
-                    print(f"[통합 분석] 객체 #{i} OCR 추출 시도...")
+                    # OCR 수행
+                    print(f"[통합 분석] 객체 #{i} OCR 추출 시도... (크기: {x2-x1}x{y2-y1})")
                     ocr_item = extract_text(cropped_cv2, save_image=True)
                     
                     analysis_results.append({
                         "object_index": i,
                         "label": obj["label"],
                         "confidence": obj["confidence"],
-                        "box": orig_box,
+                        "box": box,
                         "barcode": barcode_item,
                         "ocr": ocr_item
                     })
                 except Exception as crop_err:
-                    print(f"[통합 분석] ❌ 객체 #{i} 분석 실패: {crop_err}")
+                    print(f"[통합 분석] ❌ 객체 #{i} 크롭/분석 실패: {crop_err}")
+                    import traceback
+                    traceback.print_exc()
         
-        result["ocr"] = analysis_results # 기존 ocr 필드에 통합 결과 저장 (하위 호환성)
+        result["ocr"] = analysis_results # 하위 호환
         result["analysis_results"] = analysis_results
         result["step"] = "final"
         result["success"] = True
-        result["message"] = f"{len(analysis_results)}개의 객체에 대해 바코드 및 OCR 분석을 완료했습니다"
+        result["message"] = f"{len(analysis_results)}개의 객체에 대해 분석을 완료했습니다"
         
         print("=" * 60)
         print("✅ 분석 완료")
@@ -153,8 +136,6 @@ def analyze_supplement(image_bytes: bytes) -> dict:
             "message": f"분석 중 오류가 발생했습니다: {e}"
         }
 
-
 # 하위 호환성 유지
 def analyze_image(image_bytes: bytes) -> dict:
-    """기존 API와의 호환성을 위한 래퍼 함수"""
     return analyze_supplement(image_bytes)
