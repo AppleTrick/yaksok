@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 export function proxy(request: NextRequest) {
-    // /api/v1 경로로 가는 요청에 대해서만 동작 (config에서 설정했지만 이중 체크)
+    // /api/v1 경로로 가는 요청에 대해서만 동작
     if (request.nextUrl.pathname.startsWith('/api/v1')) {
 
         // 1. 백엔드가 설정한 대문자 쿠키 가져오기
@@ -16,7 +16,6 @@ export function proxy(request: NextRequest) {
             const requestHeaders = new Headers(request.headers);
 
             // 기존 쿠키 문자열을 가져와서 새 쿠키를 덧붙임
-            // request.cookies.getAll()은 파싱된 쿠키 객체들을 반환함
             const cookieHeader = request.cookies
                 .getAll()
                 .map((cookie) => `${cookie.name}=${cookie.value}`)
@@ -27,7 +26,7 @@ export function proxy(request: NextRequest) {
 
             requestHeaders.set('cookie', newCookieHeader);
 
-            // 변경된 헤더를 포함하여 다음 단계(Proxy/Rewrites)로 진행
+            // 변경된 헤더를 포함하여 다음 단계로 진행
             return NextResponse.next({
                 request: {
                     headers: requestHeaders,
