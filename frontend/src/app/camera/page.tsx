@@ -38,19 +38,27 @@ export default function CameraPage() {
       const formData = new FormData();
       formData.append("file", blob, "captured.jpg");
 
+      console.log("[DEBUG] Fetching /ai/v1/analyze...");
       const apiResponse = await fetch("/ai/v1/analyze", {
         method: "POST",
         body: formData,
       });
 
-      if (!apiResponse.ok) throw new Error(`HTTP error! status: ${apiResponse.status}`);
+      console.log("[DEBUG] Response status:", apiResponse.status);
+
+      if (!apiResponse.ok) {
+        const errorText = await apiResponse.text();
+        console.error("[DEBUG] Error response body:", errorText);
+        throw new Error(`HTTP error! status: ${apiResponse.status}, body: ${errorText}`);
+      }
 
       const data = await apiResponse.json();
+      console.log("[DEBUG] Analysis data received:", data);
       setAnalysisResult(data);
       setStep('result');
-    } catch (error) {
-      console.error("Upload error:", error);
-      alert("분석 중 오류가 발생했습니다. 다시 시도해 주세요.");
+    } catch (error: any) {
+      console.error("Upload error detail:", error);
+      alert(`분석 중 오류가 발생했습니다: ${error.message || error}`);
     } finally {
       setIsAnalyzing(false);
     }
