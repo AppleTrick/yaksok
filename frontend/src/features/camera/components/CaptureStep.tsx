@@ -15,6 +15,7 @@ export default function CaptureStep({ onCapture, onFileUpload }: CaptureStepProp
     const videoRef = useRef<HTMLVideoElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const streamRef = useRef<MediaStream | null>(null);
     const [isStreaming, setIsStreaming] = useState(false);
 
     useEffect(() => {
@@ -33,6 +34,8 @@ export default function CaptureStep({ onCapture, onFileUpload }: CaptureStepProp
                 audio: false,
             };
             const stream = await navigator.mediaDevices.getUserMedia(constraints);
+            streamRef.current = stream; // Store stream in ref for reliable cleanup
+
             if (videoRef.current) {
                 videoRef.current.srcObject = stream;
                 setIsStreaming(true);
@@ -44,10 +47,18 @@ export default function CaptureStep({ onCapture, onFileUpload }: CaptureStepProp
     };
 
     const stopCamera = () => {
-        if (videoRef.current && videoRef.current.srcObject) {
-            const stream = videoRef.current.srcObject as MediaStream;
-            stream.getTracks().forEach(track => track.stop());
+        if (streamRef.current) {
+            streamRef.current.getTracks().forEach(track => {
+                track.stop();
+                console.log(`[CaptureStep] Track ${track.label} stopped`);
+            });
+            streamRef.current = null;
         }
+
+        if (videoRef.current) {
+            videoRef.current.srcObject = null;
+        }
+        setIsStreaming(false);
     };
 
     const handleCapture = () => {
