@@ -1,6 +1,6 @@
 
 from fastapi import APIRouter, UploadFile, File, HTTPException
-from app.services.ai_service import analyze_image
+from app.services.analysis_service import analyze_image
 
 router = APIRouter()
 
