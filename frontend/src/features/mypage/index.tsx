@@ -18,7 +18,7 @@ export default function MyPageFeature() {
             const data = await fetchUserInfo();
             if (data) {
                 setUserInfo(data);
-                localStorage.setItem('userName', data.user.name);
+                localStorage.setItem('userName', data.userDataResponse.name);
             }
             setLoading(false);
         };
@@ -49,8 +49,8 @@ export default function MyPageFeature() {
 
             {userInfo && (
                 <ProfileCard
-                    userName={userInfo.user.name}
-                    email={userInfo.user.email}
+                    userName={userInfo.userDataResponse.name}
+                    email={userInfo.userDataResponse.email}
                 />
             )}
 
