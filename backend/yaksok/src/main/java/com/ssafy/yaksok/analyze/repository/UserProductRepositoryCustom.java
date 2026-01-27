@@ -1,6 +1,6 @@
-package com.ssafy.yaksok.repository;
+package com.ssafy.yaksok.analyze.repository;
 
-import com.ssafy.yaksok.domain.dto.IngredientSummary;
+import com.ssafy.yaksok.analyze.domain.dto.IngredientSummary;
 
 import java.util.List;
 

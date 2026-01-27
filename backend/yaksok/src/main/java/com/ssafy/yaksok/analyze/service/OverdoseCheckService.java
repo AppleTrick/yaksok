@@ -1,7 +1,7 @@
-package com.ssafy.yaksok.service;
+package com.ssafy.yaksok.analyze.service;
 
-import com.ssafy.yaksok.domain.dto.OverdoseCheckResponse;
-import com.ssafy.yaksok.domain.dto.SimulationProductRequest;
+import com.ssafy.yaksok.analyze.domain.dto.OverdoseCheckResponse;
+import com.ssafy.yaksok.analyze.domain.dto.SimulationProductRequest;
 
 import java.util.List;
 

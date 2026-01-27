@@ -1,10 +1,11 @@
 package com.ssafy.yaksok.service.impl;
 
-import com.ssafy.yaksok.domain.dto.IngredientOverdoseResult;
-import com.ssafy.yaksok.domain.dto.IngredientSummary;
-import com.ssafy.yaksok.domain.dto.OverdoseCheckResponse;
-import com.ssafy.yaksok.domain.dto.SimulationProductRequest;
-import com.ssafy.yaksok.repository.UserProductRepository;
+import com.ssafy.yaksok.analyze.domain.dto.IngredientOverdoseResult;
+import com.ssafy.yaksok.analyze.domain.dto.IngredientSummary;
+import com.ssafy.yaksok.analyze.domain.dto.OverdoseCheckResponse;
+import com.ssafy.yaksok.analyze.domain.dto.SimulationProductRequest;
+import com.ssafy.yaksok.analyze.repository.UserProductRepository;
+import com.ssafy.yaksok.analyze.service.impl.OverdoseCheckServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
