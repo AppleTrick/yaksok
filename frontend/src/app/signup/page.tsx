@@ -14,7 +14,21 @@ export default function SignupPage() {
     const handleSignup = async (data: any) => {
         setIsLoading(true);
         try {
-            const response = await axios.post('/api/v1/auth/signup', data);
+            const ageGroupMap: { [key: string]: string } = {
+                '10대': 'TEN',
+                '20대': 'TWENTY',
+                '30대': 'THIRTY',
+                '40대': 'FORTY',
+                '50대': 'FIFTY',
+                '60대+': 'SIXTY'
+            };
+
+            const requestData = {
+                ...data,
+                ageGroup: ageGroupMap[data.ageGroup] || data.ageGroup
+            };
+
+            const response = await axios.post('/api/v1/auth/signup', requestData);
             const result = response.data;
 
             if (result.success) {
