@@ -2,19 +2,22 @@
 
 :root {
     --cam-orange: #FF5722;
-    --cam-black: #000000;
-    --cam-surface: #121212;
-    --cam-light: #F8F9FA;
+    --cam-green: #4CAF50;
+    --cam-black: #1A1A1A;
+    --cam-surface: #FFFFFF;
+    --cam-bg-soft: #F8F9FA;
+    --cam-mint: #EDF7ED;
     --cam-gray: #9CA3AF;
-    --cam-glass: rgba(255, 255, 255, 0.12);
-    --cam-border: rgba(255, 255, 255, 0.2);
+    --cam-light-gray: #F3F4F6;
+    --cam-glass: rgba(255, 255, 255, 0.7);
+    --cam-border: rgba(0, 0, 0, 0.05);
     --header-h: 70px;
-    --footer-h: 120px;
+    --footer-h: 110px;
 }
 
-/* Base Body Style for Centering on Web */
+/* Base Body Style */
 body {
-    background: #000;
+    background: #f0f2f5;
     margin: 0;
     padding: 0;
     overflow: hidden;
@@ -260,63 +263,114 @@ body {
 }
 
 .result-list-section {
-    padding: 24px 20px;
+    padding: 30px 20px;
     background: #fff;
-    border-top-left-radius: 32px;
-    border-top-right-radius: 32px;
-    margin-top: -30px;
+    border-top-left-radius: 36px;
+    border-top-right-radius: 36px;
+    margin-top: -40px;
     position: relative;
     z-index: 50;
-    box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 -15px 50px rgba(0, 0, 0, 0.08);
+    min-height: 400px;
 }
 
 .report-card {
     display: flex;
     gap: 16px;
-    padding: 18px;
+    padding: 20px;
     margin-bottom: 16px;
-    background: #F9FAFB;
-    border: 1px solid #F3F4F6;
-    border-radius: 20px;
+    background: #fff;
+    border: 1px solid #F1F3F5;
+    border-radius: 24px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.report-card:active {
+    transform: scale(0.98);
 }
 
 .card-idx-circle {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    border-radius: 14px;
     display: flex;
     align-items: center;
     justify-content: center;
     font-weight: 800;
-    font-size: 0.9rem;
+    font-size: 0.95rem;
     flex-shrink: 0;
+    background: var(--cam-mint);
+    color: var(--cam-green);
 }
 
-.sticky-footer {
-    position: fixed;
-    bottom: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 100%;
-    max-width: 500px;
-    background: #fff;
-    border-top: 1px solid #f1f1f1;
-    padding-bottom: env(safe-area-inset-bottom);
-    z-index: 100;
+.section-title-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 24px;
+    padding: 0 4px;
+}
+
+.count-badge {
+    font-size: 0.9rem;
+    color: var(--cam-gray);
+    font-weight: 600;
+}
+
+.card-header-line {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 8px;
+}
+
+.matching-pill {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 10px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    background: var(--cam-mint);
+    color: var(--cam-green);
+    width: fit-content;
+}
+
+.warning-pill {
+    background: #FFF9E1;
+    color: #F59E0B;
+}
+
+.btn-edit-small {
+    padding: 4px 10px;
+    border-radius: 8px;
+    background: var(--cam-light-gray);
+    border: none;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #666;
+    cursor: pointer;
 }
 
 .scan-indicator {
     position: absolute;
-    top: 16px;
-    right: 16px;
-    background: rgba(0, 0, 0, 0.5);
-    color: #fff;
-    padding: 6px 12px;
-    border-radius: 20px;
+    top: 20px;
+    right: 20px;
+    background: var(--cam-glass);
+    color: var(--cam-black);
+    padding: 8px 14px;
+    border-radius: 12px;
     font-size: 0.75rem;
-    font-weight: 600;
+    font-weight: 700;
     z-index: 20;
-    backdrop-filter: blur(10px);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
 .obj-tag-v2 {
