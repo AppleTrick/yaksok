@@ -92,6 +92,9 @@ def parse_ocr_result(result):
             if not text.strip(): continue
             confidence = float(rec_scores[i]) if i < len(rec_scores) else 0.99
             
+            # [수정] 신뢰도(confidence) 0.5 미만은 제외
+            if confidence < 0.5: continue
+            
             coords = None
             height = 10
             if i < len(rec_polys):
@@ -114,6 +117,9 @@ def parse_ocr_result(result):
                 text = str(text_info[0])
                 if not text.strip(): continue
                 confidence = float(text_info[1])
+                
+                # [수정] 신뢰도(confidence) 0.5 미만은 제외
+                if confidence < 0.5: continue
                 
                 height = 10
                 if coords:

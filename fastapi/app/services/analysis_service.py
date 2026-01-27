@@ -32,7 +32,11 @@ def analyze_supplement(image_bytes: bytes) -> dict:
             "yolo": None,
             "barcode": None,
             "ocr": None,
-            "processing_info": None
+            "processing_info": None,
+            "frontend_data": {
+                "object_count": 0,
+                "products": []
+            }
         }
         
         # [중요 1] 원본 이미지 로드 및 회전 처리 (여기서 기준 잡음)
@@ -66,6 +70,17 @@ def analyze_supplement(image_bytes: bytes) -> dict:
                 result["step"] = "barcode"
                 result["success"] = True
                 result["message"] = "바코드로 제품 정보를 찾았습니다"
+                
+                # 프론트엔드용 데이터도 채워줌
+                result["frontend_data"] = {
+                    "object_count": 1,
+                    "products": [{
+                        "name": barcode_result["db_result"].get("name", "알 수 없는 제품"),
+                        "barcode": barcode_result["data"],
+                        "confidence": 1.0,
+                        "box": [0, 0, orig_w, orig_h] # 전체 이미지 혹은 대략적 위치 (여기선 전체)
+                    }]
+                }
                 return result
         
         # ===== 3단계: 크롭 기반 OCR 분석 (좌표 동기화됨) =====
@@ -113,12 +128,36 @@ def analyze_supplement(image_bytes: bytes) -> dict:
                     import traceback
                     traceback.print_exc()
         
+        # ===== 4단계: 프론트엔드용 데이터 정제 =====
+        frontend_products = []
+        for res in analysis_results:
+            # 제품명 결정 로직: 1. DB 결과 -> 2. OCR 첫 줄 -> 3. 기본값
+            product_name = "알 수 없는 영양제"
+            if res["barcode"]["found"] and res["barcode"].get("db_result"):
+                product_name = res["barcode"]["db_result"].get("name", product_name)
+            elif res["ocr"]["texts"]:
+                # OCR 결과 중 첫 번째(가장 큰/상단) 텍스트를 이름으로 가제
+                product_name = res["ocr"]["texts"][0]["text"]
+            
+            frontend_products.append({
+                "name": product_name,
+                "barcode": res["barcode"]["data"] if res["barcode"]["found"] else None,
+                "confidence": res["confidence"],
+                "box": res["box"]
+            })
+            
+        result["frontend_data"] = {
+            "object_count": len(frontend_products),
+            "products": frontend_products
+        }
+        
         result["ocr"] = analysis_results # 하위 호환
         result["analysis_results"] = analysis_results
         result["step"] = "final"
         result["success"] = True
         result["message"] = f"{len(analysis_results)}개의 객체에 대해 분석을 완료했습니다"
         
+        print(f"[통합 분석] 정제된 데이터: {len(frontend_products)}개 제품")
         print("=" * 60)
         print("✅ 분석 완료")
         print("=" * 60 + "\n")
