@@ -1,13 +1,14 @@
 "use client";
 
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
-import { MedicationItem } from '../types';
+import { MedicationItem, MealCategory } from '../types';
 
 // 1. Define Types
 export interface Schedule {
     id: string;
     time: string; // Display format "오후 2:00"
     rawTime: string; // 24h format "14:00"
+    mealCategory: MealCategory;
     label: string;
     status: 'upcoming' | 'done' | 'missed';
     items: MedicationItem[];
@@ -21,11 +22,11 @@ interface ScheduleContextType {
     setDate: (date: Date) => void;
     schedules: Schedule[];
     toggleAlarm: (id: string) => void;
-    updateSchedule: (id: string, newRawTime: string, newItems: MedicationItem[]) => void;
+    updateSchedule: (id: string, newRawTime: string, newMealCategory: MealCategory, newItems: MedicationItem[]) => void;
     toggleItemTaken: (scheduleId: string, itemId: string) => void;
     toggleScheduleActive: (scheduleId: string) => void;
     isItemDue: (item: MedicationItem, date: Date) => boolean;
-    addMedication: (item: MedicationItem, targetRawTime: string) => void;
+    addMedication: (item: MedicationItem, targetRawTime: string, mealCategory: MealCategory) => void;
     toggleMedicationStatus: (medicationName: string, newStatus: 'taking' | 'stopped') => void;
 }
 
@@ -66,6 +67,7 @@ const INITIAL_SCHEDULES: Schedule[] = [
         id: '1',
         time: '오후 2:00',
         rawTime: '14:00',
+        mealCategory: 'post_meal',
         label: '1시간 후 복용',
         status: 'upcoming',
         items: [
@@ -106,6 +108,7 @@ const INITIAL_SCHEDULES: Schedule[] = [
         id: '2',
         time: '오후 7:00',
         rawTime: '19:00',
+        mealCategory: 'post_meal',
         label: '저녁 식사 후',
         status: 'upcoming',
         items: [
@@ -183,7 +186,7 @@ export const ScheduleProvider = ({ children }: { children: ReactNode }) => {
     };
 
     // Action: Update Schedule (Time, Items)
-    const updateSchedule = (id: string, newRawTime: string, newItems: MedicationItem[]) => {
+    const updateSchedule = (id: string, newRawTime: string, newMealCategory: MealCategory, newItems: MedicationItem[]) => {
         const [h, m] = newRawTime.split(':').map(Number);
         const ampm = h < 12 ? '오전' : '오후';
         const displayHour = h === 0 ? 12 : (h > 12 ? h - 12 : h);
@@ -193,6 +196,7 @@ export const ScheduleProvider = ({ children }: { children: ReactNode }) => {
             s.id === id ? {
                 ...s,
                 rawTime: newRawTime,
+                mealCategory: newMealCategory,
                 time: displayTime,
                 items: newItems
             } : s
@@ -200,7 +204,7 @@ export const ScheduleProvider = ({ children }: { children: ReactNode }) => {
     };
 
     // Action: Add new medication to a schedule (or create new schedule if time doesn't exist - simplified for now: add to first matching time or morning)
-    const addMedication = (item: MedicationItem, targetRawTime: string) => {
+    const addMedication = (item: MedicationItem, targetRawTime: string, mealCategory: MealCategory) => {
         setSchedules(prev => {
             const existingScheduleIndex = prev.findIndex(s => s.rawTime === targetRawTime);
 
@@ -225,6 +229,7 @@ export const ScheduleProvider = ({ children }: { children: ReactNode }) => {
                     id: Date.now().toString(),
                     time: displayTime,
                     rawTime: targetRawTime,
+                    mealCategory: mealCategory,
                     label: '새 일정',
                     status: 'upcoming',
                     items: [item],

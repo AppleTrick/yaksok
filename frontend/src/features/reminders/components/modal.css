@@ -45,6 +45,33 @@
     padding: 1rem;
 }
 
+.meal-category-selector {
+    display: flex;
+    gap: 0.5rem;
+    background-color: var(--sub-background);
+    padding: 0.3rem;
+    border-radius: 1rem;
+}
+
+.category-btn {
+    flex: 1;
+    padding: 0.6rem 0.5rem;
+    border: none;
+    border-radius: 0.8rem;
+    background-color: transparent;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.category-btn.active {
+    background-color: var(--white);
+    color: var(--primary-color);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
 /* List Styles */
 .section-header {
     display: flex;
