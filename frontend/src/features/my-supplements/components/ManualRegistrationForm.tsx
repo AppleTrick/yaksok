@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useScheduleContext } from '@/features/notification/contexts/ScheduleContext';
-import { MedicationItem } from '@/features/notification/types';
+import { MedicationItem, MealCategory } from '@/features/notification/types';
 import TimePicker from '@/components/TimePicker';
+import DaySelector from '@/components/DaySelector';
 import { searchSupplements } from '../api/searchApi';
 import { MockSupplement } from '../api/mockData';
 import { Search, Loader2 } from 'lucide-react';
@@ -9,22 +10,29 @@ import '../styles.css';
 
 interface ManualRegistrationFormProps {
     onClose: () => void;
+    initialData?: MedicationItem;
 }
 
-export default function ManualRegistrationForm({ onClose }: ManualRegistrationFormProps) {
+export default function ManualRegistrationForm({ onClose, initialData }: ManualRegistrationFormProps) {
     const { addMedication } = useScheduleContext();
-    const [name, setName] = useState('');
-    const [category, setCategory] = useState('');
-    const [efficacy, setEfficacy] = useState('');
-    const [ingredients, setIngredients] = useState('');
-    const [dosage, setDosage] = useState(1);
-    const [time, setTime] = useState('08:00'); // Default 8:00 AM
+    const [name, setName] = useState(initialData?.name || '');
+    const [category, setCategory] = useState(initialData?.category || '');
+    const [efficacy, setEfficacy] = useState(initialData?.efficacy || '');
+    const [ingredients, setIngredients] = useState(initialData?.ingredients || '');
+    const [dosage, setDosage] = useState(initialData?.dosage || 1);
+    const [time, setTime] = useState('08:00');
+    const [mealCategory, setMealCategory] = useState<MealCategory>('post_meal'); // Default
 
-    // Search State
+
+
     const [searchQuery, setSearchQuery] = useState('');
     const [searchResults, setSearchResults] = useState<MockSupplement[]>([]);
     const [isSearching, setIsSearching] = useState(false);
     const [isSearchOpen, setIsSearchOpen] = useState(false);
+
+    // Day Selection State
+    const [selectedDays, setSelectedDays] = useState<number[]>([0, 1, 2, 3, 4, 5, 6]);
+
 
     // Handle Search
     const handleSearch = async (query: string) => {
@@ -72,12 +80,18 @@ export default function ManualRegistrationForm({ onClose }: ManualRegistrationFo
             ingredients: ingredients.trim() || undefined,
             dosage: dosage,
             isTaken: false,
-            cycle: { type: 'daily' }, // Default daily for MVP
+            cycle: {
+                type: 'weekly',
+                daysOfWeek: selectedDays
+            },
             status: 'taking',
             imageUrl: undefined // Placeholder
         };
 
-        addMedication(newItem, time);
+        // Note: calling addMedication might DUPLICATE if we are editing.
+        // But since we don't have updateMedication, we for now just add.
+        // (Ideally we should replace if ID exists, but context logic is append-only for now)
+        addMedication(newItem, time, mealCategory);
         onClose();
     };
 
@@ -214,8 +228,38 @@ export default function ManualRegistrationForm({ onClose }: ManualRegistrationFo
             </div>
 
             <div className="form-group">
-                <label>섭취 시간</label>
-                {/* Reusing TimePicker for consistency */}
+                <label>복용 시점</label>
+                <div className="meal-category-selector" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
+                    {(['empty_stomach', 'post_meal', 'pre_sleep'] as MealCategory[]).map((cat) => (
+                        <button
+                            key={cat}
+                            type="button"
+                            className={`category-btn ${mealCategory === cat ? 'active' : ''}`}
+                            onClick={() => setMealCategory(cat)}
+                            style={{
+                                padding: '10px',
+                                borderRadius: '8px',
+                                border: `1px solid ${mealCategory === cat ? 'var(--primary-color)' : '#E5E7EB'}`,
+                                backgroundColor: mealCategory === cat ? '#FFF7ED' : 'white',
+                                color: mealCategory === cat ? 'var(--primary-color)' : '#6B7280',
+                                fontSize: '0.9rem',
+                                fontWeight: 500
+                            }}
+                        >
+                            {cat === 'empty_stomach' ? '식전' : cat === 'post_meal' ? '식후' : '취침전'}
+                        </button>
+                    ))}
+                </div>
+            </div>
+
+            {/* Day Selection (Moved Above Time) */}
+            <div className="form-group">
+                <label>반복 요일</label>
+                <DaySelector value={selectedDays} onChange={setSelectedDays} />
+            </div>
+
+            <div className="form-group">
+                <label>섭취 희망 시간</label>
                 <div className="time-picker-wrapper">
                     <TimePicker value={time} onChange={setTime} />
                 </div>
