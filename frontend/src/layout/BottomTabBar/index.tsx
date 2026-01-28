@@ -9,8 +9,8 @@ import './styles.css';
 export default function BottomTabBar() {
     const pathname = usePathname();
 
-    // Hide tab bar on camera page to allow full screen UI
-    if (pathname === '/camera') {
+    // Hide tab bar on camera and report page to allow full screen UI
+    if (pathname === '/camera' || pathname === '/report') {
         return null;
     }
 

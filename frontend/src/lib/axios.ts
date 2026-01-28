@@ -9,16 +9,6 @@ const axiosInstance = axios.create({
     timeout: 5000,
 });
 
-// 토큰 관련 요청 인터셉터 제거 (쿠키 기반 인증 사용)
-axiosInstance.interceptors.request.use(
-    (config) => {
-        return config;
-    },
-    (error) => {
-        return Promise.reject(error);
-    }
-);
-
 // 에러 처리를 위한 응답 인터셉터
 axiosInstance.interceptors.response.use(
     (response) => response,
@@ -26,9 +16,9 @@ axiosInstance.interceptors.response.use(
         // 401 (Unauthorized) 또는 전역 에러를 여기서 처리
         if (error.response && error.response.status === 401) {
             // console.log('미인증 - 로그인 페이지로 리다이렉트 가능');
-            if (error.response?.status === 401 && window.location.pathname !== '/login') {
-                    window.location.href = '/login';
-                }
+            if (window.location.pathname !== '/login') {
+                window.location.href = '/login';
+            }
         }
         return Promise.reject(error);
     }
