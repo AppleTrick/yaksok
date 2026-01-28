@@ -17,12 +17,23 @@ export default function SecuritySettings() {
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
 
+    const validatePassword = (password: string) => {
+        const regex = /^(?=.*[a-zA-Z])(?=.*[0-9])(?=.*[!@#$%^&*]).{8,}$/;
+        return regex.test(password);
+    };
+
     const handlePasswordChange = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!currentPassword || !newPassword || !confirmPassword) {
             alert("모든 필드를 입력해 주세요.");
             return;
         }
+
+        if (!validatePassword(newPassword)) {
+            alert("새 비밀번호는 영문, 숫자, 특수문자 포함 8자 이상이어야 합니다.");
+            return;
+        }
+
         if (newPassword !== confirmPassword) {
             alert("새 비밀번호가 일치하지 않습니다.");
             return;

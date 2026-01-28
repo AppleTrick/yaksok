@@ -2,7 +2,7 @@ import axios from '@/lib/axios';
 
 export interface Disease {
     id: number;
-    name: string;
+    sickName: string;
 }
 
 export interface UserProduct {
@@ -16,7 +16,7 @@ export interface UserProduct {
     active: boolean;
 }
 
-export interface UserName{
+export interface UserName {
     name: string;
 }
 
@@ -95,6 +95,18 @@ export const withdrawUser = async (): Promise<boolean> => {
         }
     } catch (error) {
         console.error("회원 탈퇴 실패:", error);
+    }
+    return false;
+};
+
+export const logout = async (): Promise<boolean> => {
+    try {
+        const response = await axios.get('/api/v1/auth/logout');
+        if (response.status === 200 && response.data.success) {
+            return true;
+        }
+    } catch (error) {
+        console.error("로그아웃 실패:", error);
     }
     return false;
 };
