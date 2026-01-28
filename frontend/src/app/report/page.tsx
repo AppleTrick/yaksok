@@ -7,6 +7,7 @@ import { RotateCcw, Check } from 'lucide-react';
 import { useReportContext } from '@/features/report/contexts/ReportContext';
 import '@/features/report/styles.css';
 
+import { motion, Variants } from 'framer-motion';
 // Components
 import ReportHeader from '@/features/report/components/ReportHeader';
 import ProductSection from '@/features/report/components/ProductSection';
@@ -14,6 +15,28 @@ import IngredientSection from '@/features/report/components/IngredientSection';
 import ComparisonSection from '@/features/report/components/ComparisonSection';
 import RecommendationSection from '@/features/report/components/RecommendationSection';
 import RegisterConfirmModal from '@/features/report/components/RegisterConfirmModal';
+
+const containerVariants: Variants = {
+    hidden: { opacity: 0 },
+    visible: {
+        opacity: 1,
+        transition: {
+            staggerChildren: 0.15
+        }
+    }
+};
+
+const itemVariants: Variants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+        opacity: 1,
+        y: 0,
+        transition: {
+            duration: 0.5,
+            ease: [0.22, 1, 0.36, 1]
+        }
+    }
+};
 
 // Mock 데이터 (백엔드 API 연동 전까지 컴포넌트 전달용)
 const mockRecognizedIngredients = [
@@ -73,45 +96,73 @@ export default function ReportPage() {
     const products = reportData.analysisResult?.frontend_data?.products || [];
 
     return (
-        <div className="report-container">
-            <ReportHeader
-                onBack={handleBack}
-                title="영양제 리포트"
-                subtitle="분석된 정보를 확인하고 관리해보세요"
-            />
+        <motion.div
+            className="report-container"
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+        >
+            <motion.div variants={itemVariants}>
+                <ReportHeader
+                    onBack={handleBack}
+                    title="영양제 리포트"
+                    subtitle="분석된 정보를 확인하고 관리해보세요"
+                />
+            </motion.div>
 
             <main className="report-content-scroll">
                 {/* 1. 인식된 영양제 섹션 */}
-                <ProductSection products={products} />
+                <motion.div variants={itemVariants}>
+                    <ProductSection products={products} />
+                </motion.div>
 
                 {/* 2. 인식된 성분 섹션 */}
-                <IngredientSection ingredients={mockRecognizedIngredients} />
+                <motion.div variants={itemVariants}>
+                    <IngredientSection ingredients={mockRecognizedIngredients} />
+                </motion.div>
 
                 {/* 3. 기존 영양제 비교 섹션 */}
-                <ComparisonSection comparisonData={mockComparisonData} />
+                <motion.div variants={itemVariants}>
+                    <ComparisonSection comparisonData={mockComparisonData} />
+                </motion.div>
 
                 {/* 4. 섭취 권장사항 섹션 */}
-                <RecommendationSection
-                    interactions={mockRecommendationData.interactions}
-                    dosageInfo={mockRecommendationData.dosageInfo}
-                    productNotes={mockRecommendationData.productNotes}
-                />
+                <motion.div variants={itemVariants}>
+                    <RecommendationSection
+                        interactions={mockRecommendationData.interactions}
+                        dosageInfo={mockRecommendationData.dosageInfo}
+                        productNotes={mockRecommendationData.productNotes}
+                    />
+                </motion.div>
 
                 {/* Bottom Spacer for footer */}
                 <div className="report-spacer" />
             </main>
 
             {/* 고정 푸터 버튼 */}
-            <footer className="report-footer-modern">
-                <button className="footer-btn-modern secondary" onClick={handleBack}>
+            <motion.footer
+                className="report-footer-modern"
+                initial={{ y: 100 }}
+                animate={{ y: 0 }}
+                transition={{ delay: 0.5, duration: 0.5, type: "spring", stiffness: 100 }}
+            >
+                <motion.button
+                    className="footer-btn-modern secondary"
+                    onClick={handleBack}
+                    whileTap={{ scale: 0.95 }}
+                >
                     <RotateCcw size={18} />
                     다시 촬영
-                </button>
-                <button className="footer-btn-modern primary" onClick={() => setShowRegisterModal(true)}>
+                </motion.button>
+                <motion.button
+                    className="footer-btn-modern primary"
+                    onClick={() => setShowRegisterModal(true)}
+                    whileTap={{ scale: 0.95 }}
+                >
                     내 리스트에 추가
                     <Check size={18} />
-                </button>
-            </footer>
+                </motion.button>
+            </motion.footer>
 
             {/* 프리미엄 등록 모달 */}
             <RegisterConfirmModal
@@ -121,6 +172,6 @@ export default function ReportPage() {
                 onCancel={handleCancelRegister}
                 onClose={() => setShowRegisterModal(false)}
             />
-        </div>
+        </motion.div>
     );
 }

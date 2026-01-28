@@ -34,8 +34,8 @@ import BottomTabBar from "../layout/BottomTabBar";
 import NotificationManager from "@/features/notification/components/NotificationManager";
 import { ScheduleProvider } from "@/features/notification/contexts/ScheduleContext";
 import { ReportProvider } from "@/features/report/contexts/ReportContext";
-
-
+import PageTransition from "@/components/common/PageTransition";
+import { AnimatePresence } from "framer-motion";
 
 export default function RootLayout({
   children,
@@ -49,7 +49,11 @@ export default function RootLayout({
       >
         <ScheduleProvider>
           <ReportProvider>
-            {children}
+            <AnimatePresence mode="wait">
+              <PageTransition>
+                {children}
+              </PageTransition>
+            </AnimatePresence>
             <BottomTabBar />
             <NotificationManager />
           </ReportProvider>
