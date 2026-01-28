@@ -48,13 +48,11 @@ export default function MyPageFeature() {
     return (
         <div className="mypage-container">
             <header className="mypage-header">
-                <button onClick={() => router.back()} className="back-button">
-                    <ChevronLeft size={24} />
-                </button>
+                {/* 뒤로가기 버튼 제거됨 (탭바 사용) */}
+                <div style={{ width: 24 }}></div>
                 <h1 className="header-title">마이페이지</h1>
-                <button onClick={() => router.push('/settings')} className="settings-button">
-                    <Settings size={22} />
-                </button>
+                {/* 설정 버튼 제거됨 */}
+                <div style={{ width: 24 }}></div>
             </header>
 
             {userInfo && (
@@ -91,6 +89,13 @@ export default function MyPageFeature() {
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                         <ShieldCheck size={20} />
                         <span className="menu-label">계정 및 보안</span>
+                    </div>
+                    <ChevronRight size={18} color="#CBD5E1" />
+                </div>
+                <div className="menu-item" onClick={() => router.push('/settings/notification')}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <Bell size={20} />
+                        <span className="menu-label">알림 설정</span>
                     </div>
                     <ChevronRight size={18} color="#CBD5E1" />
                 </div>
