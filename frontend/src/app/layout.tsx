@@ -33,6 +33,7 @@ export const viewport: Viewport = {
 import BottomTabBar from "../layout/BottomTabBar";
 import NotificationManager from "@/features/notification/components/NotificationManager";
 import { ScheduleProvider } from "@/features/notification/contexts/ScheduleContext";
+import { ReportProvider } from "@/features/report/contexts/ReportContext";
 
 
 
@@ -47,9 +48,11 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <ScheduleProvider>
-          {children}
-          <BottomTabBar />
-          <NotificationManager />
+          <ReportProvider>
+            {children}
+            <BottomTabBar />
+            <NotificationManager />
+          </ReportProvider>
         </ScheduleProvider>
       </body>
     </html>
