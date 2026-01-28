@@ -5,9 +5,31 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { COLORS } from '@/constants/colors';
 import { Camera, Sun, Moon, CheckCircle, User } from "lucide-react";
+import { motion, Variants } from "framer-motion";
 import DailyProgressCard from "./components/DailyProgressCard";
 import { useScheduleContext, isItemDue } from "../notification/contexts/ScheduleContext";
 import './styles.css';
+
+const containerVariants: Variants = {
+    hidden: { opacity: 0 },
+    visible: {
+        opacity: 1,
+        transition: {
+            staggerChildren: 0.1
+        }
+    }
+};
+
+const itemVariants: Variants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+        opacity: 1,
+        y: 0,
+        transition: {
+            duration: 0.4
+        }
+    }
+};
 
 export default function HomeFeature() {
     const router = useRouter();
@@ -48,8 +70,13 @@ export default function HomeFeature() {
     const activeSchedules = schedules.filter(s => s.isActive);
 
     return (
-        <div className="home-container">
-            <header className="home-header">
+        <motion.div
+            className="home-container"
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+        >
+            <motion.header className="home-header" variants={itemVariants}>
                 <div className="greeting-section">
                     <span className="greeting-sub">좋은 아침입니다,</span>
                     <h1 className="greeting-main">{userName} 님</h1>
@@ -57,31 +84,44 @@ export default function HomeFeature() {
                 </div>
                 {/* HEAD's Profile Link */}
                 <Link href="/mypage">
-                    <div className="profile-icon" title="마이페이지">
+                    <motion.div
+                        className="profile-icon"
+                        title="마이페이지"
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                    >
                         <User size={28} color={COLORS.black} />
-                    </div>
+                    </motion.div>
                 </Link>
-            </header>
+            </motion.header>
 
             {/* Daily Progress Card */}
-            <DailyProgressCard total={totalMeds} taken={takenMeds} />
+            <motion.div variants={itemVariants}>
+                <DailyProgressCard total={totalMeds} taken={takenMeds} />
+            </motion.div>
 
             {/* Main Action Card */}
-            <section className="action-card">
+            <motion.section className="action-card" variants={itemVariants}>
                 <div className="action-text">
                     <h2>영양제 등록하기</h2>
                     <p>새 영양제를 촬영해 등록하세요</p>
                 </div>
                 <Link href="/camera" className="action-button">
-                    <Camera size={20} />
-                    <span>지금 촬영하기</span>
+                    <motion.div
+                        style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                    >
+                        <Camera size={20} />
+                        <span>지금 촬영하기</span>
+                    </motion.div>
                 </Link>
-            </section>
+            </motion.section>
 
             {/* Daily Timeline (Connected to Context) */}
-            <section className="timeline-section">
+            <motion.section className="timeline-section" variants={containerVariants}>
                 {today && activeSchedules.length > 0 ? (
-                    activeSchedules.map(schedule => {
+                    activeSchedules.map((schedule, idx) => {
                         // Filter items for this schedule
                         const dueItems = schedule.items.filter(item => isItemDue(item, today));
 
@@ -99,7 +139,14 @@ export default function HomeFeature() {
                         const slotName = isNight ? '저녁' : (isLunch ? '점심' : '아침');
 
                         return (
-                            <div key={schedule.id} className="time-slot">
+                            <motion.div
+                                key={schedule.id}
+                                className="time-slot"
+                                variants={itemVariants}
+                                initial="hidden"
+                                whileInView="visible"
+                                viewport={{ once: true, margin: "-50px" }}
+                            >
                                 <div className="slot-header">
                                     <SlotIcon className={`slot-icon ${slotClass}`} size={20} />
                                     <span className="slot-title">{slotName}</span>
@@ -108,10 +155,12 @@ export default function HomeFeature() {
                                 </div>
 
                                 {dueItems.map(item => (
-                                    <div
+                                    <motion.div
                                         key={item.id}
                                         className={`med-card ${item.isTaken ? 'done' : ''}`}
                                         onClick={() => toggleItemTaken(schedule.id, item.id)}
+                                        whileTap={{ scale: 0.98 }}
+                                        transition={{ type: "spring", stiffness: 400, damping: 10 }}
                                     >
                                         <div className={`med-checkbox ${item.isTaken ? 'checked' : ''}`}>
                                             {item.isTaken && <CheckCircle size={24} color="#10b981" />}
@@ -121,20 +170,24 @@ export default function HomeFeature() {
                                             <h3>{item.name}</h3>
                                             <p>{item.detail || '상세 정보 없음'}</p>
                                         </div>
-                                    </div>
+                                    </motion.div>
                                 ))}
-                            </div>
+                            </motion.div>
                         );
                     })
                 ) : (
-                    <div className="empty-slot" style={{ textAlign: 'center', padding: '2rem' }}>
+                    <motion.div
+                        className="empty-slot"
+                        style={{ textAlign: 'center', padding: '2rem' }}
+                        variants={itemVariants}
+                    >
                         <p>등록된 일정이 없습니다.</p>
-                    </div>
+                    </motion.div>
                 )}
-            </section>
+            </motion.section>
 
             {/* Spacing for Bottom Tab Bar */}
             <div style={{ height: "100px" }}></div>
-        </div>
+        </motion.div>
     );
 }
