@@ -32,57 +32,7 @@ export default function CameraPage() {
 
     setIsAnalyzing(true);
     try {
-      /* [주석 처리] 클라이언트 사이드 이미지 압축/리사이징 필요 시 아래 주석을 해제하세요.
-      const compressImage = (dataUrl: string): Promise<Blob> => {
-        return new Promise((resolve, reject) => {
-          const img = new Image();
-          img.src = dataUrl;
-          img.onload = () => {
-            const canvas = document.createElement('canvas');
-            const MAX_WIDTH = 1280;
-            const MAX_HEIGHT = 1280;
-            let width = img.width;
-            let height = img.height;
 
-            if (width > height) {
-              if (width > MAX_WIDTH) {
-                height *= MAX_WIDTH / width;
-                width = MAX_WIDTH;
-              }
-            } else {
-              if (height > MAX_HEIGHT) {
-                width *= MAX_HEIGHT / height;
-                height = MAX_HEIGHT;
-              }
-            }
-
-            canvas.width = width;
-            canvas.height = height;
-            const ctx = canvas.getContext('2d');
-            if (!ctx) {
-              reject(new Error("Canvas context is null"));
-              return;
-            }
-            ctx.drawImage(img, 0, 0, width, height);
-            
-            canvas.toBlob((blob) => {
-              if (blob) {
-                console.log(`[DEBUG] Image compressed: size: ${(blob.size / 1024 / 1024).toFixed(2)} MB`);
-                resolve(blob);
-              } else {
-                reject(new Error("Blob conversion failed"));
-              }
-            }, 'image/jpeg', 0.8);
-          };
-          img.onerror = (e) => reject(e);
-        });
-      };
-      
-      console.log("[DEBUG] Starting image compression...");
-      const blob = await compressImage(capturedImage);
-      */
-
-      // 현재는 원본 이미지를 그대로 사용합니다.
       console.log("[DEBUG] Fetching blob from captured image (No compression)...");
       const response = await fetch(capturedImage);
       const blob = await response.blob();
@@ -98,6 +48,7 @@ export default function CameraPage() {
       });
 
       console.log("[DEBUG] Response status:", apiResponse.status);
+      console.log("[DEBUG] Response headers:", Object.fromEntries(apiResponse.headers.entries()));
 
       if (!apiResponse.ok) {
         const errorText = await apiResponse.text();
@@ -105,12 +56,33 @@ export default function CameraPage() {
         throw new Error(`HTTP error! status: ${apiResponse.status}, body: ${errorText}`);
       }
 
-      const data = await apiResponse.json();
-      console.log("[DEBUG] Analysis data received:", data);
+      const rawText = await apiResponse.text();
+      console.log("[DEBUG] Raw response text length:", rawText.length);
+      console.log("[DEBUG] Raw response preview:", rawText.substring(0, 500));
+
+      let data;
+      try {
+        data = JSON.parse(rawText);
+        console.log("[DEBUG] JSON parsed successfully");
+      } catch (parseError) {
+        console.error("[DEBUG] JSON parse error:", parseError);
+        console.error("[DEBUG] Full raw response:", rawText);
+        throw new Error(`JSON 파싱 실패: ${parseError}`);
+      }
+
+      console.log("[DEBUG] Analysis data keys:", Object.keys(data));
+      console.log("[DEBUG] frontend_data:", data.frontend_data);
+      console.log("[DEBUG] success:", data.success);
+
       setAnalysisResult(data);
+      console.log("[DEBUG] setAnalysisResult 완료, setStep('result') 호출 예정");
       setStep('result');
+      console.log("[DEBUG] setStep('result') 완료");
     } catch (error: any) {
-      console.error("Upload error detail:", error);
+      console.error("[DEBUG] Full error object:", error);
+      console.error("[DEBUG] Error name:", error?.name);
+      console.error("[DEBUG] Error message:", error?.message);
+      console.error("[DEBUG] Error stack:", error?.stack);
       alert(`분석 중 오류가 발생했습니다: ${error.message || error}`);
     } finally {
       setIsAnalyzing(false);
