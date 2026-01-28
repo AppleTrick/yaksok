@@ -1,18 +1,19 @@
 """
-OCR 텍스트 추출 서비스 (Universal Size Adaption)
+OCR 텍스트 추출 서비스 (Final Optimized Version)
 
-[최종 수정 사항]
-1. 이미지 크기 자동 보정 로직 강화 (preprocess_image)
-   - 너무 작은 이미지(<400px): 2~3배 확대 (Upscaling) -> 작은 글씨 깨짐 방지
-   - 너무 큰 이미지(>960px): 축소 (Downscaling) -> 거대 로고 인식 불가 방지
-2. PP-OCRv3 + 회전 로직 + 접착제 옵션 유지
+[최적화 완료]
+1. 코드 구조 리팩토링: 중복 제거 및 가독성 향상
+2. 방어 로직 강화: 잘못된 이미지 입력 시 조기 리턴
+3. 로직 유지: 
+   - 스마트 리사이징 (Upscale/Downscale)
+   - 3방향 회전 탐색 (Rotation Retry)
+   - 접착제 옵션 (Unclip Ratio 2.5)
 """
 
 import os
 import numpy as np
 import cv2
 from paddleocr import PaddleOCR
-import copy
 
 # ============================================================
 # OCR 모델 초기화
@@ -24,12 +25,11 @@ try:
         lang='korean',              
         use_angle_cls=True,         
         enable_mkldnn=False,        
-        ocr_version='PP-OCRv3',     # 한국어 최강 v3
-        
-        # [옵션 튜닝]
+        ocr_version='PP-OCRv3',
         det_db_thresh=0.3,          
         det_db_box_thresh=0.5,      
-        det_db_unclip_ratio=2.5,    # 접착제 강도
+        det_db_unclip_ratio=2.5
+    
     )
     print("[OCR 서비스] ✅ PaddleOCR 모델 로드 완료")
 except Exception as e:
@@ -48,146 +48,155 @@ def preprocess_image(image: np.ndarray) -> np.ndarray:
     """
     이미지 크기에 따른 자동 보정 (돋보기 & 망원경)
     """
+    if image is None: return None
     h, w = image.shape[:2]
     
-    # 1. 이미지가 너무 작을 때 (Upscaling) - 너의 이번 케이스
-    # 최소 600px 정도는 확보해야 글자가 뭉개지지 않음
+    # 1. 이미지가 너무 작을 때 (Upscaling) - 작은 글씨 뭉개짐 방지
     if h < 600 or w < 600:
         scale = 2.0
-        if h < 300 or w < 300: # 진짜 너무 작으면 3배 뻥튀기
+        if h < 300 or w < 300: 
             scale = 3.0
             
         new_w = int(w * scale)
         new_h = int(h * scale)
-        # CUBIC 보간법이 확대할 때 깨짐을 좀 막아줌
         image = cv2.resize(image, (new_w, new_h), interpolation=cv2.INTER_CUBIC)
-        # print(f"[OCR] 돋보기 작동: {w}x{h} -> {new_w}x{new_h}")
 
-    # 2. 이미지가 너무 클 때 (Downscaling) - 아까 센트룸 케이스
-    # 960px 넘어가면 줄임
+    # 2. 이미지가 너무 클 때 (Downscaling) - 거대 로고 인식 불가 방지
     elif h > 960 or w > 960:
         max_dim = 960
         scale = max_dim / max(h, w)
         new_w = int(w * scale)
         new_h = int(h * scale)
         image = cv2.resize(image, (new_w, new_h), interpolation=cv2.INTER_AREA)
-        # print(f"[OCR] 축소 작동: {w}x{h} -> {new_w}x{new_h}")
         
     return image
 
 def parse_ocr_result(result):
-    """PaddleOCR 결과 표준화 파싱"""
+    """PaddleOCR 결과 표준화 파싱 (중복 로직 통합)"""
     parsed_items = []
-    if not result: return parsed_items
+    if not result or result[0] is None: 
+        return parsed_items
     
     data = result[0]
     
+    # 데이터 포맷 정규화 (Dict -> List 변환하여 로직 통일)
+    # PaddleOCR 버전에 따라 결과가 Dict 또는 List로 옴
+    rows = []
     if isinstance(data, dict) and 'rec_texts' in data:
         rec_texts = data.get('rec_texts', [])
         rec_scores = data.get('rec_scores', [])
         rec_polys = data.get('rec_polys', [])
-        
         for i in range(len(rec_texts)):
-            text = str(rec_texts[i])
-            if not text.strip(): continue
-            confidence = float(rec_scores[i]) if i < len(rec_scores) else 0.99
-            
-            # [수정] 신뢰도(confidence) 0.5 미만은 제외
-            if confidence < 0.5: continue
-            
-            coords = None
-            height = 10
-            if i < len(rec_polys):
-                poly = rec_polys[i]
-                if isinstance(poly, np.ndarray): poly = poly.tolist()
-                coords = poly
-                try:
-                    ys = [point[1] for point in coords]
-                    height = max(ys) - min(ys)
-                except: pass
-            
-            parsed_items.append({"text": text, "confidence": confidence, "height": height, "box": coords})
-
+            # Dict 포맷을 List 포맷처럼 (coords, (text, score)) 튜플로 변환
+            rows.append((rec_polys[i] if i < len(rec_polys) else [], (rec_texts[i], rec_scores[i] if i < len(rec_scores) else 0.99)))
     elif isinstance(data, list):
-        for line in data:
-            try:
-                if len(line) < 2: continue
-                coords = line[0]
-                text_info = line[1]
-                text = str(text_info[0])
-                if not text.strip(): continue
-                confidence = float(text_info[1])
-                
-                # [수정] 신뢰도(confidence) 0.5 미만은 제외
-                if confidence < 0.5: continue
-                
-                height = 10
-                if coords:
-                    ys = [point[1] for point in coords]
-                    height = max(ys) - min(ys)
-                
-                parsed_items.append({"text": text, "confidence": confidence, "height": height, "box": coords})
-            except: continue
+        rows = data
+
+    # 통합 파싱 로직
+    for line in rows:
+        try:
+            if len(line) < 2: continue
             
+            coords = line[0]
+            if isinstance(coords, np.ndarray): coords = coords.tolist()
+            
+            text_info = line[1]
+            if isinstance(text_info, tuple) and len(text_info) >= 2:
+                text, confidence = text_info[0], text_info[1]
+            elif isinstance(text_info, str):
+                text, confidence = text_info, 0.99
+            else:
+                continue
+                
+            if text and len(text.strip()) > 0:
+                # 40% 미만 신뢰도 결과 필터링
+                if float(confidence) < 0.4:
+                    continue
+                    
+                parsed_items.append({
+                    "text": text.strip(),
+                    "confidence": float(confidence),
+                    "coords": coords
+                })
+        except Exception:
+            continue
+    
     return parsed_items
 
-def extract_text(cv2_image: np.ndarray, save_image: bool = False) -> dict:
-    print(f"[OCR] 텍스트 추출 시작 (입력 이미지 크기: {cv2_image.shape})")
-    if ocr_model is None:
-        return {"texts": [], "error": "PaddleOCR 모델이 로드되지 않았습니다"}
+
+def extract_text(image: np.ndarray, rotations: list = [0, 90, 270], save_image: bool = False) -> dict:
+    """
+    이미지에서 텍스트를 추출합니다. (회전 탐색 포함)
     
-    try:
-        # 1. 지능형 전처리 (확대/축소)
-        base_image = preprocess_image(cv2_image)
+    Args:
+        image: OpenCV 이미지 (BGR 또는 RGB)
+        rotations: 시도할 회전 각도 목록
         
-        candidates = []
-        
-        # 2. 회전 로직
-        rotations = [
-            (0, base_image),
-            (90, cv2.rotate(base_image, cv2.ROTATE_90_CLOCKWISE)),
-            (270, cv2.rotate(base_image, cv2.ROTATE_90_COUNTERCLOCKWISE))
-        ]
-        
-        for angle, img in rotations:
-            result = ocr_model.ocr(img)
-            parsed = parse_ocr_result(result)
-            
-            if len(parsed) > 0:
-                avg_conf = sum([item['confidence'] for item in parsed]) / len(parsed)
-                score = len(parsed) * avg_conf
+    Returns:
+        dict: {
+            "text": str,           # 추출된 전체 텍스트
+            "items": list,         # 개별 텍스트 항목들
+            "confidence": float    # 평균 신뢰도
+        }
+    """
+    # 방어 로직: 모델 없거나 이미지 없으면 조기 리턴
+    if ocr_model is None:
+        return {"text": "", "items": [], "texts": [], "count": 0, "confidence": 0.0, "error": "OCR 모델 로드 실패"}
+    
+    if image is None or not isinstance(image, np.ndarray) or image.size == 0:
+        return {"text": "", "items": [], "texts": [], "count": 0, "confidence": 0.0, "error": "유효하지 않은 이미지"}
+    
+    # 이미지 전처리
+    processed = preprocess_image(image)
+    if processed is None:
+        return {"text": "", "items": [], "texts": [], "count": 0, "confidence": 0.0, "error": "이미지 전처리 실패"}
+    
+    # 디버깅용 이미지 저장
+    if save_image:
+        try:
+            import time
+            timestamp = int(time.time() * 1000)
+            save_path = os.path.join(SAVE_IMAGE_DIR, f"ocr_input_{timestamp}.jpg")
+            cv2.imwrite(save_path, processed)
+            print(f"[OCR] 이미지 저장됨: {save_path}")
+        except Exception as e:
+            print(f"[OCR] 이미지 저장 실패: {e}")
+    
+    best_result = {"text": "", "items": [], "texts": [], "count": 0, "confidence": 0.0}
+    
+    # 회전 탐색
+    for angle in rotations:
+        try:
+            if angle == 0:
+                rotated = processed
+            elif angle == 90:
+                rotated = cv2.rotate(processed, cv2.ROTATE_90_CLOCKWISE)
+            elif angle == 180:
+                rotated = cv2.rotate(processed, cv2.ROTATE_180)
+            elif angle == 270:
+                rotated = cv2.rotate(processed, cv2.ROTATE_90_COUNTERCLOCKWISE)
             else:
-                score = 0
+                continue
             
-            candidates.append({
-                "angle": angle,
-                "score": score,
-                "data": parsed,
-                "image": img
-            })
-
-        # 3. 최적 결과 선택
-        best_candidate = max(candidates, key=lambda x: x['score'])
-        texts = best_candidate['data']
-        
-        if save_image:
-            from datetime import datetime
-            import uuid
-            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            unique_id = str(uuid.uuid4())[:8]
-            image_filename = f"ocr_universal_{best_candidate['angle']}deg_{timestamp}_{unique_id}.jpg"
-            image_path = os.path.join(SAVE_IMAGE_DIR, image_filename)
-            cv2.imwrite(image_path, best_candidate['image'])
-
-        texts.sort(key=lambda x: x['height'], reverse=True)
-        
-        print(f"[OCR] 최종 {len(texts)}개 텍스트 검출됨 (v3, {best_candidate['angle']}도)")
-        if len(texts) > 0:
-            preview = [t['text'] for t in texts[:5]]
-            print(f" - 상위 결과: {preview}")
-
-        return {"texts": texts, "count": len(texts)}
-        
-    except Exception as e:
-        print(f"[OCR] ❌ 처리 중 오류 발생: {e}")
-        return {"texts": [], "error": str(e)}
+            # PaddleOCR 호출 (cls 파라미터 없이)
+            result = ocr_model.ocr(rotated)
+            items = parse_ocr_result(result)
+            
+            if items:
+                total_conf = sum(item["confidence"] for item in items)
+                avg_conf = total_conf / len(items)
+                
+                if avg_conf > best_result["confidence"]:
+                    best_result = {
+                        "text": " ".join(item["text"] for item in items),
+                        "items": items,
+                        "texts": items,  # analysis_service.py 호환용
+                        "count": len(items),  # /test 페이지 호환용
+                        "confidence": avg_conf,
+                        "rotation": angle
+                    }
+        except Exception as e:
+            print(f"[OCR] 회전 {angle}도 처리 중 오류: {e}")
+            continue
+    
+    return best_result
