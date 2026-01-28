@@ -13,17 +13,6 @@ export default function SettingsPage() {
 
             <div className="settings-menu">
                 <section className="menu-section">
-                    <h2 className="section-title">앱 설정</h2>
-                    <Link href="/settings/notification" className="menu-item">
-                        <div className="menu-icon-wrapper">
-                            <Bell size={20} />
-                        </div>
-                        <span className="menu-label">알림 설정</span>
-                        <ChevronRight size={16} className="menu-arrow" />
-                    </Link>
-                </section>
-
-                <section className="menu-section">
                     <h2 className="section-title">계정</h2>
                     <div className="menu-item">
                         <div className="menu-icon-wrapper">

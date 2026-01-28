@@ -24,10 +24,6 @@ export default function BottomTabBar() {
                 <Pill size={24} />
                 <span>내 영양제</span>
             </Link>
-            <Link href="/reminders" className={`tab-item ${pathname === '/reminders' ? 'active' : ''}`}>
-                <Bell size={24} />
-                <span>알림</span>
-            </Link>
             <Link href="/settings" className={`tab-item ${pathname === '/settings' ? 'active' : ''}`}>
                 <Settings size={24} />
                 <span>설정</span>
