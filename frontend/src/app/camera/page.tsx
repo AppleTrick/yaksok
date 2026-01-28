@@ -41,8 +41,14 @@ export default function CameraPage() {
       const formData = new FormData();
       formData.append("file", blob, "captured.jpg");
 
-      console.log("[DEBUG] Fetching /ai/v1/analyze...");
-      const apiResponse = await fetch("/ai/v1/analyze", {
+      // 개발환경: FastAPI 직접 호출 (Next.js 프록시 타임아웃 문제 회피)
+      // 프로덕션: 프록시 경로 사용
+      const apiUrl = process.env.NODE_ENV === 'development'
+        ? "http://localhost:8000/v1/analyze"
+        : "/ai/v1/analyze";
+
+      console.log("[DEBUG] Fetching", apiUrl);
+      const apiResponse = await fetch(apiUrl, {
         method: "POST",
         body: formData,
       });
