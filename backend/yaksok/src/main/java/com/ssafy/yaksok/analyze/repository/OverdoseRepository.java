@@ -17,16 +17,15 @@ public interface OverdoseRepository extends JpaRepository<UserProduct, Long> {
 
     /**
      * 사용자의 성분별 일일 섭취량 합산 조회
-     * 계산: ingredient_amount × daily_dose × dose_amount (dose_amount가 null이면 1로 처리)
      */
     @Query("""
                 SELECT new com.ssafy.yaksok.analyze.dto.IngredientSummary(
                     i.id,
                     i.ingredientName,
-                    SUM(pi.ingredientAmount * up.dailyDose * COALESCE(up.doseAmount, 1)),
+                    CAST(SUM(pi.ingredientAmount * up.dailyDose * COALESCE(up.doseAmount, 1.0)) AS double),
                     pi.amountUnit,
-                    i.maxIntakeValue,
-                    i.minIntakeValue
+                    CAST(i.maxIntakeValue AS double),
+                    CAST(i.minIntakeValue AS double)
                 )
                 FROM UserProduct up
                 JOIN ProductIngredient pi ON up.product.id = pi.product.id
@@ -43,10 +42,10 @@ public interface OverdoseRepository extends JpaRepository<UserProduct, Long> {
                 SELECT new com.ssafy.yaksok.analyze.dto.IngredientSummary(
                     i.id,
                     i.ingredientName,
-                    pi.ingredientAmount * :dailyDose,
+                    CAST(pi.ingredientAmount * :dailyDose AS double),
                     pi.amountUnit,
-                    i.maxIntakeValue,
-                    i.minIntakeValue
+                    CAST(i.maxIntakeValue AS double),
+                    CAST(i.minIntakeValue AS double)
                 )
                 FROM ProductIngredient pi
                 JOIN Ingredient i ON pi.ingredient.id = i.id
