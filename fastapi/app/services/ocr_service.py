@@ -132,6 +132,7 @@ def parse_ocr_result(result):
     return parsed_items
 
 def extract_text(cv2_image: np.ndarray, save_image: bool = False) -> dict:
+    print(f"[OCR] 텍스트 추출 시작 (입력 이미지 크기: {cv2_image.shape})")
     if ocr_model is None:
         return {"texts": [], "error": "PaddleOCR 모델이 로드되지 않았습니다"}
     
