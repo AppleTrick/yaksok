@@ -1,0 +1,763 @@
+/* Professional & Premium Report Styles */
+
+:root {
+    --report-primary: #FF5722;
+    --report-primary-soft: #FFF3F0;
+    --report-bg: #F8F9FA;
+    --report-surface: #FFFFFF;
+    --report-text-main: #1A1A1A;
+    --report-text-sub: #6B7280;
+    --report-success: #10B981;
+    --report-warning: #F59E0B;
+    --report-danger: #EF4444;
+    --report-accent: #6366F1;
+    --report-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+    --report-radius: 1.25rem;
+}
+
+.report-container {
+    padding: 0;
+    height: 100vh;
+    height: 100dvh;
+    /* dynamic viewport height for mobile browsers */
+    background-color: var(--report-bg);
+    font-family: 'Pretendard', -apple-system, sans-serif;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Header */
+.report-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.25rem 1.5rem;
+    background: var(--report-surface);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+}
+
+.report-back-btn {
+    width: 40px;
+    height: 40px;
+    border: none;
+    background: var(--report-bg);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--report-text-main);
+    transition: transform 0.2s, background 0.2s;
+}
+
+.report-back-btn:active {
+    transform: scale(0.95);
+    background: #e5e7eb;
+}
+
+.report-title-section {
+    flex: 1;
+    text-align: center;
+}
+
+.report-title {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: var(--report-text-main);
+    letter-spacing: -0.5px;
+}
+
+.report-subtitle {
+    font-size: 0.8rem;
+    color: var(--report-text-sub);
+    font-weight: 500;
+    margin-top: 2px;
+}
+
+/* Scroll Wrapper */
+.report-content-scroll {
+    flex: 1;
+    padding: 1.5rem;
+    padding-bottom: 120px;
+    overflow-y: auto;
+}
+
+/* Generic Section Styles */
+.report-section-wrap {
+    margin-bottom: 2.5rem;
+    animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.section-title {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
+}
+
+.section-title h2 {
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: var(--report-text-main);
+}
+
+.section-title .icon {
+    color: var(--report-primary);
+}
+
+.section-count {
+    font-size: 0.85rem;
+    color: var(--report-text-sub);
+    font-weight: 600;
+    margin-left: auto;
+    background: #eee;
+    padding: 2px 10px;
+    border-radius: 20px;
+}
+
+/* Product Section Empty State Modern - 프리미엄 개선 */
+.product-empty-modern {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3.5rem 2rem;
+    background: var(--report-surface);
+    border-radius: var(--report-radius);
+    box-shadow: var(--report-shadow);
+    text-align: center;
+    border: 2px dashed #f1f5f9;
+}
+
+.empty-icon-circle {
+    width: 64px;
+    height: 64px;
+    background: var(--report-primary-soft);
+    color: var(--report-primary);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1.25rem;
+    animation: bounceSlow 3s infinite;
+}
+
+@keyframes bounceSlow {
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-8px);
+    }
+}
+
+.product-empty-modern h3 {
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: var(--report-text-main);
+    margin-bottom: 0.5rem;
+}
+
+.product-empty-modern p {
+    font-size: 0.9rem;
+    color: var(--report-text-sub);
+    line-height: 1.6;
+    max-width: 240px;
+}
+
+/* Product Cards Modern */
+.product-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.product-card-modern {
+    background: var(--report-surface);
+    padding: 1.25rem;
+    border-radius: var(--report-radius);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    box-shadow: var(--report-shadow);
+    border: 1px solid rgba(0, 0, 0, 0.02);
+}
+
+.product-idx-modern {
+    width: 44px;
+    height: 44px;
+    background: linear-gradient(135deg, var(--report-primary), #FF8A65);
+    color: #fff;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+}
+
+.product-info-modern {
+    flex: 1;
+}
+
+.product-info-modern h3 {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--report-text-main);
+    margin-bottom: 0.5rem;
+}
+
+.confidence-meter {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.confidence-bar {
+    height: 6px;
+    background: #f3f4f6;
+    border-radius: 10px;
+    position: relative;
+    overflow: hidden;
+    flex: 1;
+}
+
+.confidence-bar::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 100%;
+    background: var(--report-primary);
+    transform-origin: left;
+    transition: transform 1s ease-out;
+}
+
+.confidence-bar.high::after {
+    background: var(--report-success);
+}
+
+.confidence-text {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--report-text-sub);
+    min-width: 40px;
+}
+
+.confidence-text.high {
+    color: var(--report-success);
+}
+
+/* Ingredient Section Modern */
+.ingredient-grid-modern {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+}
+
+.ingredient-card-modern {
+    background: var(--report-surface);
+    padding: 1rem;
+    border-radius: 1rem;
+    box-shadow: var(--report-shadow);
+}
+
+.ing-header-modern {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.ing-name-modern {
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: var(--report-text-main);
+}
+
+.ing-percent-modern {
+    font-size: 0.75rem;
+    font-weight: 800;
+    color: var(--report-primary);
+}
+
+.ing-progress-bg {
+    height: 4px;
+    background: #f3f4f6;
+    border-radius: 4px;
+    margin-bottom: 0.5rem;
+    overflow: hidden;
+}
+
+.ing-progress-fill {
+    height: 100%;
+    background: var(--report-primary);
+    border-radius: 4px;
+}
+
+.ing-amount-modern {
+    font-size: 0.7rem;
+    font-weight: 500;
+    color: var(--report-text-sub);
+}
+
+/* Comparison Table Modern */
+.comparison-card-modern {
+    background: var(--report-surface);
+    border-radius: var(--report-radius);
+    overflow: hidden;
+    box-shadow: var(--report-shadow);
+}
+
+.comparison-table-header {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr;
+    padding: 1rem;
+    background: #F9FAFB;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--report-text-sub);
+    text-transform: uppercase;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.comparison-table-body {
+    display: flex;
+    flex-direction: column;
+}
+
+.comparison-row-modern {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr;
+    padding: 1rem;
+    border-bottom: 1px solid #f9fafb;
+    font-size: 0.85rem;
+    align-items: center;
+}
+
+.comparison-row-modern:last-child {
+    border-bottom: none;
+}
+
+.comp-name-modern {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 700;
+    color: var(--report-text-main);
+}
+
+.status-icon.new {
+    color: var(--report-accent);
+}
+
+.status-icon.warning {
+    color: var(--report-warning);
+}
+
+.comp-val {
+    font-weight: 500;
+    color: var(--report-text-sub);
+    text-align: right;
+    padding-right: 4px;
+}
+
+.comp-val.add {
+    color: var(--report-success);
+    font-weight: 700;
+}
+
+.comp-val.total {
+    color: var(--report-primary);
+    font-weight: 800;
+}
+
+.comparison-footer-note {
+    padding: 0.75rem 1rem;
+    background: var(--report-primary-soft);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.75rem;
+    color: var(--report-primary);
+    font-weight: 600;
+}
+
+/* Subsection Header */
+.subsection-header-modern {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--report-text-sub);
+    margin: 1.5rem 0 0.75rem;
+}
+
+.premium-ai-badge {
+    background: linear-gradient(135deg, #6366F1, #A855F7);
+    color: #fff;
+    font-size: 0.65rem;
+    padding: 2px 6px;
+    border-radius: 6px;
+    font-weight: 800;
+}
+
+/* Recommendation Cards Modern */
+.recommendation-card-modern {
+    background: var(--report-surface);
+    padding: 1rem;
+    border-radius: 1rem;
+    display: flex;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+    box-shadow: var(--report-shadow);
+}
+
+.recommendation-card-modern.warning {
+    background: #FFFBEB;
+    border: 1px solid #FEF3C7;
+}
+
+.recommendation-card-modern.tip {
+    background: #F0FDF4;
+    border: 1px solid #DCFCE7;
+}
+
+.rec-icon-wrap {
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.recommendation-card-modern p {
+    font-size: 0.85rem;
+    line-height: 1.6;
+    color: #374151;
+    margin: 0;
+}
+
+/* Dosage Visualization Modern */
+.dosage-card-modern {
+    background: var(--report-surface);
+    padding: 1.25rem;
+    border-radius: 1rem;
+    margin-bottom: 1rem;
+    box-shadow: var(--report-shadow);
+}
+
+.dosage-top-modern {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.dosage-name-modern {
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: var(--report-text-main);
+}
+
+.dosage-status-pill {
+    font-size: 0.7rem;
+    font-weight: 800;
+    padding: 4px 10px;
+    border-radius: 20px;
+}
+
+.dosage-status-pill.good {
+    background: #DCFCE7;
+    color: #166534;
+}
+
+.dosage-status-pill.warning {
+    background: #FEF3C7;
+    color: #92400E;
+}
+
+.dosage-status-pill.danger {
+    background: #FEE2E2;
+    color: #991B1B;
+}
+
+.dosage-viz-modern {
+    padding-top: 1rem;
+}
+
+.dosage-labels-modern {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.65rem;
+    color: var(--report-text-sub);
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.dosage-labels-modern .rec {
+    color: var(--report-success);
+}
+
+.dosage-track-modern {
+    position: relative;
+    height: 6px;
+    background: #f3f4f6;
+    border-radius: 10px;
+}
+
+.dosage-fill-active {
+    position: absolute;
+    height: 100%;
+    background: linear-gradient(to right, #10B981, #FF5722);
+    border-radius: 10px;
+}
+
+.dosage-marker-modern {
+    position: absolute;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 14px;
+    height: 14px;
+    background: #fff;
+    border: 3px solid var(--report-primary);
+    border-radius: 50%;
+    z-index: 10;
+}
+
+.marker-label {
+    position: absolute;
+    bottom: 18px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--report-text-main);
+    color: #fff;
+    font-size: 0.65rem;
+    font-weight: 800;
+    padding: 2px 6px;
+    border-radius: 4px;
+    white-space: nowrap;
+}
+
+.product-guide-modern {
+    background: var(--report-surface);
+    padding: 1.25rem;
+    border-radius: 1rem;
+    box-shadow: var(--report-shadow);
+}
+
+.guide-item-modern {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.guide-item-modern:last-child {
+    margin-bottom: 0;
+}
+
+.guide-dot {
+    width: 6px;
+    height: 6px;
+    background: var(--report-primary);
+    border-radius: 50%;
+    margin-top: 8px;
+    flex-shrink: 0;
+}
+
+.guide-item-modern p {
+    font-size: 0.85rem;
+    color: #4B5563;
+    line-height: 1.5;
+    margin: 0;
+}
+
+/* Main Footer */
+.report-footer-modern {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    gap: 12px;
+    padding: 1.25rem 1.5rem;
+    padding-bottom: calc(1.25rem + env(safe-area-inset-bottom));
+    background: var(--report-surface);
+    border-top: 1px solid #f3f4f6;
+    z-index: 200;
+}
+
+.footer-btn-modern {
+    flex: 1;
+    height: 56px;
+    border-radius: 16px;
+    font-size: 1rem;
+    font-weight: 800;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    transition: all 0.2s;
+}
+
+.footer-btn-modern.primary {
+    background: var(--report-primary);
+    color: #fff;
+    box-shadow: 0 8px 20px rgba(255, 87, 34, 0.2);
+}
+
+.footer-btn-modern.primary:active {
+    transform: scale(0.97);
+}
+
+.footer-btn-modern.secondary {
+    background: var(--report-bg);
+    color: var(--report-text-main);
+}
+
+.footer-btn-modern.secondary:active {
+    background: #e5e7eb;
+}
+
+/* Modal Premium */
+.premium-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 24px;
+}
+
+.premium-modal-content {
+    background: #fff;
+    border-radius: 2rem;
+    padding: 2rem;
+    width: 100%;
+    max-width: 360px;
+    text-align: center;
+    position: relative;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+    animation: modalSlideUp 0.3s ease-out;
+}
+
+@keyframes modalSlideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px) scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.premium-modal-close {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: none;
+    border: none;
+    color: var(--report-text-sub);
+    cursor: pointer;
+}
+
+.premium-modal-icon-bg {
+    width: 72px;
+    height: 72px;
+    background: var(--report-primary-soft);
+    border-radius: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem;
+}
+
+.premium-modal-title {
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: var(--report-text-main);
+    margin-bottom: 0.75rem;
+}
+
+.premium-modal-desc {
+    font-size: 0.95rem;
+    color: var(--report-text-sub);
+    margin-bottom: 1.5rem;
+    line-height: 1.6;
+}
+
+.premium-modal-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+    margin-bottom: 2rem;
+}
+
+.premium-product-chip {
+    background: #f3f4f6;
+    padding: 6px 14px;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--report-text-main);
+}
+
+.premium-modal-footer {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.premium-modal-btn {
+    height: 52px;
+    border-radius: 14px;
+    font-size: 1rem;
+    font-weight: 800;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.premium-modal-btn.primary {
+    background: var(--report-primary);
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(255, 87, 34, 0.2);
+}
+
+.premium-modal-btn.secondary {
+    background: #f3f4f6;
+    color: var(--report-text-main);
+}
+
+.premium-modal-btn:active {
+    transform: scale(0.98);
+}
