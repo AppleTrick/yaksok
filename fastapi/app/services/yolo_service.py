@@ -10,12 +10,14 @@ from ultralytics import YOLO
 # 모델 경로 등은 기존 유지
 MODEL_PATH = os.path.join(
     os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+    "model",
     "Version3.pt"
 )
 
 try:
     model = YOLO(MODEL_PATH)
-    print(f"[YOLO 서비스] ✅ 모델 로드 성공")
+    print(f"[YOLO 서비스] ✅ 모델 로드 성공 (경로: {MODEL_PATH})")
+    print(f"[YOLO 서비스] 🏷️ 모델 라벨: {model.names}")
 except Exception as e:
     print(f"[YOLO 서비스] ❌ 모델 로드 실패: {e}")
     model = None
@@ -73,19 +75,23 @@ def detect_supplements(image_input, confidence_threshold: float = 0.3) -> dict:
         print(f"[YOLO] 원본 크기 유지")
 
     # YOLO 추론
+    print(f"[YOLO] 추론 시작 (imgsz=640, conf={confidence_threshold})...")
     results = model(detect_image, conf=confidence_threshold, imgsz=640)
     
     detected_objects = []
     
     for r in results:
         boxes = r.boxes
-        for box in boxes:
+        print(f"[YOLO] 원시 탐지 객체 수: {len(boxes)}")
+        for i, box in enumerate(boxes):
             cls_id = int(box.cls[0])
             conf = float(box.conf[0])
             label = model.names[cls_id]
             
             # 리사이즈된 좌표 (x1, y1, x2, y2)
             coords = box.xyxy[0].tolist()
+            
+            print(f"  - 객체 #{i}: {label} ({conf:.2f})")
             
             # [중요] 원본 좌표로 복구
             if scale_info["resized"]:
