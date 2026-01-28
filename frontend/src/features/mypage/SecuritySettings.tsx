@@ -1,21 +1,36 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { ChevronLeft, ShieldCheck, UserX } from 'lucide-react';
 import { COLORS } from '@/constants/colors';
 import Button from '@/components/Button';
-import { changePassword, withdrawUser } from '@/services/userService';
+import { changePassword, fetchUserInfo, UserInfo } from '@/services/userService';
+import WithdrawalModal from './WithdrawalModal';
 import './styles.css';
 
 export default function SecuritySettings() {
     const router = useRouter();
     const [submitting, setSubmitting] = useState(false);
 
+    // User info for withdrawal verification
+    const [userEmail, setUserEmail] = useState<string>('');
+    const [showWithdrawModal, setShowWithdrawModal] = useState(false);
+
     // Password state
     const [currentPassword, setCurrentPassword] = useState('');
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
+
+    useEffect(() => {
+        const loadUserInfo = async () => {
+            const info = await fetchUserInfo();
+            if (info && info.userDataResponse) {
+                setUserEmail(info.userDataResponse.email);
+            }
+        };
+        loadUserInfo();
+    }, []);
 
     const validatePassword = (password: string) => {
         const regex = /^(?=.*[a-zA-Z])(?=.*[0-9])(?=.*[!@#$%^&*]).{8,}$/;
@@ -52,18 +67,12 @@ export default function SecuritySettings() {
         setSubmitting(false);
     };
 
-    const handleWithdrawal = async () => {
-        if (confirm("정말로 탈퇴하시겠습니까? 모든 데이터가 영구적으로 삭제됩니다.")) {
-            setSubmitting(true);
-            const success = await withdrawUser();
-            if (success) {
-                alert("회원 탈퇴가 완료되었습니다.");
-                router.push('/login');
-            } else {
-                alert("회원 탈퇴 처리 중 오류가 발생했습니다.");
-            }
-            setSubmitting(false);
+    const handleWithdrawalClick = () => {
+        if (!userEmail) {
+            alert("사용자 정보를 불러오는 중입니다. 잠시 후 다시 시도해주세요.");
+            return;
         }
+        setShowWithdrawModal(true);
     };
 
     return (
@@ -135,13 +144,20 @@ export default function SecuritySettings() {
                     <button
                         className="logout-button-full"
                         style={{ padding: '0.9rem', fontSize: '0.9rem' }}
-                        onClick={handleWithdrawal}
+                        onClick={handleWithdrawalClick}
                         disabled={submitting}
                     >
                         탈퇴하기
                     </button>
                 </section>
             </div>
+
+            {showWithdrawModal && (
+                <WithdrawalModal
+                    email={userEmail}
+                    onClose={() => setShowWithdrawModal(false)}
+                />
+            )}
         </div>
     );
 }
