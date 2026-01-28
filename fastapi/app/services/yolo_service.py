@@ -10,6 +10,7 @@ from ultralytics import YOLO
 # 모델 경로 등은 기존 유지
 MODEL_PATH = os.path.join(
     os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+    "model",
     "Version3.pt"
 )
 
