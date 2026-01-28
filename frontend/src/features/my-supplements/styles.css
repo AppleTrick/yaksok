@@ -184,6 +184,10 @@
     margin-bottom: 2rem;
 }
 
+.detail-section:last-child {
+    margin-bottom: 0 !important;
+}
+
 .section-label {
     font-size: 0.95rem;
     font-weight: 700;
@@ -244,6 +248,20 @@
     display: flex;
     gap: 1rem;
     /* Margin top is handled by modal-footer usually, but ensuring spacing */
+}
+
+.setting-group {
+    margin: 0;
+    padding: 0;
+}
+
+.setting-group:last-child {
+    margin-bottom: 0 !important;
+    padding-bottom: 0 !important;
+}
+
+.notification-settings-container {
+    padding-bottom: 0 !important;
 }
 
 .action-btn {
