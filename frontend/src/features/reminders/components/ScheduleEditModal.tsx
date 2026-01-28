@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import TimePicker from '@/components/TimePicker';
 import { X, Plus, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
-import { MedicationItem, Cycle } from '@/features/notification/types';
+import { MedicationItem, Cycle, MealCategory } from '@/features/notification/types';
 import CycleSelector from './CycleSelector';
 import './modal.css';
 
@@ -12,12 +12,14 @@ interface ScheduleEditModalProps {
     onClose: () => void;
     initialTime: string; // "14:00" (24h format for picker logic)
     initialItems: MedicationItem[];
-    onSave: (time: string, items: MedicationItem[]) => void;
+    initialMealCategory: MealCategory;
+    onSave: (time: string, mealCategory: MealCategory, items: MedicationItem[]) => void;
 }
 
-export default function ScheduleEditModal({ isOpen, onClose, initialTime, initialItems, onSave }: ScheduleEditModalProps) {
+export default function ScheduleEditModal({ isOpen, onClose, initialTime, initialItems, initialMealCategory, onSave }: ScheduleEditModalProps) {
     const [time, setTime] = useState(initialTime);
     const [items, setItems] = useState<MedicationItem[]>(initialItems);
+    const [mealCategory, setMealCategory] = useState<MealCategory>(initialMealCategory);
 
     // Adding state
     const [newItemName, setNewItemName] = useState("");
@@ -31,12 +33,13 @@ export default function ScheduleEditModal({ isOpen, onClose, initialTime, initia
         if (isOpen) {
             setTime(initialTime);
             setItems(initialItems);
+            setMealCategory(initialMealCategory);
             setNewItemName("");
             setNewItemCycle({ type: 'daily' });
             setIsAdding(false);
             setExpandedItemId(null);
         }
-    }, [isOpen, initialTime, initialItems]);
+    }, [isOpen, initialTime, initialItems, initialMealCategory]);
 
     if (!isOpen) return null;
 
@@ -65,7 +68,7 @@ export default function ScheduleEditModal({ isOpen, onClose, initialTime, initia
     };
 
     const handleSave = () => {
-        onSave(time, items);
+        onSave(time, mealCategory, items);
         onClose();
     };
 
@@ -90,6 +93,24 @@ export default function ScheduleEditModal({ isOpen, onClose, initialTime, initia
                 </div>
 
                 <div className="modal-body">
+                    {/* Meal Category Selection */}
+                    <section className="modal-section">
+                        <h3 className="section-label">복용 시점</h3>
+                        <div className="meal-category-selector">
+                            {(['empty_stomach', 'post_meal', 'pre_sleep'] as MealCategory[]).map((cat) => (
+                                <button
+                                    key={cat}
+                                    className={`category-btn ${mealCategory === cat ? 'active' : ''}`}
+                                    onClick={() => setMealCategory(cat)}
+                                >
+                                    {cat === 'empty_stomach' && '공복 (식전)'}
+                                    {cat === 'post_meal' && '식후'}
+                                    {cat === 'pre_sleep' && '취침 전'}
+                                </button>
+                            ))}
+                        </div>
+                    </section>
+
                     {/* 1. Time Picker Section */}
                     <section className="modal-section">
                         <h3 className="section-label">시간 설정</h3>
