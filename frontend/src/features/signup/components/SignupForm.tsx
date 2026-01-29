@@ -34,6 +34,34 @@ export default function SignupForm({ onSubmit, isLoading }: SignupFormProps) {
         }
     };
 
+    const validatePassword = (password: string) => {
+        // 영문, 숫자, 특수문자 포함 8자 이상
+        const regex = /^(?=.*[a-zA-Z])(?=.*[0-9])(?=.*[!@#$%^&*]).{8,}$/;
+        return regex.test(password);
+    };
+
+    const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const newPassword = e.target.value;
+        setPassword(newPassword);
+        if (newPassword && !validatePassword(newPassword)) {
+            setPasswordError('비밀번호는 영문, 숫자, 특수문자 포함 8자 이상이어야 합니다.');
+        } else if (confirmPassword && newPassword !== confirmPassword) {
+            setPasswordError('비밀번호가 일치하지 않습니다.');
+        } else {
+            setPasswordError('');
+        }
+    };
+
+    const handleConfirmPasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const newConfirmPassword = e.target.value;
+        setConfirmPassword(newConfirmPassword);
+        if (password !== newConfirmPassword) {
+            setPasswordError('비밀번호가 일치하지 않습니다.');
+        } else {
+            setPasswordError('');
+        }
+    };
+
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         setPasswordError('');
@@ -41,6 +69,11 @@ export default function SignupForm({ onSubmit, isLoading }: SignupFormProps) {
 
         if (!validateEmail(email)) {
             setEmailError('올바른 이메일 형식이 아닙니다.');
+            return;
+        }
+
+        if (!validatePassword(password)) {
+            setPasswordError('비밀번호는 영문, 숫자, 특수문자 포함 8자 이상이어야 합니다.');
             return;
         }
 
@@ -129,7 +162,7 @@ export default function SignupForm({ onSubmit, isLoading }: SignupFormProps) {
                     type="password"
                     placeholder="영문, 숫자, 특수문자 포함 8자 이상"
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    onChange={handlePasswordChange}
                     required
                 />
                 <InputForm
@@ -137,7 +170,7 @@ export default function SignupForm({ onSubmit, isLoading }: SignupFormProps) {
                     type="password"
                     placeholder="비밀번호 재입력"
                     value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    onChange={handleConfirmPasswordChange}
                     error={passwordError}
                     required
                 />

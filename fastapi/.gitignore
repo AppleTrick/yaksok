@@ -21,4 +21,6 @@ build/
 
 # AI Models
 *.pt
+!model/Version3.pt
 *.onnx
+

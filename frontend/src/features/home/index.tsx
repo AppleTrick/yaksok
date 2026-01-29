@@ -9,34 +9,52 @@ import DailyProgressCard from "./components/DailyProgressCard";
 import { useScheduleContext, isItemDue } from "../notification/contexts/ScheduleContext";
 import './styles.css';
 
+// 시간대별 인사말 유틸리티 함수
+const getGreeting = (date: Date): string => {
+    const hour = date.getHours();
+    if (hour >= 5 && hour < 11) return "상쾌한 아침을 시작하세요,";
+    if (hour >= 11 && hour < 17) return "활기찬 오후 보내세요,";
+    if (hour >= 17 && hour < 22) return "오늘 하루도 수고하셨어요,";
+    return "편안한 밤 되세요,";
+};
+
 export default function HomeFeature() {
     const router = useRouter();
     const [userName, setUserName] = useState("사용자");
+    const [isLoading, setIsLoading] = useState(true);
     const { schedules, toggleItemTaken } = useScheduleContext();
     const [today, setToday] = useState<Date | null>(null);
 
     useEffect(() => {
         setToday(new Date());
-    }, []);
 
-    useEffect(() => {
-        // 1. 로컬 스토리지에서 초기 로드
-        const storedName = localStorage.getItem("userName");
-        if (storedName) {
-            setUserName(storedName);
-        }
+        const loadData = async () => {
+            setIsLoading(true);
+            try {
+                // 1. 로컬 스토리지에서 우선 로드 (빠른 초기 화면)
+                const storedName = localStorage.getItem("userName");
+                if (storedName) {
+                    setUserName(storedName);
+                    // 스토리지에 있으면 일단 로딩 해제, 백그라운드에서 최신화
+                    setIsLoading(false);
+                }
 
-        // 2. 최신 데이터 가져오기 및 세션 확인
-        const syncUserName = async () => {
-            const { fetchUserName } = await import('@/services/userService');
-            const userName = await fetchUserName();
-            if (userName) {
-                setUserName(userName.name);
-                localStorage.setItem("userName", userName.name);
+                // 2. 최신 데이터 동기화
+                const { fetchUserName } = await import('@/services/userService');
+                const user = await fetchUserName();
+                if (user) {
+                    setUserName(user.name);
+                    localStorage.setItem("userName", user.name);
+                }
+            } catch (error) {
+                console.error("Failed to load user data", error);
+            } finally {
+                // 스토리지 데이터가 없었을 경우 여기서 로딩 해제
+                setIsLoading(false);
             }
         };
 
-        syncUserName();
+        loadData();
     }, []);
 
     // Schedule Logic
@@ -46,21 +64,24 @@ export default function HomeFeature() {
     const totalMeds = allDueItems.length;
     const takenMeds = allDueItems.filter(i => i.isTaken).length;
     const activeSchedules = schedules.filter(s => s.isActive);
+    const greetingText = today ? getGreeting(today) : "반갑습니다,";
 
     return (
         <div className="home-container">
             <header className="home-header">
                 <div className="greeting-section">
-                    <span className="greeting-sub">좋은 아침입니다,</span>
-                    <h1 className="greeting-main">{userName} 님</h1>
+                    <span className="greeting-sub">{greetingText}</span>
+                    <h1 className="greeting-main">
+                        {isLoading ? (
+                            <span className="skeleton-loader" />
+                        ) : (
+                            `${userName} 님`
+                        )}
+                    </h1>
                     <p className="greeting-desc">오늘도 건강 약속을 지켜보세요.</p>
                 </div>
                 {/* HEAD's Profile Link */}
-                <Link href="/mypage">
-                    <div className="profile-icon" title="마이페이지">
-                        <User size={28} color={COLORS.black} />
-                    </div>
-                </Link>
+                {/* HEAD's Profile Link Removed per request */}
             </header>
 
             {/* Daily Progress Card */}
