@@ -38,36 +38,6 @@ const itemVariants: Variants = {
     }
 };
 
-// Mock 데이터 (백엔드 API 연동 전까지 컴포넌트 전달용)
-const mockRecognizedIngredients = [
-    { name: '비타민 D3', amount: '1000IU', dailyPercent: 250 },
-    { name: '오메가-3 (EPA)', amount: '360mg', dailyPercent: 45 },
-    { name: '오메가-3 (DHA)', amount: '240mg', dailyPercent: 48 },
-    { name: '비타민 E', amount: '15mg', dailyPercent: 100 },
-];
-
-const mockComparisonData = [
-    { name: '비타민 D3', myAmount: '800IU', newAmount: '1000IU', totalAmount: '1800IU', status: 'warning' },
-    { name: '비타민 C', myAmount: '500mg', newAmount: '0mg', totalAmount: '500mg', status: 'good' },
-    { name: '오메가-3', myAmount: '0mg', newAmount: '600mg', totalAmount: '600mg', status: 'new' },
-    { name: '아연', myAmount: '10mg', newAmount: '0mg', totalAmount: '10mg', status: 'good' },
-];
-
-const mockRecommendationData = {
-    interactions: [
-        { type: 'warning' as const, text: '비타민 E와 오메가-3를 함께 고용량 복용 시 혈액 응고에 영향을 줄 수 있습니다.' },
-        { type: 'tip' as const, text: '비타민 D는 지용성이므로 식사와 함께 복용하면 흡수율이 높아집니다.' },
-    ],
-    dosageInfo: [
-        { name: '비타민 D3', min: '400IU', recommended: '800IU', max: '4000IU', current: '1800IU', status: 'good' as const },
-        { name: '오메가-3', min: '250mg', recommended: '500mg', max: '3000mg', current: '600mg', status: 'good' as const },
-    ],
-    productNotes: [
-        '이 제품은 식후 복용을 권장합니다.',
-        '임산부는 복용 전 전문가와 상담하세요.',
-    ]
-};
-
 export default function ReportPage() {
     const router = useRouter();
     const { reportData, clearReportData } = useReportContext();
@@ -92,8 +62,28 @@ export default function ReportPage() {
         router.push('/camera');
     };
 
-    // 분석된 제품 정보
-    const products = reportData.analysisResult?.frontend_data?.products || [];
+    // 분석된 실제 데이터 추출
+    const realReportData = reportData.analysisResult?.reportData;
+
+    // 1. 제품 목록
+    const products = realReportData?.products || [];
+
+    // 2. 성분 목록 (모든 제품의 성분을 평탄화하여 표시)
+    const ingredients = products.flatMap((p: any) =>
+        (p.ingredients || []).map((i: any) => ({
+            name: i.name,
+            amount: `${i.amount}${i.unit}`,
+            dailyPercent: i.dailyPercent
+        }))
+    );
+
+    // 3. 비교 및 권장 데이터
+    const comparisonData = realReportData?.overdoseAnalysis?.comparison || [];
+    const recommendationData = realReportData?.overdoseAnalysis?.recommendations || {
+        interactions: [],
+        dosageInfo: [],
+        productNotes: []
+    };
 
     return (
         <motion.div
@@ -118,20 +108,20 @@ export default function ReportPage() {
 
                 {/* 2. 인식된 성분 섹션 */}
                 <motion.div variants={itemVariants}>
-                    <IngredientSection ingredients={mockRecognizedIngredients} />
+                    <IngredientSection ingredients={ingredients} />
                 </motion.div>
 
                 {/* 3. 기존 영양제 비교 섹션 */}
                 <motion.div variants={itemVariants}>
-                    <ComparisonSection comparisonData={mockComparisonData} />
+                    <ComparisonSection comparisonData={comparisonData} />
                 </motion.div>
 
                 {/* 4. 섭취 권장사항 섹션 */}
                 <motion.div variants={itemVariants}>
                     <RecommendationSection
-                        interactions={mockRecommendationData.interactions}
-                        dosageInfo={mockRecommendationData.dosageInfo}
-                        productNotes={mockRecommendationData.productNotes}
+                        interactions={recommendationData.interactions}
+                        dosageInfo={recommendationData.dosageInfo}
+                        productNotes={recommendationData.productNotes}
                     />
                 </motion.div>
 
