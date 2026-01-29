@@ -22,7 +22,7 @@ public class SupplementAnalysisResponse {
      * 화면 표시용 데이터 (이미지 위 박스 및 기본 정보)
      */
     private DisplayData displayData;
-    
+
     /**
      * 상세 리포트 서비스 데이터 (성분 비교, 권장사항 등)
      */
@@ -65,11 +65,8 @@ public class SupplementAnalysisResponse {
     @AllArgsConstructor
     public static class ReportProductInfo {
         private Long productId;
-        private String name;         // 프론트엔드 ProductSection 호환용
-        private String productName;  // 기존 필드 유지
-        private String company;
-        private String imageUrl;
-        private double confidence;   // 프론트엔드 신뢰도 표시용
+        private String name;
+        private double confidence;
         private List<ProductIngredientInfo> ingredients;
     }
 
