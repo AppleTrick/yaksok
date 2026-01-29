@@ -1,15 +1,19 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import "@/features/camera/styles.css";
 import CaptureStep from "@/features/camera/components/CaptureStep";
 import ReviewStep from "@/features/camera/components/ReviewStep";
-
 import ResultStep from "@/features/camera/components/ResultStep";
+import { useReportContext } from "@/features/report/contexts/ReportContext";
 
 type CameraFlowStep = 'capture' | 'review' | 'result';
 
 export default function CameraPage() {
+  const router = useRouter();
+  const { setReportData } = useReportContext();
+
   const [step, setStep] = useState<CameraFlowStep>('capture');
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [analysisResult, setAnalysisResult] = useState<any>(null);
@@ -96,8 +100,12 @@ export default function CameraPage() {
   };
 
   const handleRegister = () => {
-    alert("영양제가 등록되었습니다! (홈으로 이동)");
-    window.location.href = "/";
+    // Context에 분석 결과 저장 후 리포트 페이지로 이동
+    setReportData({
+      analysisResult,
+      capturedImage,
+    });
+    router.push('/report');
   };
 
   // Render Steps
