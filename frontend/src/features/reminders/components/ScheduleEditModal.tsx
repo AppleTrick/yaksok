@@ -5,6 +5,7 @@ import TimePicker from '@/components/TimePicker';
 import { X, Plus, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
 import { MedicationItem, Cycle, MealCategory } from '@/features/notification/types';
 import CycleSelector from './CycleSelector';
+import { validateScheduleSettings, ValidationError } from '@/features/notification/utils/validation';
 import './modal.css';
 
 interface ScheduleEditModalProps {
@@ -28,6 +29,9 @@ export default function ScheduleEditModal({ isOpen, onClose, initialTime, initia
 
     // Editing state
     const [expandedItemId, setExpandedItemId] = useState<string | null>(null);
+
+    // Validation state
+    const [validationErrors, setValidationErrors] = useState<ValidationError[]>([]);
 
     useEffect(() => {
         if (isOpen) {
@@ -68,6 +72,15 @@ export default function ScheduleEditModal({ isOpen, onClose, initialTime, initia
     };
 
     const handleSave = () => {
+        // 유효성 검사
+        const errors = validateScheduleSettings(time, items);
+        if (errors.length > 0) {
+            setValidationErrors(errors);
+            return;
+        }
+
+        // 유효성 검사 통과 시 저장
+        setValidationErrors([]);
         onSave(time, mealCategory, items);
         onClose();
     };
@@ -93,6 +106,26 @@ export default function ScheduleEditModal({ isOpen, onClose, initialTime, initia
                 </div>
 
                 <div className="modal-body">
+                    {/* Validation Errors */}
+                    {validationErrors.length > 0 && (
+                        <div className="validation-errors" style={{
+                            background: '#FEE2E2',
+                            border: '1px solid #EF4444',
+                            borderRadius: '8px',
+                            padding: '0.75rem 1rem',
+                            marginBottom: '1rem'
+                        }}>
+                            {validationErrors.map((err, idx) => (
+                                <p key={idx} style={{
+                                    color: '#EF4444',
+                                    fontSize: '0.875rem',
+                                    margin: '0.25rem 0'
+                                }}>
+                                    • {err.message}
+                                </p>
+                            ))}
+                        </div>
+                    )}
                     {/* Meal Category Selection */}
                     <section className="modal-section">
                         <h3 className="section-label">복용 시점</h3>

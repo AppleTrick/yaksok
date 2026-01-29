@@ -31,7 +31,7 @@ export const viewport: Viewport = {
 };
 
 import BottomTabBar from "../layout/BottomTabBar";
-import NotificationManager from "@/features/notification/components/NotificationManager";
+import NotificationManagerEnhanced from "@/features/notification/components/NotificationManagerEnhanced";
 import { ScheduleProvider } from "@/features/notification/contexts/ScheduleContext";
 
 
@@ -49,7 +49,7 @@ export default function RootLayout({
         <ScheduleProvider>
           {children}
           <BottomTabBar />
-          <NotificationManager />
+          <NotificationManagerEnhanced />
         </ScheduleProvider>
       </body>
     </html>
