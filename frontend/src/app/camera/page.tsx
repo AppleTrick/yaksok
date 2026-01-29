@@ -45,11 +45,11 @@ export default function CameraPage() {
       const formData = new FormData();
       formData.append("file", blob, "captured.jpg");
 
-      // 개발환경: FastAPI 직접 호출 (Next.js 프록시 타임아웃 문제 회피)
-      // 프로덕션: 프록시 경로 사용
+      // 개발환경: Spring Boot 로컬 서버 호출 (8080 포트)
+      // 프로덕션: nginx가 /api를 백엔드로 라우팅함
       const apiUrl = process.env.NODE_ENV === 'development'
-        ? "http://localhost:8000/v1/analyze"
-        : "/ai/v1/analyze";
+        ? "http://localhost:8080/api/v1/analyze"
+        : "/api/v1/analyze";
 
       console.log("[DEBUG] Fetching", apiUrl);
       const apiResponse = await fetch(apiUrl, {
@@ -57,35 +57,23 @@ export default function CameraPage() {
         body: formData,
       });
 
-      console.log("[DEBUG] Response status:", apiResponse.status);
-      console.log("[DEBUG] Response headers:", Object.fromEntries(apiResponse.headers.entries()));
-
       if (!apiResponse.ok) {
         const errorText = await apiResponse.text();
-        console.error("[DEBUG] Error response body:", errorText);
         throw new Error(`HTTP error! status: ${apiResponse.status}, body: ${errorText}`);
       }
 
-      const rawText = await apiResponse.text();
-      console.log("[DEBUG] Raw response text length:", rawText.length);
-      console.log("[DEBUG] Raw response preview:", rawText.substring(0, 500));
+      const responseJson = await apiResponse.json();
+      console.log("[DEBUG] Raw response:", responseJson);
 
-      let data;
-      try {
-        data = JSON.parse(rawText);
-        console.log("[DEBUG] JSON parsed successfully");
-      } catch (parseError) {
-        console.error("[DEBUG] JSON parse error:", parseError);
-        console.error("[DEBUG] Full raw response:", rawText);
-        throw new Error(`JSON 파싱 실패: ${parseError}`);
+      // Spring Boot의 ApiResponse 구조: { success: boolean, data: SupplementAnalysisResponse, message: string }
+      if (!responseJson.success) {
+        throw new Error(responseJson.message || "분석 실패");
       }
 
-      console.log("[DEBUG] Analysis data keys:", Object.keys(data));
-      console.log("[DEBUG] frontend_data:", data.frontend_data);
-      console.log("[DEBUG] success:", data.success);
+      const unifiedResult = responseJson.data;
+      console.log("[DEBUG] Unified analysis result:", unifiedResult);
 
-      setAnalysisResult(data);
-      console.log("[DEBUG] setAnalysisResult 완료, setStep('result') 호출 예정");
+      setAnalysisResult(unifiedResult);
       setStep('result');
       console.log("[DEBUG] setStep('result') 완료");
     } catch (error: any) {
