@@ -2,7 +2,7 @@
 
 
 import Link from 'next/link';
-import { Home, Pill, Settings, Bell } from 'lucide-react';
+import { Home, Pill, Settings, Bell, User } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import './styles.css';
 
@@ -25,8 +25,8 @@ export default function BottomTabBar() {
                 <span>내 영양제</span>
             </Link>
             <Link href="/settings" className={`tab-item ${pathname === '/settings' ? 'active' : ''}`}>
-                <Settings size={24} />
-                <span>설정</span>
+                <User size={24} />
+                <span>마이페이지</span>
             </Link>
         </nav>
     );

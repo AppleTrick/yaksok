@@ -77,7 +77,7 @@ public class UserService {
 
         // 1. 사용자 영양제 기본 정보
         List<UserProductResponse> userProducts =
-                userProductService.findUserProducts(userId);
+                userProductService.getUserProducts(userId);
 
         if (userProducts.isEmpty()) {
             return List.of();

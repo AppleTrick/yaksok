@@ -23,6 +23,13 @@ public enum ErrorCode {
     USER_DUPLICATE_EMAIL("USER_409", "이미 사용 중인 이메일입니다", HttpStatus.CONFLICT),
     USER_DUPLICATE_OUATHID("USER_409", "이미 등록된 회원입니다.", HttpStatus.CONFLICT),
 
+    // PRODUCT
+    PRODUCT_NOT_FOUND("PRODUCT_404", "영양제를 찾을 수 없습니다", HttpStatus.NOT_FOUND),
+
+    // USER_PRODUCT
+    USER_PRODUCT_NOT_FOUND("USER_PRODUCT_404", "사용자 영양제를 찾을 수 없습니다", HttpStatus.NOT_FOUND),
+    USER_PRODUCT_UNAUTHORIZED("USER_PRODUCT_403", "해당 영양제에 대한 권한이 없습니다", HttpStatus.FORBIDDEN),
+
     // COMMON
     INTERNAL_SERVER_ERROR("COMMON_500", "서버 오류가 발생했습니다", HttpStatus.INTERNAL_SERVER_ERROR);
 

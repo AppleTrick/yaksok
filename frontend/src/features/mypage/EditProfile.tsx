@@ -91,7 +91,7 @@ export default function EditProfile() {
                 <div className="form-group">
                     <label className="form-label">연령대</label>
                     <select
-                        value={ageGroup}
+                        value={ageGroup || ''}
                         onChange={(e) => setAgeGroup(e.target.value)}
                         className="form-select"
                     >
@@ -134,7 +134,7 @@ export default function EditProfile() {
                                 onClick={() => toggleDisease(disease.id)}
                                 className={`disease-select-item ${selectedDiseaseIds.includes(disease.id) ? 'selected' : ''}`}
                             >
-                                {disease.name}
+                                {disease.sickName}
                             </button>
                         ))}
                     </div>
