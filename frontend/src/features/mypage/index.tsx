@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ChevronLeft, ChevronRight, Settings, User, Bell, LogOut, ShieldCheck } from 'lucide-react';
-import { fetchUserInfo, UserInfo } from '@/services/userService';
+import { fetchUserInfo, UserInfo, logout } from '@/services/userService';
 import './styles.css';
 
 import ProfileCard from './components/ProfileCard';
@@ -13,12 +13,21 @@ export default function MyPageFeature() {
     const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
     const [loading, setLoading] = useState(true);
 
+    const hasAlerted = React.useRef(false);
+
     useEffect(() => {
         const loadUserInfo = async () => {
             const data = await fetchUserInfo();
             if (data) {
                 setUserInfo(data);
                 localStorage.setItem('userName', data.userDataResponse.name);
+            } else {
+                if (!hasAlerted.current) {
+                    hasAlerted.current = true;
+                    alert("로그인이 필요한 서비스입니다.");
+                    router.replace('/login');
+                }
+                return;
             }
             setLoading(false);
         };
@@ -28,6 +37,7 @@ export default function MyPageFeature() {
 
     const handleLogout = async () => {
         if (confirm("로그아웃 하시겠습니까?")) {
+            await logout(); // 서버 로그아웃 요청
             localStorage.removeItem("userName");
             router.push("/login");
         }
@@ -38,13 +48,11 @@ export default function MyPageFeature() {
     return (
         <div className="mypage-container">
             <header className="mypage-header">
-                <button onClick={() => router.back()} className="back-button">
-                    <ChevronLeft size={24} />
-                </button>
+                {/* 뒤로가기 버튼 제거됨 (탭바 사용) */}
+                <div style={{ width: 24 }}></div>
                 <h1 className="header-title">마이페이지</h1>
-                <button onClick={() => router.push('/settings')} className="settings-button">
-                    <Settings size={22} />
-                </button>
+                {/* 설정 버튼 제거됨 */}
+                <div style={{ width: 24 }}></div>
             </header>
 
             {userInfo && (
@@ -60,7 +68,7 @@ export default function MyPageFeature() {
                     <div className="disease-tags">
                         {userInfo?.userDiseases.length ? (
                             userInfo.userDiseases.map(d => (
-                                <span key={d.id} className="disease-tag">{d.name}</span>
+                                <span key={d.id} className="disease-tag">{d.sickName}</span>
                             ))
                         ) : (
                             <p className="empty-text">등록된 질환 정보가 없습니다.</p>
@@ -81,6 +89,13 @@ export default function MyPageFeature() {
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                         <ShieldCheck size={20} />
                         <span className="menu-label">계정 및 보안</span>
+                    </div>
+                    <ChevronRight size={18} color="#CBD5E1" />
+                </div>
+                <div className="menu-item" onClick={() => router.push('/settings/notification')}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <Bell size={20} />
+                        <span className="menu-label">알림 설정</span>
                     </div>
                     <ChevronRight size={18} color="#CBD5E1" />
                 </div>

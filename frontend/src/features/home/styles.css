@@ -198,7 +198,26 @@
     color: var(--text-muted);
 }
 
-.empty-icon {
-    color: var(--highlight-color);
-    margin-bottom: 0.5rem;
+
+/* Skeleton Loader */
+@keyframes shimmer {
+    0% {
+        background-position: -200% 0;
+    }
+
+    100% {
+        background-position: 200% 0;
+    }
+}
+
+.skeleton-loader {
+    display: inline-block;
+    height: 1.5em;
+    /* 텍스트 높이에 맞춤 */
+    width: 120px;
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: 4px;
+    vertical-align: middle;
 }
