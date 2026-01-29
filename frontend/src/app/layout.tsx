@@ -31,7 +31,7 @@ export const viewport: Viewport = {
 };
 
 import BottomTabBar from "../layout/BottomTabBar";
-import NotificationManager from "@/features/notification/components/NotificationManager";
+import NotificationManagerEnhanced from "@/features/notification/components/NotificationManagerEnhanced";
 import { ScheduleProvider } from "@/features/notification/contexts/ScheduleContext";
 import { ReportProvider } from "@/features/report/contexts/ReportContext";
 import PageTransition from "@/components/common/PageTransition";
@@ -55,7 +55,7 @@ export default function RootLayout({
               </PageTransition>
             </AnimatePresence>
             <BottomTabBar />
-            <NotificationManager />
+            <NotificationManagerEnhanced />
           </ReportProvider>
         </ScheduleProvider>
       </body>

@@ -1,0 +1,50 @@
+.permission-guide-content {
+    padding: 1.5rem;
+}
+
+.permission-guide-desc {
+    font-size: 1rem;
+    color: #1A1A1A;
+    margin-bottom: 1.5rem;
+    line-height: 1.5;
+}
+
+.browser-instructions {
+    background: #F5F5F5;
+    border-radius: 12px;
+    padding: 1.25rem;
+}
+
+.browser-instructions h4 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #FF5722;
+    margin-bottom: 1rem;
+}
+
+.browser-instructions ol {
+    margin: 0;
+    padding-left: 1.5rem;
+}
+
+.browser-instructions li {
+    font-size: 0.9375rem;
+    color: #1A1A1A;
+    line-height: 1.6;
+    margin-bottom: 0.5rem;
+}
+
+.browser-instructions li:last-child {
+    margin-bottom: 0;
+}
+
+.permission-guide-footer {
+    display: flex;
+    gap: 0.75rem;
+    padding: 1rem 1.5rem;
+    border-top: 1px solid #E5E7EB;
+}
+
+.permission-guide-footer button {
+    flex: 1;
+}
