@@ -197,7 +197,7 @@ export default function ResultStep({ imageSrc, result, onRetake, onRegister }: R
                         <span>다시 촬영</span>
                     </ActionButton>
                     <ActionButton onClick={onRegister} variant="primary">
-                        <span>등록하기</span>
+                        <span>리포트 보기</span>
                         <Check size={20} strokeWidth={3} />
                     </ActionButton>
                 </div>
