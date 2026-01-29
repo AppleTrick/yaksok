@@ -64,11 +64,34 @@ export default function MySupplementsPage() {
             if (schedule.items.some(i => i.name === selectedItem.name)) {
                 const newItems = schedule.items.filter(i => i.name !== selectedItem.name);
                 // Note: updateSchedule expects rawTime as 2nd arg
-                updateSchedule(schedule.id, schedule.items.length === newItems.length ? schedule.rawTime : schedule.rawTime, newItems);
+                updateSchedule(schedule.id, schedule.items.length === newItems.length ? schedule.rawTime : schedule.rawTime, schedule.mealCategory || 'post_meal', newItems);
             }
         });
 
         setSelectedItem(null);
+    };
+
+    // 5. Handle Edit
+    const handleEdit = () => {
+        if (!selectedItem) return;
+        setIsRegisterModalOpen(true);
+        // We keep selectedItem set so the modal stays open? 
+        // No, we want to open RegisterModal with data. And Close DetailModal?
+        // Let's close DetailModal first.
+        setSelectedItem(null);
+        // Wait, if we close detail modal, we lose selectedItem context for initialData.
+        // We need a separate state for `editingItem` or just pass `selectedItem` to the form BEFORE clearing it.
+        // Actually, `isRegisterModalOpen` controls the form using `ManualRegistrationForm`.
+        // We need to pass `initialData` to it.
+        // I'll add a `itemToEdit` state.
+    };
+
+    const [itemToEdit, setItemToEdit] = useState<MedicationItem | undefined>(undefined);
+
+    const openRegisterModal = (item?: MedicationItem) => {
+        setItemToEdit(item);
+        setIsRegisterModalOpen(true);
+        if (item) setSelectedItem(null); // Close detail modal if editing
     };
 
     return (
@@ -95,7 +118,7 @@ export default function MySupplementsPage() {
             <SupplementList
                 items={filteredItems}
                 onItemClick={setSelectedItem}
-                onAddClick={() => setIsRegisterModalOpen(true)}
+                onAddClick={() => openRegisterModal()}
             />
 
             {/* Detail Modal */}
@@ -110,6 +133,7 @@ export default function MySupplementsPage() {
                         toggleMedicationStatus(selectedItem.name, newStatus);
                         setSelectedItem(prev => prev ? { ...prev, status: newStatus } : null);
                     }}
+                    onEdit={() => openRegisterModal(selectedItem)}
                 />
             )}
 
@@ -117,9 +141,12 @@ export default function MySupplementsPage() {
             <Modal
                 isOpen={isRegisterModalOpen}
                 onClose={() => setIsRegisterModalOpen(false)}
-                title="영양제 등록"
+                title={itemToEdit ? "영양제 수정" : "영양제 등록"}
             >
-                <ManualRegistrationForm onClose={() => setIsRegisterModalOpen(false)} />
+                <ManualRegistrationForm
+                    onClose={() => setIsRegisterModalOpen(false)}
+                    initialData={itemToEdit}
+                />
             </Modal>
 
             {/* Spacing for Bottom Tab Bar */}
