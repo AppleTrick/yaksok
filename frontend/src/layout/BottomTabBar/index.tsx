@@ -23,7 +23,10 @@ export default function BottomTabBar() {
     ];
 
     return (
+<<<<<<< HEAD
 
+=======
+>>>>>>> 723dcd2e4cea1162e94133d66521e21277f368fb
         <motion.nav
             className="bottom-tab-bar"
             initial={{ y: 20, opacity: 0 }}
