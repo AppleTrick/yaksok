@@ -18,12 +18,10 @@ export default function BottomTabBar() {
     const navItems = [
         { href: '/', icon: Home, label: '홈' },
         { href: '/my-supplements', icon: Pill, label: '내 영양제' },
-        { href: '/reminders', icon: Bell, label: '알림' },
         { href: '/settings', icon: Settings, label: '설정' },
     ];
 
     return (
-
         <motion.nav
             className="bottom-tab-bar"
             initial={{ y: 20, opacity: 0 }}

@@ -1,3 +1,5 @@
+export type MealCategory = 'empty_stomach' | 'post_meal' | 'pre_sleep';
+
 export type CycleType = 'daily' | 'weekly' | 'interval';
 
 export interface Cycle {
