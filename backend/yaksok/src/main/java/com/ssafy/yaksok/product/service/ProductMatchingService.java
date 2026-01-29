@@ -187,7 +187,7 @@ public class ProductMatchingService {
                 3. confidence가 high인 경우만 exists: true
                 """, ocrProductName);
 
-            String response = llmService.query(verifyPrompt, 0.1);
+            String response = llmService.query(verifyPrompt, 1);
             String json = response.replaceAll("```json|```", "").trim();
             JsonNode node = objectMapper.readTree(json);
 
@@ -224,7 +224,7 @@ public class ProductMatchingService {
             String prompt = buildProductCreationPrompt(ocrProductName);
 
             // LLM 호출
-            String response = llmService.query(prompt, 0.1);
+            String response = llmService.query(prompt, 1);
 
             // 응답 파싱
             Product newProduct = parseProductResponse(response);
