@@ -128,42 +128,29 @@ def analyze_supplement(image_bytes: bytes) -> dict:
                 except Exception as crop_err:
                     print(f"❌ [Analysis] 객체 #{i+1} 분석 실패: {crop_err}")
         
-        # 4. 데이터 정제 및 반환
-        frontend_products = []
+        # 4. 데이터 정제 및 반환 (Spring Boot(백엔드)에서 가공하기 위한 Raw 데이터만 반환)
+        # 프론트엔드 직접 연동 로직을 제거하고, 백엔드가 DB 검색을 수행하기 위한 핵심 정보만 포함합니다.
+        raw_results = []
         for res in analysis_results:
-            product_name = "알 수 없는 영양제"
-            if res["barcode"]["found"] and res["barcode"].get("db_result"):
-                product_name = res["barcode"]["db_result"].get("name", product_name)
-            elif res["ocr"].get("texts"):
-                # 제품명 선택 로직 개선:
-                # 1. 2글자 이상인 텍스트만 필터링 (잡음 제거)
-                # 2. 신뢰도가 가장 높은 텍스트 선택
-                ocr_texts = res["ocr"].get("texts", [])
-                valid_texts = [t for t in ocr_texts if len(t.get("text", "")) >= 2]
-                if valid_texts:
-                    # 신뢰도 내림차순, 길이 내림차순 정렬
-                    best_text = max(valid_texts, key=lambda x: (x.get("confidence", 0), len(x.get("text", ""))))
-                    product_name = best_text["text"]
-            
-            frontend_products.append({
-                "name": product_name,
-                "barcode": res["barcode"]["data"] if res["barcode"]["found"] else None,
-                "confidence": res["confidence"],
-                "box": res["box"]
+            raw_results.append({
+                "box": res["box"],           # 탐지된 객체의 좌표 [x1, y1, x2, y2]
+                "confidence": res["confidence"], # 탐지 신뢰도
+                "barcode": res["barcode"]["data"] if res["barcode"]["found"] else None, # 인식된 바코드
+                "ocr_texts": [t.get("text", "") for t in res["ocr"].get("texts", [])]  # 추출된 모든 텍스트 리스트
             })
             
-        result["frontend_data"] = {
-            "object_count": len(frontend_products),
-            "products": frontend_products
-        }
-        
-        result["ocr"] = analysis_results
-        result["analysis_results"] = analysis_results
+        result["analysis_results"] = raw_results
         result["step"] = "final"
         result["success"] = True
-        result["message"] = f"{len(analysis_results)}개의 객체 분석 완료"
+        result["message"] = f"{len(raw_results)} objects detected"
         
-        print(f"[Analysis] ✅ 분석 완료: {len(frontend_products)}개 제품 식별됨\n")
+        # UI 및 중복 키 제거 (Spring Boot가 처리함)
+        result.pop("frontend_data", None)
+        result.pop("yolo", None)
+        result.pop("barcode", None)
+        result.pop("ocr", None)
+        
+        print(f"[Analysis] ✅ Raw AI 분석 완료: {len(raw_results)}개 객체 데이터 반환\n")
         return result
         
     except Exception as e:
