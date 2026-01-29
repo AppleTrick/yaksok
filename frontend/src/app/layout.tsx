@@ -33,8 +33,9 @@ export const viewport: Viewport = {
 import BottomTabBar from "../layout/BottomTabBar";
 import NotificationManagerEnhanced from "@/features/notification/components/NotificationManagerEnhanced";
 import { ScheduleProvider } from "@/features/notification/contexts/ScheduleContext";
-
-
+import { ReportProvider } from "@/features/report/contexts/ReportContext";
+import PageTransition from "@/components/common/PageTransition";
+import { AnimatePresence } from "framer-motion";
 
 export default function RootLayout({
   children,
@@ -47,9 +48,15 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <ScheduleProvider>
-          {children}
-          <BottomTabBar />
-          <NotificationManagerEnhanced />
+          <ReportProvider>
+            <AnimatePresence mode="wait">
+              <PageTransition>
+                {children}
+              </PageTransition>
+            </AnimatePresence>
+            <BottomTabBar />
+            <NotificationManagerEnhanced />
+          </ReportProvider>
         </ScheduleProvider>
       </body>
     </html>
