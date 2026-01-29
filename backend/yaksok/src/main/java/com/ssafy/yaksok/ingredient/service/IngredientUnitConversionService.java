@@ -41,7 +41,7 @@ public class IngredientUnitConversionService {
             String prompt = buildConversionPrompt(ingredientName, amount, fromUnit);
 
             // LLM 호출
-            String response = llmService.query(prompt, 0.1);
+            String response = llmService.query(prompt, 1);
 
             // 응답 파싱
             UnitConversionResultDto result = parseResponse(response);
