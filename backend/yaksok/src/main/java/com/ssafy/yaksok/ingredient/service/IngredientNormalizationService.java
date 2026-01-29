@@ -90,8 +90,7 @@ public class IngredientNormalizationService {
 
         var result = IngredientUnitConverter.convertIUToStandard(
                 ingredient.getIngredient().getIngredientName(),
-                ingredient.getIngredientAmount()
-        );
+                ingredient.getIngredientAmount());
 
         if (result.isSuccess()) {
             ingredient.setIngredientAmount(result.getValue());
@@ -112,10 +111,9 @@ public class IngredientNormalizationService {
         log.debug("LLM 변환 시작: {}", ingredient.getIngredient().getIngredientName());
 
         UnitConversionResultDto result = llmConversionService.convertUnit(
-                ingredient.getIngredient().getIngredientName(),  // 수정
+                ingredient.getIngredient().getIngredientName(), // 수정
                 ingredient.getIngredientAmount(),
-                ingredient.getAmountUnit()
-        );
+                ingredient.getAmountUnit());
 
         if (result.isSuccess()) {
             ingredient.setIngredientAmount(result.getAmount());
