@@ -21,17 +21,18 @@ public class OpenAILLMServiceImpl implements LLMService {
     @Value("${openai.api.key}")
     private String apiKey;
 
-    @Value("${openai.model:gpt-4}")
+    @Value("${openai.model:gpt-5-mini}")
     private String model;
+
+    @Value("${openai.api.url:https://gms.ssafy.io/gmsapi/api.openai.com/v1/chat/completions}")
+    private String apiUrl;
 
     private final RestTemplate restTemplate = new RestTemplate();
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    private static final String OPENAI_API_URL = "https://api.openai.com/v1/chat/completions";
-
     @Override
     public String query(String prompt) {
-        return query(prompt, 0.1);  // 기본값: 정확성 우선
+        return query(prompt, 0.1); // 기본값: 정확성 우선
     }
 
     @Override
@@ -46,15 +47,13 @@ public class OpenAILLMServiceImpl implements LLMService {
             Map<String, Object> body = Map.of(
                     "model", model,
                     "messages", List.of(Map.of("role", "user", "content", prompt)),
-                    "temperature", temperature
-            );
+                    "temperature", temperature);
 
             HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, headers);
             ResponseEntity<String> response = restTemplate.postForEntity(
-                    OPENAI_API_URL,
+                    apiUrl,
                     entity,
-                    String.class
-            );
+                    String.class);
 
             JsonNode root = objectMapper.readTree(response.getBody());
             String content = root.path("choices").get(0).path("message").path("content").asText();
