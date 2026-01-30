@@ -20,7 +20,6 @@ os.makedirs(SAVE_IMAGE_DIR, exist_ok=True)
 
 # 서비스 임포트
 from app.services.yolo_service import detect_supplements
-from app.services.barcode_service import detect_barcode
 from app.services.ocr_service import extract_text
 # 유틸리티 임포트
 from app.utils import load_image_with_exif
@@ -34,13 +33,8 @@ def analyze_supplement(image_bytes: bytes) -> dict:
             "step": None,
             "success": False,
             "yolo": None,
-            "barcode": None,
             "ocr": None,
-            "processing_info": None,
-            "frontend_data": {
-                "object_count": 0,
-                "products": []
-            }
+            "processing_info": None
         }
         
         # 1. 이미지 로드
@@ -69,30 +63,8 @@ def analyze_supplement(image_bytes: bytes) -> dict:
             print(f"⚠️ [Analysis] 분석 중단: 영양제 미탐지")
             return result
         
-        # 3. 통합 분석 (바코드 + OCR)
+        # 3. 통합 분석 (OCR 위주)
         analysis_results = []
-        
-        # 전체 이미지 바코드 스캔 (빠른 확인용)
-        if processed_pil:
-            cv2_full_image = cv2.cvtColor(np.array(processed_pil), cv2.COLOR_RGB2BGR)
-            barcode_result = detect_barcode(cv2_full_image)
-            result["barcode"] = barcode_result
-            
-            if barcode_result["found"] and barcode_result.get("db_result"):
-                result["step"] = "barcode"
-                result["success"] = True
-                result["message"] = "바코드로 제품 정보를 찾았습니다"
-                result["frontend_data"] = {
-                    "object_count": 1,
-                    "products": [{
-                        "name": barcode_result["db_result"].get("name", "알 수 없는 제품"),
-                        "barcode": barcode_result["data"],
-                        "confidence": 1.0,
-                        "box": [0, 0, orig_w, orig_h]
-                    }]
-                }
-                print(f"[Analysis] 바코드 인식 성공: {barcode_result['data']}")
-                return result
         
         # 객체별 상세 분석 Loop
         for i, obj in enumerate(yolo_result.get("objects", [])):
@@ -110,10 +82,7 @@ def analyze_supplement(image_bytes: bytes) -> dict:
                     cropped_pil = original_pil.crop((x1, y1, x2, y2))
                     cropped_cv2 = cv2.cvtColor(np.array(cropped_pil), cv2.COLOR_RGB2BGR)
                     
-                    # 바코드 & OCR 수행
-                    barcode_item = detect_barcode(cropped_cv2)
-                    
-                    # 로그 간소화: 진행 상황만 한 줄로 표시
+                    # OCR 수행
                     print(f"[Analysis] 객체 #{i+1} 분석 중 (OCR)...")
                     ocr_item = extract_text(cropped_cv2, save_image=False)
                     
@@ -122,21 +91,19 @@ def analyze_supplement(image_bytes: bytes) -> dict:
                         "label": obj["label"],
                         "confidence": obj["confidence"],
                         "box": box,
-                        "barcode": barcode_item,
                         "ocr": ocr_item
                     })
                 except Exception as crop_err:
                     print(f"❌ [Analysis] 객체 #{i+1} 분석 실패: {crop_err}")
         
-        # 4. 데이터 정제 및 반환 (Spring Boot(백엔드)에서 가공하기 위한 Raw 데이터만 반환)
-        # 프론트엔드 직접 연동 로직을 제거하고, 백엔드가 DB 검색을 수행하기 위한 핵심 정보만 포함합니다.
+        # 4. 데이터 정제 및 반환
         raw_results = []
         for res in analysis_results:
             raw_results.append({
-                "box": res["box"],           # 탐지된 객체의 좌표 [x1, y1, x2, y2]
-                "confidence": res["confidence"], # 탐지 신뢰도
-                "barcode": res["barcode"]["data"] if res["barcode"]["found"] else None, # 인식된 바코드
-                "ocr_texts": [t.get("text", "") for t in res["ocr"].get("texts", [])]  # 추출된 모든 텍스트 리스트
+                "box": res["box"],
+                "confidence": res["confidence"],
+                "barcode": None, # 바코드 기능 제거
+                "ocr_texts": [t.get("text", "") for t in res["ocr"].get("texts", [])]
             })
             
         result["analysis_results"] = raw_results
@@ -144,20 +111,7 @@ def analyze_supplement(image_bytes: bytes) -> dict:
         result["success"] = True
         result["message"] = f"{len(raw_results)} objects detected"
         
-        # 테스트 페이지 호환을 위해 analysis_results에 상세 정보도 포함
-        # (백엔드는 raw_results의 box, confidence, barcode, ocr_texts만 사용)
-        for i, res in enumerate(analysis_results):
-            raw_results[i]["barcode_detail"] = res["barcode"]  # 전체 바코드 정보
-            raw_results[i]["ocr"] = res["ocr"]  # 전체 OCR 정보 (테스트 페이지용)
-            raw_results[i]["label"] = res["label"]
-        
-        # yolo 결과는 유지 (테스트 페이지에서 사용)
-        # frontend_data, barcode, ocr 키만 제거
-        result.pop("frontend_data", None)
-        result.pop("barcode", None)
-        result.pop("ocr", None)
-        
-        print(f"[Analysis] ✅ Raw AI 분석 완료: {len(raw_results)}개 객체 데이터 반환\n")
+        print(f"[Analysis] ✅ 분석 완료: {len(raw_results)}개 객체 데이터 반환")
         return result
         
     except Exception as e:
