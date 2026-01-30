@@ -57,7 +57,7 @@ export default function Home() {
 
   // Schedule Logic for Progress Card
   const allDueItems = today ? schedules.flatMap(s =>
-    s.items.filter(item => isItemDue(item, today))
+    s.items.filter(item => isItemDue(item, today) && item.status !== 'stopped')
   ) : [];
   const totalMeds = allDueItems.length;
   const takenMeds = allDueItems.filter(i => i.isTaken).length;
