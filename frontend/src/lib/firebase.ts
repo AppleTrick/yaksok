@@ -35,6 +35,16 @@ export const getFirebaseMessaging = async (): Promise<Messaging | null> => {
             return null;
         }
 
+        // Service Worker 등록
+        if ('serviceWorker' in navigator) {
+            try {
+                const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+                console.log('✅ Service Worker 등록 성공:', registration);
+            } catch (error) {
+                console.error('❌ Service Worker 등록 실패:', error);
+            }
+        }
+
         return getMessaging(app);
     } catch (error) {
         console.error('Firebase Messaging 초기화 오류:', error);
