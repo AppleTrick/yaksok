@@ -44,7 +44,6 @@ public class SupplementAnalysisResponse {
     public static class ProductDisplayInfo {
         private Long tempId;
         private String name;
-        private String barcode;
         private double confidence;
         private List<Double> box;
         private boolean isExactMatch;
