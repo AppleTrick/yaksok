@@ -99,13 +99,19 @@ def analyze_supplement(image_bytes: bytes) -> dict:
         # 4. 데이터 정제 및 반환
         raw_results = []
         for res in analysis_results:
+            ocr_info = res["ocr"]
+            lines_data = ocr_info.get("lines", []) # [{text, confidence}, ...]
+            
             raw_results.append({
                 "box": res["box"],
                 "confidence": res["confidence"],
-                "ocr_texts": [t.get("text", "") for t in res["ocr"].get("texts", [])]
+                "ocr_text": ocr_info.get("text", ""),    # 전체 텍스트 (줄바꿈 포함)
+                "ocr_texts": [line["text"] for line in lines_data], # 하위 호환성 (줄별 텍스트 리스트)
+                "ocr_lines": lines_data                  # 상세 라인 정보 (정확도 포함)
             })
             
         result["analysis_results"] = raw_results
+    
         result["step"] = "final"
         result["success"] = True
         result["message"] = f"{len(raw_results)} objects detected"

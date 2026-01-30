@@ -25,7 +25,7 @@ try:
         
         # 문서 전처리 옵션
         use_doc_orientation_classify=False,  # 문서 회전 감지 (필요시 True)
-        use_doc_unwarping=False,             # 곡면 보정 (필요시 True, 성능 영향)
+        use_doc_unwarping=True,          # 곡면 보정 (필요시 True, 성능 영향)
         use_textline_orientation=True,       # 텍스트 라인 방향 감지
     )
     print("[OCR 서비스] ✅ PP-OCRv5 모델 로드 완료")
@@ -104,8 +104,8 @@ def parse_ppocrv5_result(result):
                 score = float(rec_scores[i]) if i < len(rec_scores) else 0.99
                 coords = rec_polys[i].tolist() if i < len(rec_polys) and hasattr(rec_polys[i], 'tolist') else []
                 
-                # 40% 이상 신뢰도만 포함
-                if score >= 0.4:
+                # 50% 이상 신뢰도만 포함 (노이즈 제거를 위해 0.4 -> 0.5 상향)
+                if score >= 0.5:
                     parsed_items.append({
                         "text": str(text).strip(),
                         "confidence": score,
@@ -117,6 +117,72 @@ def parse_ppocrv5_result(result):
             continue
     
     return parsed_items
+
+
+def group_text_to_lines(items: list, threshold_ratio: float = 0.5) -> dict:
+    """
+    OCR 파편들을 줄(Line) 단위로 그룹화하고 정렬합니다.
+    """
+    if not items:
+        return {"text": "", "lines": []}
+
+    # 1. 각 항목의 중심점과 높이 계산
+    for item in items:
+        coords = np.array(item["coords"])
+        y_min = np.min(coords[:, 1])
+        y_max = np.max(coords[:, 1])
+        x_min = np.min(coords[:, 0])
+        x_max = np.max(coords[:, 0])
+        
+        item["center_y"] = (y_min + y_max) / 2
+        item["center_x"] = (x_min + x_max) / 2
+        item["height"] = y_max - y_min
+
+    # 2. 중심 Y 좌표 기준으로 정렬
+    sorted_items = sorted(items, key=lambda x: x["center_y"])
+
+    lines = []
+    if sorted_items:
+        current_line = [sorted_items[0]]
+        
+        for i in range(1, len(sorted_items)):
+            item = sorted_items[i]
+            prev_item = current_line[-1]
+            
+            # 수직 거리 계산
+            dist = abs(item["center_y"] - prev_item["center_y"])
+            # 현재 줄의 평균 높이와 비교하여 임계값 이내면 같은 줄로 판정
+            avg_height = sum(it["height"] for it in current_line) / len(current_line)
+            
+            if dist < avg_height * threshold_ratio:
+                current_line.append(item)
+            else:
+                # 줄 내부에서 X 좌표 기준 정렬 (왼쪽 -> 오른쪽)
+                current_line.sort(key=lambda x: x["center_x"])
+                lines.append(current_line)
+                current_line = [item]
+        
+        # 마지막 줄 처리
+        current_line.sort(key=lambda x: x["center_x"])
+        lines.append(current_line)
+
+    # 3. 텍스트 병합 및 로그용 데이터 생성
+    lines_with_meta = []
+    for line in lines:
+        line_text = " ".join([it["text"] for it in line])
+        line_conf = sum([it["confidence"] for it in line]) / len(line)
+        lines_with_meta.append({
+            "text": line_text,
+            "confidence": line_conf
+        })
+
+    full_text = "\n".join([lm["text"] for lm in lines_with_meta])
+    
+    return {
+        "text": full_text.strip(),
+        "lines": lines,
+        "lines_with_meta": lines_with_meta
+    }
 
 
 def extract_text(image: np.ndarray, rotations: list = None, save_image: bool = False) -> dict:
@@ -182,19 +248,25 @@ def extract_text(image: np.ndarray, rotations: list = None, save_image: bool = F
             total_conf = sum(item["confidence"] for item in items)
             avg_conf = total_conf / len(items)
             
+            # Line Grouping 적용
+            grouped_result = group_text_to_lines(items)
+            full_text = grouped_result["text"]
+            lines_meta = grouped_result["lines_with_meta"]
+            
             # 터미널에 OCR 결과 출력
-            print(f"[OCR] ✅ {len(items)}개 텍스트 추출 (평균 신뢰도: {avg_conf:.1%})")
-            for item in items[:5]:  # 상위 5개만 출력
-                print(f"    └ [{item['confidence']:.0%}] {item['text'][:50]}")
-            if len(items) > 5:
-                print(f"    └ ... 외 {len(items) - 5}개")
+            print(f"[OCR] ✅ {len(items)}개 텍스트 추출 (전체 평균 신뢰도: {avg_conf:.1%})")
+            print("[OCR] --- 추출된 텍스트 및 줄별 정확도 ---")
+            for i, lm in enumerate(lines_meta):
+                print(f"  [{i+1:02d}] ({lm['confidence']:.0%}) {lm['text']}")
+            print("[OCR] --------------------------------------")
             
             return {
-                "text": " ".join(item["text"] for item in items),
+                "text": full_text,
                 "items": items,
                 "texts": items,  # analysis_service.py 호환용
                 "count": len(items),  # /test 페이지 호환용
-                "confidence": avg_conf
+                "confidence": avg_conf,
+                "lines": lines_meta  # 상세 라인 정보
             }
         else:
             print("[OCR] ⚠️ 텍스트 추출 결과 없음")
