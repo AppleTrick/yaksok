@@ -28,6 +28,11 @@ try:
         use_doc_orientation_classify=False,  # 문서 회전 감지 (필요시 True)
         use_doc_unwarping=True,          # 곡면 보정 (필요시 True, 성능 영향)
         use_textline_orientation=True,       # 텍스트 라인 방향 감지
+
+
+        det_db_unclip_ratio=2.0,  # 박스를 좀 더 넉넉하게 따서 휘어진 부분까지 포함
+        det_db_thresh=0.3,        # 탐지 민감도 조절
+        rec_batch_num=6,          # 인식 속도와 정확도 밸런스
     )
     print("[OCR 서비스] ✅ PP-OCRv5 모델 로드 완료")
 except Exception as e:
