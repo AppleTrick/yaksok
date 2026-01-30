@@ -37,3 +37,7 @@ public/swe-worker-*.js.map
 bin/
 build/
 .gradle/
+
+# Firebase service account key
+serviceAccountKey.json
+firebase.json
