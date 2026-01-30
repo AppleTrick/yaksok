@@ -30,19 +30,23 @@ public enum ErrorCode {
     USER_PRODUCT_NOT_FOUND("USER_PRODUCT_404", "사용자 영양제를 찾을 수 없습니다", HttpStatus.NOT_FOUND),
     USER_PRODUCT_UNAUTHORIZED("USER_PRODUCT_403", "해당 영양제에 대한 권한이 없습니다", HttpStatus.FORBIDDEN),
 
-    //NOTIFICATION
+    // NOTIFICATION
     NOTIFICATION_NOT_FOUND("NOTIFICATION_404", "알람을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
     NOTIFICATION_DUPLICATE_PRODUCT("NOTIFICATION_409", "이미 존재하는 알람입니다", HttpStatus.CONFLICT),
 
-    //NOTIFICATION_SETTING
+    // NOTIFICATION_SETTING
     NOTIFICATION_SETTING_NOT_FOUND("NOTIFICATION_404", "알람을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
 
-    //NOTIFICATION_LOG
+    // NOTIFICATION_LOG
     NOTIFICATION_LOG_NOT_FOUND("NOTIFICATION_404", "알람을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
 
-    //FCM_TOKEN
+    // FCM_TOKEN
     FCM_TOKEN_NOT_FOUND("FCM_TOKEN_404", "사용자 fcm 토큰이 없습니다.", HttpStatus.NOT_FOUND),
 
+    // ANALYZE
+    ANALYZE_AI_SERVER_ERROR("ANALYZE_500_1", "AI 서버 연동 중 오류가 발생했습니다", HttpStatus.INTERNAL_SERVER_ERROR),
+    ANALYZE_LLM_ERROR("ANALYZE_500_2", "LLM 분석 중 오류가 발생했습니다", HttpStatus.INTERNAL_SERVER_ERROR),
+    ANALYZE_DATA_ERROR("ANALYZE_500_3", "데이터 취합 중 오류가 발생했습니다", HttpStatus.INTERNAL_SERVER_ERROR),
 
     // COMMON
     INTERNAL_SERVER_ERROR("COMMON_500", "서버 오류가 발생했습니다", HttpStatus.INTERNAL_SERVER_ERROR);
@@ -57,5 +61,3 @@ public enum ErrorCode {
         this.status = status;
     }
 }
-
-
