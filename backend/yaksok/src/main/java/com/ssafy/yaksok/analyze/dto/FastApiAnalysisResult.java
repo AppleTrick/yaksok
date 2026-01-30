@@ -1,7 +1,9 @@
 package com.ssafy.yaksok.analyze.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.List;
 
@@ -9,11 +11,13 @@ import java.util.List;
  * FastAPI 서버로부터 수신하는 Raw AI 분석 결과 DTO
  */
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class FastApiAnalysisResult {
     private boolean success;
     private String message;
     private String step;
-    
+
     /**
      * AI 분석 결과 목록 (객체별 좌표, 바코드, OCR 텍스트)
      */
@@ -21,11 +25,12 @@ public class FastApiAnalysisResult {
     private List<RawAnalysisResult> analysisResults;
 
     @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
     public static class RawAnalysisResult {
         private List<Double> box;
         private double confidence;
-        private String barcode;
-        
+
         @JsonProperty("ocr_texts")
         private List<String> ocrTexts;
     }
