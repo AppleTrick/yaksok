@@ -125,25 +125,28 @@ def parse_ppocrv5_result(result):
     return parsed_items
 
 
-def clean_text(text: str) -> str:
+def clean_text_hybrid(text: str, mode: str = "product") -> str:
     """
-    텍스트 정규화 및 노이즈 제거
-    - 특수문자 제거 (일부 유효 기호 제외)
-    - 연속된 공백 및 줄바꿈 정리
-    - 양끝 공백 제거
+    하이브리드 텍스트 정규화
+    - mode="product": 제품명 매칭용 (특수문자 제거 + 한글 자간 결합)
+    - mode="general": 일반 정보용 (특수문자 보존)
     """
     if not text:
         return ""
-    
-    # 1. 특수문자 전처리 (일반적으로 노이즈로 인식되는 문자들 제거)
-    # 유효문자: 한글, 영문, 숫자, 일부 문장 부호 (.,:;%() / ~ +)
-    # 아래 정규식은 허용된 문자 이외의 모든 특수문자를 제거하거나 공백으로 변환
+
+    # 1. 공통 노이즈 제거 (의미 없는 잡기호)
     text = re.sub(r'[^a-zA-Z0-9가-힣\s\.,:%();/~+\-\[\]]', ' ', text)
+
+    if mode == "product":
+        # 제품명 매칭용: 특수문자 싹 날리고 검색 키워드 위주 정제
+        text = re.sub(r'[\.,:%();/~+\-\[\]]', ' ', text)
+        # 단어 사이의 미세 공백 제거 (비 타 민 -> 비타민)
+        # 한 글자씩 떨어져 있는 한글들을 강제로 붙임
+        text = re.sub(r'([가-힣])\s+(?=[가-힣]\s|[가-힣]$)', r'\1', text)
     
-    # 2. 연속된 공백 하나로 통합
-    text = re.sub(r'\s+', ' ', text)
-    
-    return text.strip()
+    # 2. 연속 공백 정리
+    text = re.sub(r'\s+', ' ', text).strip()
+    return text
 
 
 def group_text_to_lines(items: list, threshold_ratio: float = 0.5) -> dict:
@@ -198,9 +201,9 @@ def group_text_to_lines(items: list, threshold_ratio: float = 0.5) -> dict:
     filtered_lines = []
     
     for line in lines:
-        # 각 아이템 텍스트 정제
+        # 각 아이템 텍스트 정제 (제품 기본 정제 모드 사용)
         raw_line_text = " ".join([it["text"] for it in line])
-        cleaned_line_text = clean_text(raw_line_text)
+        cleaned_line_text = clean_text_hybrid(raw_line_text, mode="product")
         
         # 정제 후 너무 짧거나 의미 없는 텍스트(노이즈)면 제외
         if len(cleaned_line_text) < 1:
