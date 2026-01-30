@@ -154,16 +154,16 @@ export const ScheduleProvider = ({ children }: { children: ReactNode }) => {
             setActiveTab(savedTab as 'daily' | 'weekly');
         }
 
-        // Temporarily disable loading schedules from localStorage to use INITIAL_SCHEDULES
-        // const savedSchedules = localStorage.getItem('medication_schedules');
-        // if (savedSchedules) {
-        //     try {
-        //         const parsed = JSON.parse(savedSchedules);
-        //         setSchedules(parsed);
-        //     } catch (e) {
-        //         console.error("Failed to parse schedules from local storage", e);
-        //     }
-        // }
+        // Load schedules from localStorage
+        const savedSchedules = localStorage.getItem('medication_schedules');
+        if (savedSchedules) {
+            try {
+                const parsed = JSON.parse(savedSchedules);
+                setSchedules(parsed);
+            } catch (e) {
+                console.error("Failed to parse schedules from local storage", e);
+            }
+        }
     }, []);
 
     // Save schedules to localStorage whenever they change
