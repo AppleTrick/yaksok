@@ -38,3 +38,7 @@ out/
 
 ### 환경변수 ###
 .env
+
+# Firebase service account key
+serviceAccountKey.json
+firebase.json
