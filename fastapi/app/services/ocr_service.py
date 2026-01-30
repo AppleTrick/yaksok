@@ -166,21 +166,27 @@ def group_text_to_lines(items: list, threshold_ratio: float = 0.5) -> dict:
         current_line.sort(key=lambda x: x["center_x"])
         lines.append(current_line)
 
-    # 3. 텍스트 병합 및 로그용 데이터 생성
+    # 3. 텍스트 병합 및 로그용 데이터 생성 (평균 신뢰도 70% 이상만 필터링)
     lines_with_meta = []
+    filtered_lines = []
+    
     for line in lines:
         line_text = " ".join([it["text"] for it in line])
         line_conf = sum([it["confidence"] for it in line]) / len(line)
-        lines_with_meta.append({
-            "text": line_text,
-            "confidence": line_conf
-        })
+        
+        # 줄 단위 70% 임계값 적용
+        if line_conf >= 0.7:
+            lines_with_meta.append({
+                "text": line_text,
+                "confidence": line_conf
+            })
+            filtered_lines.append(line)
 
     full_text = "\n".join([lm["text"] for lm in lines_with_meta])
     
     return {
         "text": full_text.strip(),
-        "lines": lines,
+        "lines": filtered_lines,
         "lines_with_meta": lines_with_meta
     }
 
@@ -254,10 +260,13 @@ def extract_text(image: np.ndarray, rotations: list = None, save_image: bool = F
             lines_meta = grouped_result["lines_with_meta"]
             
             # 터미널에 OCR 결과 출력
-            print(f"[OCR] ✅ {len(items)}개 텍스트 추출 (전체 평균 신뢰도: {avg_conf:.1%})")
+            filtered_count = sum(len(line) for line in grouped_result["lines"])
+            print(f"[OCR] ✅ {filtered_count}개 텍스트 추출 (70% 미만 제외, 전체 평균 신뢰도: {avg_conf:.1%})")
             print("[OCR] --- 추출된 텍스트 및 줄별 정확도 ---")
             for i, lm in enumerate(lines_meta):
                 print(f"  [{i+1:02d}] ({lm['confidence']:.0%}) {lm['text']}")
+            if not lines_meta:
+                print("  (70% 이상의 신뢰도를 가진 텍스트가 없습니다)")
             print("[OCR] --------------------------------------")
             
             return {
