@@ -7,10 +7,9 @@ import com.ssafy.yaksok.global.util.ResponseUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import com.ssafy.yaksok.security.principal.UserPrincipal;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 /**
@@ -36,11 +35,14 @@ public class AnalyzeController {
      */
     @PostMapping
     public ResponseEntity<ApiResponse<SupplementAnalysisResponse>> analyzeSupplement(
+            @AuthenticationPrincipal UserPrincipal principal,
             @RequestParam("file") MultipartFile file) {
-        log.info("영양제 분석 API 호출됨: {}", file.getOriginalFilename());
-        
-        SupplementAnalysisResponse response = analyzeService.analyzeSupplement(file);
-        
+
+        Long userId = (principal != null) ? principal.getUserId() : null;
+        log.info("영양제 분석 요청: userId={}, filename={}", userId, file.getOriginalFilename());
+
+        SupplementAnalysisResponse response = analyzeService.analyzeSupplement(userId, file);
+
         return ResponseUtil.ok(response);
     }
 }

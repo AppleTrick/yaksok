@@ -135,57 +135,76 @@ export default function ResultStep({ imageSrc, result, onRetake, onRegister }: R
                 <div className="result-list-section">
                     <div className="section-title-row">
                         <h3 className="card-item-title" style={{ fontSize: '1.4rem', color: '#1A1A1A' }}>인식된 영양제</h3>
-                        <span className="count-badge">{result.displayData?.objectCount || 0}개 발견</span>
+                        <span className="count-badge">{(result.displayData?.products || []).length}개 발견</span>
                     </div>
 
-                    {(result.displayData?.products || []).map((obj, idx) => (
-                        <div key={idx} className="report-card">
-                            <div className="card-idx-circle" style={{
-                                background: idx === 0 ? 'var(--cam-mint)' : '#FFF9E1',
-                                color: idx === 0 ? 'var(--cam-green)' : '#F59E0B'
-                            }}>
-                                {idx + 1}
-                            </div>
-                            <div className="card-main-info" style={{ flex: 1 }}>
-                                <div className="card-header-line">
-                                    <h4 className="card-item-title" style={{ fontSize: '1.1rem', fontWeight: 800 }}>{obj.name}</h4>
-                                    <button className="btn-edit-small">수정</button>
-                                </div>
-                                {obj.barcode && (
-                                    <div style={{ fontSize: '0.8rem', color: '#888', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                        <Info size={12} />
-                                        코드: {obj.barcode}
-                                    </div>
-                                )}
-
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
-                                    <div style={{ flex: 1, height: 6, background: '#f1f5f9', borderRadius: 10, overflow: 'hidden' }}>
-                                        <div style={{
-                                            width: `${obj.confidence * 100}%`,
-                                            height: '100%',
-                                            background: obj.confidence > 0.7 ? 'var(--cam-green)' : 'var(--cam-orange)',
-                                            borderRadius: 10
-                                        }}></div>
-                                    </div>
-                                    <span style={{ fontSize: '0.85rem', fontWeight: 800, color: '#333' }}>
-                                        {Math.round(obj.confidence * 100)}%
-                                    </span>
-                                </div>
-
-                                {obj.confidence > 0.7 ? (
-                                    <div className="matching-pill">
-                                        <ShieldCheck size={14} />
-                                        정보가 정확합니다
-                                    </div>
-                                ) : (
-                                    <div className="matching-pill warning-pill">
-                                        <Info size={14} />
-                                        확인이 필요해요
-                                    </div>
-                                )}
-                            </div>
+                    {(result.displayData?.products || []).length === 0 ? (
+                        <div className="empty-analysis-state" style={{
+                            padding: '40px 20px',
+                            textAlign: 'center',
+                            background: '#f8fafc',
+                            borderRadius: '16px',
+                            border: '1px dashed #cbd5e1',
+                            margin: '20px 0'
+                        }}>
+                            <Info size={40} color="#94a3b8" style={{ marginBottom: '12px' }} />
+                            <p style={{ color: '#64748b', fontWeight: 600, marginBottom: '20px' }}>
+                                제품을 인식하지 못했습니다.<br />직접 검색하여 등록하시겠습니까?
+                            </p>
+                            <ActionButton onClick={() => window.location.href = '/search'} variant="outline" style={{ margin: '0 auto' }}>
+                                <ScanText size={18} />
+                                <span>직접 검색하기</span>
+                            </ActionButton>
                         </div>
-                    ))}
+                    ) : (
+                        (result.displayData?.products || []).map((obj, idx) => (
+                            <div key={idx} className="report-card">
+                                <div className="card-idx-circle" style={{
+                                    background: idx === 0 ? 'var(--cam-mint)' : '#FFF9E1',
+                                    color: idx === 0 ? 'var(--cam-green)' : '#F59E0B'
+                                }}>
+                                    {idx + 1}
+                                </div>
+                                <div className="card-main-info" style={{ flex: 1 }}>
+                                    <div className="card-header-line">
+                                        <h4 className="card-item-title" style={{ fontSize: '1.1rem', fontWeight: 800 }}>{obj.name}</h4>
+                                        <button className="btn-edit-small">수정</button>
+                                    </div>
+                                    {obj.barcode && (
+                                        <div style={{ fontSize: '0.8rem', color: '#888', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                            <Info size={12} />
+                                            코드: {obj.barcode}
+                                        </div>
+                                    )}
+
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
+                                        <div style={{ flex: 1, height: 6, background: '#f1f5f9', borderRadius: 10, overflow: 'hidden' }}>
+                                            <div style={{
+                                                width: `${obj.confidence * 100}%`,
+                                                height: '100%',
+                                                background: obj.confidence > 0.7 ? 'var(--cam-green)' : 'var(--cam-orange)',
+                                                borderRadius: 10
+                                            }}></div>
+                                        </div>
+                                        <span style={{ fontSize: '0.85rem', fontWeight: 800, color: '#333' }}>
+                                            {Math.round(obj.confidence * 100)}%
+                                        </span>
+                                    </div>
+
+                                    {obj.confidence > 0.7 ? (
+                                        <div className="matching-pill">
+                                            <ShieldCheck size={14} />
+                                            정보가 정확합니다
+                                        </div>
+                                    ) : (
+                                        <div className="matching-pill warning-pill">
+                                            <Info size={14} />
+                                            확인이 필요해요
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        )))}
                 </div>
             </div>
 
