@@ -1,0 +1,202 @@
+/* FCM 권한 요청 배너 */
+.fcm-permission-request {
+    position: fixed;
+    bottom: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 90%;
+    max-width: 400px;
+    background: var(--white);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-premium);
+    padding: 1.25rem;
+    z-index: 1000;
+    animation: slideUpBanner 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.fcm-request-content {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.fcm-request-icon {
+    flex-shrink: 0;
+    width: 48px;
+    height: 48px;
+    background: linear-gradient(135deg, #FFF3E0 0%, #FFE0B2 100%);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.fcm-request-text h3 {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--foreground-color);
+    margin: 0 0 0.25rem 0;
+}
+
+.fcm-request-text p {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    margin: 0;
+    line-height: 1.4;
+}
+
+.fcm-request-actions {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.fcm-request-btn {
+    flex: 1;
+    padding: 0.875rem;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 0.9375rem;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.fcm-request-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.fcm-request-btn-dismiss {
+    background: var(--light-grey);
+    color: var(--text-muted);
+}
+
+.fcm-request-btn-dismiss:hover:not(:disabled) {
+    background: #E5E7EB;
+}
+
+.fcm-request-btn-allow {
+    background: var(--brand-gradient);
+    color: white;
+    box-shadow: 0 4px 12px rgba(255, 87, 34, 0.3);
+}
+
+.fcm-request-btn-allow:hover:not(:disabled) {
+    box-shadow: 0 6px 16px rgba(255, 87, 34, 0.4);
+    transform: translateY(-1px);
+}
+
+.fcm-request-btn-allow:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+/* 거부 시 재고려 메시지 */
+.fcm-denied-message {
+    position: fixed;
+    bottom: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 90%;
+    max-width: 400px;
+    background: linear-gradient(135deg, #FFF3E0 0%, #FFE0B2 100%);
+    border-left: 4px solid #FF9800;
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-lg);
+    padding: 1.25rem;
+    z-index: 1000;
+    animation: slideUpBanner 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.fcm-denied-content {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.fcm-denied-icon {
+    font-size: 2rem;
+    flex-shrink: 0;
+}
+
+.fcm-denied-text h4 {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #E65100;
+    margin: 0 0 0.25rem 0;
+}
+
+.fcm-denied-text p {
+    font-size: 0.875rem;
+    color: #F57C00;
+    margin: 0;
+    line-height: 1.4;
+}
+
+.fcm-denied-actions {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+}
+
+.fcm-denied-btn {
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-weight: 600;
+}
+
+.fcm-denied-btn-close {
+    background: transparent;
+    color: #F57C00;
+    padding: 0.5rem;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.fcm-denied-btn-close:hover {
+    background: rgba(245, 124, 0, 0.1);
+}
+
+.fcm-denied-btn-reconsider {
+    flex: 1;
+    background: white;
+    color: var(--primary-color);
+    padding: 0.875rem;
+    border-radius: 12px;
+    font-size: 0.9375rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.fcm-denied-btn-reconsider:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    transform: translateY(-1px);
+}
+
+.fcm-denied-btn-reconsider:active {
+    transform: translateY(0);
+}
+
+/* 애니메이션 */
+@keyframes slideUpBanner {
+    from {
+        transform: translate(-50%, 100%);
+        opacity: 0;
+    }
+
+    to {
+        transform: translate(-50%, 0);
+        opacity: 1;
+    }
+}
+
+/* 반응형 */
+@media (max-width: 480px) {
+
+    .fcm-permission-request,
+    .fcm-denied-message {
+        width: 95%;
+        bottom: 70px;
+    }
+}
