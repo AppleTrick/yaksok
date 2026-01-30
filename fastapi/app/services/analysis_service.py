@@ -19,7 +19,7 @@ SAVE_IMAGE_DIR = os.path.join(APP_DIR, "SaveImage")
 os.makedirs(SAVE_IMAGE_DIR, exist_ok=True)
 
 # 서비스 임포트
-from app.services.yolo_service import detect_supplements
+from app.services.yolo_service import detect_supplements, enhance_for_ocr
 from app.services.ocr_service import extract_text
 # 유틸리티 임포트
 from app.utils import load_image_with_exif
@@ -81,6 +81,9 @@ def analyze_supplement(image_bytes: bytes) -> dict:
 
                     cropped_pil = original_pil.crop((x1, y1, x2, y2))
                     cropped_cv2 = cv2.cvtColor(np.array(cropped_pil), cv2.COLOR_RGB2BGR)
+                    
+                    # [NEW] OCR 성능 향상을 위한 고도화 전처리 적용
+                    cropped_cv2 = enhance_for_ocr(cropped_cv2)
                     
                     # OCR 수행
                     print(f"[Analysis] 객체 #{i+1} 분석 중 (OCR)...")
