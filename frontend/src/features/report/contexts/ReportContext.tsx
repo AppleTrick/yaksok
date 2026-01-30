@@ -10,14 +10,16 @@ interface DetectedProduct {
     box: number[];
 }
 
-// 분석 결과 전체
+// 분석 결과 전체 (Spring Boot 통합 응답의 data 필드 구조)
 interface AnalysisResult {
-    success: boolean;
-    frontend_data: {
-        object_count: number;
+    displayData: {
+        objectCount: number;
         products: DetectedProduct[];
     };
-    message: string;
+    reportData: {
+        products: any[];
+        overdoseAnalysis: any;
+    };
 }
 
 // 리포트 데이터 (Mock 기반)

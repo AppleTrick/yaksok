@@ -16,12 +16,11 @@ interface DetectedObject {
 }
 
 interface AnalysisResult {
-    success: boolean;
-    frontend_data: {
-        object_count: number;
+    displayData: {
+        objectCount: number;
         products: DetectedObject[];
     };
-    message: string;
+    reportData: any; // Used in other pages
 }
 
 interface ResultStepProps {
@@ -77,7 +76,7 @@ export default function ResultStep({ imageSrc, result, onRetake, onRegister }: R
                         </div>
 
                         {/* Bounding Boxes & Tags */}
-                        {imageSize.width > 0 && result.frontend_data?.products?.map((obj, idx) => {
+                        {imageSize.width > 0 && result.displayData?.products?.map((obj, idx) => {
                             const img = imageRef.current;
                             if (!img) return null;
 
@@ -136,10 +135,10 @@ export default function ResultStep({ imageSrc, result, onRetake, onRegister }: R
                 <div className="result-list-section">
                     <div className="section-title-row">
                         <h3 className="card-item-title" style={{ fontSize: '1.4rem', color: '#1A1A1A' }}>인식된 영양제</h3>
-                        <span className="count-badge">{result.frontend_data?.object_count || 0}개 발견</span>
+                        <span className="count-badge">{result.displayData?.objectCount || 0}개 발견</span>
                     </div>
 
-                    {(result.frontend_data?.products || []).map((obj, idx) => (
+                    {(result.displayData?.products || []).map((obj, idx) => (
                         <div key={idx} className="report-card">
                             <div className="card-idx-circle" style={{
                                 background: idx === 0 ? 'var(--cam-mint)' : '#FFF9E1',
