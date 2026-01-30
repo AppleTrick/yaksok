@@ -57,5 +57,3 @@ firebase:
   credentials:
     path: ${FIREBASE_CREDENTIALS_PATH:classpath:serviceAccountKey.json}
 
-fastapi:
-  url: ${FASTAPI_URL:http://localhost:8000/v1/analyze}
