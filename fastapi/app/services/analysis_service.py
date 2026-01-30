@@ -115,7 +115,7 @@ def analyze_supplement(image_bytes: bytes) -> dict:
                     
                     # 로그 간소화: 진행 상황만 한 줄로 표시
                     print(f"[Analysis] 객체 #{i+1} 분석 중 (OCR)...")
-                    ocr_item = extract_text(cropped_cv2, save_image=True)
+                    ocr_item = extract_text(cropped_cv2, save_image=False)
                     
                     analysis_results.append({
                         "object_index": i,
@@ -144,9 +144,16 @@ def analyze_supplement(image_bytes: bytes) -> dict:
         result["success"] = True
         result["message"] = f"{len(raw_results)} objects detected"
         
-        # UI 및 중복 키 제거 (Spring Boot가 처리함)
+        # 테스트 페이지 호환을 위해 analysis_results에 상세 정보도 포함
+        # (백엔드는 raw_results의 box, confidence, barcode, ocr_texts만 사용)
+        for i, res in enumerate(analysis_results):
+            raw_results[i]["barcode_detail"] = res["barcode"]  # 전체 바코드 정보
+            raw_results[i]["ocr"] = res["ocr"]  # 전체 OCR 정보 (테스트 페이지용)
+            raw_results[i]["label"] = res["label"]
+        
+        # yolo 결과는 유지 (테스트 페이지에서 사용)
+        # frontend_data, barcode, ocr 키만 제거
         result.pop("frontend_data", None)
-        result.pop("yolo", None)
         result.pop("barcode", None)
         result.pop("ocr", None)
         
