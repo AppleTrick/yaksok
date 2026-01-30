@@ -85,4 +85,15 @@ public class AuthController {
                 cookieUtil.deleteAccessToken()
         );
     }
+
+    @GetMapping("/test/login")
+    public ResponseEntity<ApiResponse<LoginResponse>> testLogin(){
+        User user = authService.getTestUser();
+
+        String accessToken = jwtTokenProvider.createAccessToken(user.getId());
+
+        return ResponseUtil.okWithCookies(
+                new LoginResponse(user.getName()),
+                cookieUtil.createAccessToken(accessToken));
+    }
 }
