@@ -1,4 +1,4 @@
-package com.ssafy.yaksok.analyze.dto;
+package com.ssafy.yaksok.analyze.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,23 +9,13 @@ import java.util.List;
 
 /**
  * 영양제 분석 통합 응답 DTO
- * 
- * ResultStep(인식 결과 표시)과 ReportPage(상세 리포트)에 필요한
- * 모든 데이터를 포함하는 통합 객체입니다.
  */
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class SupplementAnalysisResponse {
-    /**
-     * 화면 표시용 데이터 (이미지 위 박스 및 기본 정보)
-     */
     private DisplayData displayData;
-
-    /**
-     * 상세 리포트 서비스 데이터 (성분 비교, 권장사항 등)
-     */
     private ReportData reportData;
 
     @Data
@@ -108,7 +98,7 @@ public class SupplementAnalysisResponse {
     public static class Recommendations {
         private List<InteractionInfo> interactions;
         private List<DosageInfo> dosageInfo;
-        private List<TimingGuide> timingGuides; // 추가: 복용 시간대 가이드
+        private List<TimingGuide> timingGuides;
         private List<String> productNotes;
     }
 
@@ -126,9 +116,9 @@ public class SupplementAnalysisResponse {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class TimingGuide {
-        private String time; // 아침, 점심, 저녁, 취침 전
-        private List<String> products; // 해당 시간대에 권장되는 제품명 목록
-        private String reason; // 추천 이유
+        private String time;
+        private List<String> products;
+        private String reason;
     }
 
     @Data
@@ -141,6 +131,6 @@ public class SupplementAnalysisResponse {
         private String recommended;
         private String max;
         private String current;
-        private String status; // good, warning
+        private String status;
     }
 }

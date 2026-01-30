@@ -21,7 +21,7 @@ public class OpenAILLMServiceImpl implements LLMService {
     @Value("${openai.api.key}")
     private String apiKey;
 
-    @Value("${openai.model:gpt-5-mini}")
+    @Value("${openai.model:gpt-4.1-mini}")
     private String model;
 
     @Value("${openai.api.url:https://gms.ssafy.io/gmsapi/api.openai.com/v1/chat/completions}")
@@ -32,7 +32,7 @@ public class OpenAILLMServiceImpl implements LLMService {
 
     @Override
     public String query(String prompt) {
-        return query(prompt, 0.1); // 기본값: 정확성 우선
+        return query(prompt, 0.3); // 기본값: 정확성 우선
     }
 
     @Override
