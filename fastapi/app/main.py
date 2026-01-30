@@ -20,7 +20,7 @@ from app.utils import clean_save_image_directory
 
 app = FastAPI(
     title="Yaksok AI Server",
-    description="영양제 이미지 분석 API (YOLO + 바코드 + OCR)",
+    description="영양제 이미지 분석 API (YOLO + OCR)",
     version="2.0.0"
 )
 
@@ -71,7 +71,7 @@ def read_root():
     return {
         "message": "Yaksok AI Server가 정상 동작 중입니다",
         "version": "2.0.0",
-        "features": ["YOLO 객체탐지", "바코드 인식", "한국어 OCR (PP-OCRv5)"]
+        "features": ["YOLO 객체탐지", "한국어 OCR (PP-OCRv5)"]
     }
 
 
@@ -82,11 +82,10 @@ async def analyze_image_endpoint(file: UploadFile = File(...)):
     
     분석 순서:
     1. YOLO로 영양제 객체 탐지
-    2. 바코드 탐지 및 DB 조회 시도
-    3. OCR로 텍스트 추출
+    2. OCR로 텍스트 추출
     
     Returns:
-        분석 결과 (YOLO 탐지 결과 + 바코드 정보 + OCR 텍스트)
+        분석 결과 (YOLO 탐지 결과 + OCR 텍스트)
     """
     # 이미지 형식 검증
     if not file.content_type or not file.content_type.startswith("image/"):
@@ -113,7 +112,7 @@ async def analyze_image_endpoint(file: UploadFile = File(...)):
 async def read_test_page():
     """
     브라우저에서 직접 테스트할 수 있는 웹 페이지
-    YOLO 탐지 + 바코드 + OCR 결과를 시각적으로 확인 가능
+    YOLO 탐지 + OCR 결과를 시각적으로 확인 가능
     """
     return """
     <!DOCTYPE html>
@@ -271,7 +270,7 @@ async def read_test_page():
     <body>
         <div class="container">
             <h1>🧪 Yaksok AI 분석 테스트</h1>
-            <p class="subtitle">영양제 이미지를 업로드하면 YOLO + 바코드 + OCR 분석 결과를 확인할 수 있습니다</p>
+            <p class="subtitle">영양제 이미지를 업로드하면 YOLO + OCR 분석 결과를 확인할 수 있습니다</p>
             
             <div class="upload-area" id="uploadArea" onclick="document.getElementById('fileInput').click()">
                 <p style="font-size: 3rem; margin-bottom: 10px;">📷</p>
@@ -289,7 +288,7 @@ async def read_test_page():
             <div id="loading" class="loading" style="display: none;">
                 <div class="spinner"></div>
                 <p>이미지를 분석하고 있습니다...</p>
-                <p style="font-size: 0.9rem; color: #999; margin-top: 10px;">YOLO → 바코드 → OCR 순서로 진행 중</p>
+                <p style="font-size: 0.9rem; color: #999; margin-top: 10px;">YOLO → OCR 순서로 진행 중</p>
             </div>
             
             <div class="result-section" id="resultSection">
@@ -394,40 +393,6 @@ async def read_test_page():
                     `;
                 }
                 
-                // 바코드 결과 (개별 객체별 상세 정보 표시)
-                if (data.analysis_results) {
-                    const results = data.analysis_results;
-                    const foundCount = results.filter(r => r.barcode && r.barcode.found).length;
-                    const badge = foundCount > 0 
-                        ? `<span class="badge badge-success">${foundCount}개 발견</span>`
-                        : '<span class="badge badge-warning">미검출</span>';
-                    
-                    html += `
-                        <div class="result-card card-barcode">
-                            <div class="card-title">📊 2단계: 바코드 탐지 ${badge}</div>
-                            ${results.length > 0 
-                                ? results.map((obj, idx) => `
-                                    <div style="margin-bottom: 15px; padding: 12px; background: rgba(255,255,255,0.5); border-radius: 10px; border: 1px solid rgba(0,0,0,0.05);">
-                                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-                                            <strong>📍 객체 #${idx + 1} (${obj.label})</strong>
-                                            ${obj.barcode && obj.barcode.found 
-                                                ? `<span style="color: #10b981; font-weight: bold;">${obj.barcode.data}</span>`
-                                                : '<span style="color: #ef4444;">Not Found</span>'}
-                                        </div>
-                                        <div style="font-size: 0.85rem; color: #444;">
-                                            <p>상태: ${obj.barcode ? obj.barcode.message : '분석 전'}</p>
-                                            <p>시도: ${obj.barcode && obj.barcode.attempts 
-                                                ? obj.barcode.attempts.map(a => `<span style="color: ${a.success ? '#10b981' : '#999'}">${a.step}${a.success ? '✅' : '❌'}</span>`).join(' → ') 
-                                                : '-'}</p>
-                                        </div>
-                                    </div>
-                                `).join('')
-                                : '<p>분석할 영양제 객체가 발견되지 않았습니다</p>'
-                            }
-                        </div>
-                    `;
-                }
-                
                 // OCR 결과 (이제 순수하게 텍스트 정보만 표시)
                 if (data.analysis_results) {
                     const results = data.analysis_results;
@@ -438,7 +403,7 @@ async def read_test_page():
                     
                     html += `
                         <div class="result-card card-ocr">
-                            <div class="card-title">📝 3단계: 크롭 OCR 분석 ${badge}</div>
+                            <div class="card-title">📝 2단계: 크롭 OCR 분석 ${badge}</div>
                             ${results.length > 0 
                                 ? results.map((obj, idx) => `
                                     <div style="margin-bottom: 20px; border-left: 4px solid #764ba2; padding-left: 15px;">

@@ -36,6 +36,7 @@ public class AnalyzeService {
         private final ProductMatchingService productMatchingService;
         private final UserProductService userProductService;
         private final LLMService llmService;
+        private final ObjectMapper objectMapper = new ObjectMapper();
 
         @Value("${fastapi.url}")
         private String fastApiUrl;
@@ -57,31 +58,38 @@ public class AnalyzeService {
          * AI 서버(FastAPI)와 통신하여 이미지 분석 결과를 받아옵니다.
          */
         private FastApiAnalysisResult callFastApi(MultipartFile file) {
+                log.info("[FastAPI] AI 서버 호출 시작: URL={}", fastApiUrl);
                 try {
                         WebClient webClient = webClientBuilder.build();
 
                         MultipartBodyBuilder builder = new MultipartBodyBuilder();
                         builder.part("file", new ByteArrayResource(file.getBytes()))
-                                        .filename(file.getOriginalFilename())
+                                        .filename(file.getOriginalFilename() != null ? file.getOriginalFilename()
+                                                        : "image.jpg")
                                         .contentType(MediaType.IMAGE_JPEG);
 
-                        FastApiAnalysisResult result = webClient.post()
+                        // 원본 응답을 먼저 String으로 받아 로그를 출력
+                        String rawResponse = webClient.post()
                                         .uri(fastApiUrl)
                                         .contentType(MediaType.MULTIPART_FORM_DATA)
                                         .body(BodyInserters.fromMultipartData(builder.build()))
                                         .retrieve()
-                                        .bodyToMono(FastApiAnalysisResult.class)
+                                        .bodyToMono(String.class)
+                                        .timeout(java.time.Duration.ofSeconds(60)) // 60초 타임아웃
                                         .block();
 
+                        log.info("[FastAPI] AI 서버로부터 원본 응답 수신: {}", rawResponse);
+
+                        FastApiAnalysisResult result = objectMapper.readValue(rawResponse, FastApiAnalysisResult.class);
                         logAiAnalysisDetails(result);
                         return result;
 
                 } catch (IOException e) {
-                        log.error("파일 처리 실패", e);
+                        log.error("[FastAPI] 파일 처리 실패: {}", e.getMessage());
                         throw new RuntimeException("이미지 파일 처리 중 오류가 발생했습니다.");
                 } catch (Exception e) {
-                        log.error("AI 서버 통신 실패", e);
-                        throw new RuntimeException("AI 분석 서버와의 네트워크 통신에 실패했습니다.");
+                        log.error("[FastAPI] AI 서버 연동 중 오류 발생: {}", e.getMessage(), e);
+                        throw new RuntimeException("AI 분석 서버와의 네트워크 통신에 실패했습니다: " + e.getMessage());
                 }
         }
 
@@ -91,9 +99,8 @@ public class AnalyzeService {
 
                 log.info("============== AI 분석 결과 상세 로그 ==============");
                 result.getAnalysisResults().forEach(raw -> {
-                        log.info("Conf: {}, Barcode: {}, OCR: {}",
+                        log.info("Conf: {}, OCR: {}",
                                         raw.getConfidence(),
-                                        raw.getBarcode() != null ? raw.getBarcode() : "N/A",
                                         raw.getOcrTexts());
                 });
                 log.info("================================================");
@@ -128,7 +135,6 @@ public class AnalyzeService {
                                                 .tempId(product != null ? product.getId() : null)
                                                 .name(product != null ? product.getPrdlstNm()
                                                                 : (ocrName != null ? ocrName : "알 수 없는 제품"))
-                                                .barcode(raw.getBarcode())
                                                 .confidence(raw.getConfidence())
                                                 .box(raw.getBox())
                                                 .isExactMatch(product != null)
