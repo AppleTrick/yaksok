@@ -46,5 +46,7 @@ public class AuthService {
         long userId = userPrincipal.getUserId();
     }
 
-
+    public User getTestUser(){
+        return userService.getTestUser();
+    }
 }
