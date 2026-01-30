@@ -3,11 +3,15 @@
 import { useState, useEffect, useCallback } from 'react';
 import { NotificationSettings, DEFAULT_SETTINGS, MedicationSchedule } from '../types';
 import { getNotificationSettings, saveNotificationSettings } from '../api';
+import { useFCM } from './useFCM';
 
 export function useNotificationSettings() {
     const [settings, setSettings] = useState<NotificationSettings>(DEFAULT_SETTINGS);
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
+
+    // FCM 훅 사용
+    const { requestPermission } = useFCM();
 
     // Load settings on mount
     useEffect(() => {
@@ -39,7 +43,18 @@ export function useNotificationSettings() {
     }, []);
 
     // Individual updaters
-    const togglePush = (enabled: boolean) => save({ ...settings, pushEnabled: enabled });
+    const togglePush = async (enabled: boolean) => {
+        if (enabled) {
+            // 푸시 알림을 켤 때 FCM 토큰 발급
+            try {
+                await requestPermission();
+                console.log('✅ FCM 토큰 발급 완료 (togglePush)');
+            } catch (error) {
+                console.error('❌ FCM 토큰 발급 실패:', error);
+            }
+        }
+        save({ ...settings, pushEnabled: enabled });
+    };
     const toggleMissed = (enabled: boolean) => save({ ...settings, missedNotification: enabled });
 
     // DND Updaters
