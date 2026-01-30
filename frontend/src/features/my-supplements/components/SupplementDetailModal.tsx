@@ -17,6 +17,7 @@ interface SupplementDetailModalProps {
     onDelete: () => void;
     onToggleStatus: (newStatus: 'taking' | 'stopped') => void;
     onEdit: () => void;
+    onSave?: () => void; // 저장 후 호출될 콜백
 }
 
 import { COLORS } from '@/constants/colors';
@@ -27,7 +28,8 @@ const SupplementDetailModal: React.FC<SupplementDetailModalProps> = ({
     item,
     onDelete,
     onToggleStatus,
-    onEdit
+    onEdit,
+    onSave
 }) => {
     const { schedules, updateSchedule, addMedication } = useScheduleContext();
 
@@ -119,6 +121,13 @@ const SupplementDetailModal: React.FC<SupplementDetailModalProps> = ({
         }
         setIsEditing(false); // Exit edit mode
         alert("수정사항이 저장되었습니다.");
+
+        // 저장 후 모달 닫기
+        if (onSave) {
+            onSave();
+        } else {
+            onClose();
+        }
     };
 
 
