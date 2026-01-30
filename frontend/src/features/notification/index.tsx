@@ -1,9 +1,15 @@
 import NotificationSettingsForm from './components/NotificationSettingsForm';
 
-// Export everything needed externally
+// Export components
 export { default as NotificationSettingsForm } from './components/NotificationSettingsForm';
-export * from './types';
-export * from './hooks/useNotificationSettings';
+export { default as FCMPermissionBanner } from './components/FCMPermissionBanner';
+export { default as FCMPermissionRequest } from './components/FCMPermissionRequest';
 
-// Default export as the main component if used directly
+// Export hooks
+export * from './hooks/useNotificationSettings';
+export * from './hooks/useFCM';
+
+// Export types
+export * from './types';
+
 export default NotificationSettingsForm;
