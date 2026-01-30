@@ -102,7 +102,6 @@ def analyze_supplement(image_bytes: bytes) -> dict:
             raw_results.append({
                 "box": res["box"],
                 "confidence": res["confidence"],
-                "barcode": None, # 바코드 기능 제거
                 "ocr_texts": [t.get("text", "") for t in res["ocr"].get("texts", [])]
             })
             
