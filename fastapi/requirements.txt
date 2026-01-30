@@ -6,5 +6,5 @@ opencv-python-headless==4.9.0.80
 pydantic==2.6.0
 pydantic-settings==2.1.0
 pyzbar
-paddlepaddle
-paddleocr
+paddlepaddle==3.0.0
+paddleocr>=2.9.0
