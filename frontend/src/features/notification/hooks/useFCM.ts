@@ -114,6 +114,10 @@ export function useFCM(): UseFCMReturn {
             setFcmToken(token);
             console.log('✅ FCM 토큰 발급 완료:', token);
 
+            // localStorage에 토큰 저장
+            localStorage.setItem('fcmToken', token);
+            console.log('✅ FCM 토큰 localStorage 저장 완료');
+
             // 백엔드에 토큰 저장
             await saveFCMToken(token, 'web');
             console.log('✅ FCM 토큰 백엔드 저장 완료');
