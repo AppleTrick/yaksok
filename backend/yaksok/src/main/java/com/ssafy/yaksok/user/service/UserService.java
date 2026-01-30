@@ -109,7 +109,9 @@ public class UserService {
         return userProducts;
     }
 
-
+    public User getTestUser(){
+        return findByUserId(1L);
+    }
 
     public String encodePassword(String password){
         return passwordEncoder.encode(password);
