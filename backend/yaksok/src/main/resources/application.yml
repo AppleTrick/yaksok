@@ -48,3 +48,6 @@ openai:
     key: ${OPENAI_API_KEY}
     url: ${OPENAI_API_URL:https://gms.ssafy.io/gmsapi/api.openai.com/v1/chat/completions}
   model: ${OPENAI_MODEL:gpt-5}
+
+fastapi:
+  url: ${FASTAPI_URL:http://localhost:8000/v1/analyze}
