@@ -41,7 +41,11 @@ build/
 /OCRLearning
 
 
+<<<<<<< HEAD
 OCRLearning.zip
 # Firebase service account key
 serviceAccountKey.json
 firebase.json
+=======
+OCRLearning.zip
+>>>>>>> e50972979a6390db92b80aa5cb7f2c91c1cab5e8
