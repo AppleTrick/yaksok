@@ -2,7 +2,7 @@
 Yaksok AI Server - 메인 애플리케이션
 
 영양제 이미지 분석을 위한 FastAPI 서버입니다.
-분석 파이프라인: YOLO 객체탐지 → 바코드 인식 → OCR 텍스트 추출
+분석 파이프라인: YOLO 객체탐지 -> OCR 텍스트 추출
 """
 
 from fastapi import FastAPI, UploadFile, File, HTTPException
@@ -193,7 +193,6 @@ async def read_test_page():
                 margin-bottom: 15px;
             }
             .card-yolo { background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%); }
-            .card-barcode { background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%); }
             .card-ocr { background: linear-gradient(135deg, #d299c2 0%, #fef9d7 100%); }
             .card-error { background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%); }
             
@@ -396,7 +395,7 @@ async def read_test_page():
                 // OCR 결과 (이제 순수하게 텍스트 정보만 표시)
                 if (data.analysis_results) {
                     const results = data.analysis_results;
-                    const totalOCRCount = results.reduce((sum, r) => sum + (r.ocr?.count || 0), 0);
+                    const totalOCRCount = results.reduce((sum, r) => sum + (r.ocr_texts?.length || 0), 0);
                     const badge = totalOCRCount > 0 
                         ? `<span class="badge badge-success">텍스트 추출 완료</span>`
                         : '<span class="badge badge-warning">텍스트 없음</span>';
@@ -408,12 +407,11 @@ async def read_test_page():
                                 ? results.map((obj, idx) => `
                                     <div style="margin-bottom: 20px; border-left: 4px solid #764ba2; padding-left: 15px;">
                                         <p style="font-weight: 600; margin-bottom: 10px; color: #764ba2;">📍 객체 #${idx + 1} 텍스트</p>
-                                        ${obj.ocr && obj.ocr.count > 0 
+                                        ${obj.ocr_texts && obj.ocr_texts.length > 0 
                                             ? `<ul class="text-list">
-                                                ${obj.ocr.texts.map(item => `
+                                                ${obj.ocr_texts.map(text => `
                                                     <li class="text-item">
-                                                        <span>${item.text}</span>
-                                                        <span class="confidence">${Math.round(item.confidence * 100)}%</span>
+                                                        <span>${text}</span>
                                                     </li>
                                                 `).join('')}
                                                </ul>`
