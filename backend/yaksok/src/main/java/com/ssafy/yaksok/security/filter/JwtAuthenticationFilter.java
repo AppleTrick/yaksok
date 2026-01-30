@@ -31,15 +31,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(
             HttpServletRequest request,
             HttpServletResponse response,
-            FilterChain filterChain
-    ) throws ServletException, IOException {
+            FilterChain filterChain) throws ServletException, IOException {
 
         try {
             String token = jwtTokenResolver.resolve(request);
 
             if (token != null && jwtTokenProvider.validateToken(token)) {
-                Authentication authentication =
-                        jwtTokenProvider.getAuthentication(token);
+                Authentication authentication = jwtTokenProvider.getAuthentication(token);
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             }
 
@@ -55,22 +53,22 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             response.addHeader(
                     "Set-Cookie",
-                    cookieUtil.deleteAccessToken().toString()
-            );
+                    cookieUtil.deleteAccessToken().toString());
 
             new ObjectMapper().writeValue(
                     response.getWriter(),
-                    errorResponse
-            );
+                    errorResponse);
         }
     }
+
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getRequestURI();
 
         return path.startsWith("/api/v1/auth/")
                 || path.startsWith("/swagger-ui")
-                || path.startsWith("/v3/api-docs");
+                || path.startsWith("/v3/api-docs")
+                || path.startsWith("/api/v1/analyze");
     }
 
 }
