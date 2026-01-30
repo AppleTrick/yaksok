@@ -32,6 +32,7 @@ export const viewport: Viewport = {
 
 import BottomTabBar from "../layout/BottomTabBar";
 import NotificationManagerEnhanced from "@/features/notification/components/NotificationManagerEnhanced";
+import { FCMPermissionRequest } from "@/features/notification";
 import { ScheduleProvider } from "@/features/notification/contexts/ScheduleContext";
 import { ReportProvider } from "@/features/report/contexts/ReportContext";
 import PageTransition from "@/components/common/PageTransition";
@@ -56,6 +57,7 @@ export default function RootLayout({
             </AnimatePresence>
             <BottomTabBar />
             <NotificationManagerEnhanced />
+            <FCMPermissionRequest />
           </ReportProvider>
         </ScheduleProvider>
       </body>

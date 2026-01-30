@@ -1,13 +1,11 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import NotificationModal from '@/components/NotificationModal';
-import PermissionGuide from '@/components/PermissionGuide';
 import { useNotificationHandlers } from '../hooks/useNotificationHandlers';
 import { useScheduleContext } from '../contexts/ScheduleContext';
 
 export default function NotificationManagerEnhanced() {
-    const [showPermissionGuide, setShowPermissionGuide] = useState(false);
     const [currentNotification, setCurrentNotification] = useState<{
         schedule: any;
         eventId: number;
@@ -15,30 +13,6 @@ export default function NotificationManagerEnhanced() {
 
     const { handleConfirm, handleSnooze, snoozeBanner, dismissSnoozeBanner } = useNotificationHandlers();
     const { schedules } = useScheduleContext();
-
-    useEffect(() => {
-        // 권한 확인
-        if (typeof window !== 'undefined' && 'Notification' in window) {
-            if (Notification.permission === 'denied') {
-                setShowPermissionGuide(true);
-            } else if (Notification.permission === 'default') {
-                Notification.requestPermission().then(permission => {
-                    if (permission === 'denied') {
-                        setShowPermissionGuide(true);
-                    }
-                });
-            }
-        }
-    }, []);
-
-    const handleRetryPermission = async () => {
-        if (typeof window !== 'undefined' && 'Notification' in window) {
-            const permission = await Notification.requestPermission();
-            if (permission === 'granted') {
-                setShowPermissionGuide(false);
-            }
-        }
-    };
 
     return (
         <>
@@ -52,12 +26,6 @@ export default function NotificationManagerEnhanced() {
                     onSnooze={handleSnooze}
                 />
             )}
-
-            <PermissionGuide
-                isOpen={showPermissionGuide}
-                onClose={() => setShowPermissionGuide(false)}
-                onRetry={handleRetryPermission}
-            />
 
             {snoozeBanner.visible && (
                 <div className="snooze-banner" style={{
