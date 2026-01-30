@@ -9,6 +9,7 @@ OCR 텍스트 추출 서비스 (PP-OCRv5 Upgraded Version)
 """
 
 import os
+import re
 import numpy as np
 import cv2
 from paddleocr import PaddleOCR
@@ -119,6 +120,27 @@ def parse_ppocrv5_result(result):
     return parsed_items
 
 
+def clean_text(text: str) -> str:
+    """
+    텍스트 정규화 및 노이즈 제거
+    - 특수문자 제거 (일부 유효 기호 제외)
+    - 연속된 공백 및 줄바꿈 정리
+    - 양끝 공백 제거
+    """
+    if not text:
+        return ""
+    
+    # 1. 특수문자 전처리 (일반적으로 노이즈로 인식되는 문자들 제거)
+    # 유효문자: 한글, 영문, 숫자, 일부 문장 부호 (.,:;%() / ~ +)
+    # 아래 정규식은 허용된 문자 이외의 모든 특수문자를 제거하거나 공백으로 변환
+    text = re.sub(r'[^a-zA-Z0-9가-힣\s\.,:%();/~+\-\[\]]', ' ', text)
+    
+    # 2. 연속된 공백 하나로 통합
+    text = re.sub(r'\s+', ' ', text)
+    
+    return text.strip()
+
+
 def group_text_to_lines(items: list, threshold_ratio: float = 0.5) -> dict:
     """
     OCR 파편들을 줄(Line) 단위로 그룹화하고 정렬합니다.
@@ -166,18 +188,25 @@ def group_text_to_lines(items: list, threshold_ratio: float = 0.5) -> dict:
         current_line.sort(key=lambda x: x["center_x"])
         lines.append(current_line)
 
-    # 3. 텍스트 병합 및 로그용 데이터 생성 (평균 신뢰도 70% 이상만 필터링)
+    # 3. 텍스트 병합 및 로그용 데이터 생성 (평균 신뢰도 70% 이상만 필터링 + Denoising)
     lines_with_meta = []
     filtered_lines = []
     
     for line in lines:
-        line_text = " ".join([it["text"] for it in line])
+        # 각 아이템 텍스트 정제
+        raw_line_text = " ".join([it["text"] for it in line])
+        cleaned_line_text = clean_text(raw_line_text)
+        
+        # 정제 후 너무 짧거나 의미 없는 텍스트(노이즈)면 제외
+        if len(cleaned_line_text) < 1:
+            continue
+            
         line_conf = sum([it["confidence"] for it in line]) / len(line)
         
         # 줄 단위 70% 임계값 적용
         if line_conf >= 0.7:
             lines_with_meta.append({
-                "text": line_text,
+                "text": cleaned_line_text,
                 "confidence": line_conf
             })
             filtered_lines.append(line)
