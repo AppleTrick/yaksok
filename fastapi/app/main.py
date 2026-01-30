@@ -395,7 +395,7 @@ async def read_test_page():
                 // OCR 결과 (이제 순수하게 텍스트 정보만 표시)
                 if (data.analysis_results) {
                     const results = data.analysis_results;
-                    const totalOCRCount = results.reduce((sum, r) => sum + (r.ocr_texts?.length || 0), 0);
+                    const totalOCRCount = results.reduce((sum, r) => sum + (r.ocr_lines?.length || 0), 0);
                     const badge = totalOCRCount > 0 
                         ? `<span class="badge badge-success">텍스트 추출 완료</span>`
                         : '<span class="badge badge-warning">텍스트 없음</span>';
@@ -407,11 +407,12 @@ async def read_test_page():
                                 ? results.map((obj, idx) => `
                                     <div style="margin-bottom: 20px; border-left: 4px solid #764ba2; padding-left: 15px;">
                                         <p style="font-weight: 600; margin-bottom: 10px; color: #764ba2;">📍 객체 #${idx + 1} 텍스트</p>
-                                        ${obj.ocr_texts && obj.ocr_texts.length > 0 
+                                        ${obj.ocr_lines && obj.ocr_lines.length > 0 
                                             ? `<ul class="text-list">
-                                                ${obj.ocr_texts.map(text => `
+                                                ${obj.ocr_lines.map(line => `
                                                     <li class="text-item">
-                                                        <span>${text}</span>
+                                                        <span>${line.text}</span>
+                                                        <span class="confidence">${Math.round(line.confidence * 100)}%</span>
                                                     </li>
                                                 `).join('')}
                                                </ul>`

@@ -33,5 +33,19 @@ public class FastApiAnalysisResult {
 
         @JsonProperty("ocr_texts")
         private List<String> ocrTexts;
+
+        @JsonProperty("ocr_text")
+        private String ocrText;
+
+        @JsonProperty("ocr_lines")
+        private List<OcrLine> ocrLines;
+    }
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class OcrLine {
+        private String text;
+        private double confidence;
     }
 }
