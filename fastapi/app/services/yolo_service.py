@@ -4,6 +4,8 @@ YOLO 객체탐지 서비스 - UPDATED BY Z-MINAI
 
 import os
 import io
+import numpy as np
+import cv2
 from PIL import Image, ImageOps
 from ultralytics import YOLO
 
@@ -118,3 +120,38 @@ def detect_supplements(image_input, confidence_threshold: float = 0.3) -> dict:
         "count": len(detected_objects),
         "scale_info": scale_info
     }
+
+
+def enhance_for_ocr(crop_img: np.ndarray) -> np.ndarray:
+    """
+    고도화된 OCR 전처리 루틴 (OpenCV 기반)
+    1. Grayscale 변환
+    2. 선명도 강화
+    3. 대비 개선 (CLAHE)
+    4. 노이즈 제거
+    5. BGR 3채널 복구 (OCR 호환성)
+    """
+    if crop_img is None:
+        return None
+    
+    # 1. Grayscale 변환
+    if len(crop_img.shape) == 3:
+        gray = cv2.cvtColor(crop_img, cv2.COLOR_BGR2GRAY)
+    else:
+        gray = crop_img
+    
+    # 2. 이미지 선명도 강화 (Laplacian)
+    kernel = np.array([[-1,-1,-1], [-1,9,-1], [-1,-1,-1]])
+    sharpened = cv2.filter2D(gray, -1, kernel)
+    
+    # 3. 대비 개선 (CLAHE 사용 - 조명 불균형 해결)
+    clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8,8))
+    enhanced = clahe.apply(sharpened)
+    
+    # 4. 노이즈 제거
+    denoised = cv2.fastNlMeansDenoising(enhanced, None, 10, 7, 21)
+    
+    # 5. [중요] 3채널로 복구 (Gray 단일 채널 전달 시 PaddleOCR crash 발생 가능)
+    final = cv2.cvtColor(denoised, cv2.COLOR_GRAY2BGR)
+    
+    return final
