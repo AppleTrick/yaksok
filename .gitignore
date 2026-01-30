@@ -37,3 +37,8 @@ public/swe-worker-*.js.map
 bin/
 build/
 .gradle/
+
+/OCRLearning
+
+
+OCRLearning.zip
