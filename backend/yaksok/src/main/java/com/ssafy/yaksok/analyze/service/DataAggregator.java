@@ -61,12 +61,18 @@ public class DataAggregator {
             targets.forEach(t -> t.setIngredients(new ArrayList<>()));
         }
 
-        // 3. 사용자 기존 섭취 정보 조회
-        List<UserProductResponse> currentSupplements = (userId != null)
-                ? userProductService.getUserProducts(userId)
-                : new ArrayList<>();
+        // 3. 사용자 기존 섭취 정보 조회 (userId가 null이거나 0이면 건너뜀)
+        List<UserProductResponse> currentSupplements;
+        if (userId != null && userId > 0) {
+            log.info("[AGGREGATOR] 📋 사용자 기존 섭취 정보 조회 (userId: {})", userId);
+            currentSupplements = userProductService.getUserProducts(userId);
+        } else {
+            log.info("[AGGREGATOR] 👤 Guest 모드 - 사용자 섭취 정보 조회 건너뜀");
+            currentSupplements = new ArrayList<>();
+        }
 
-        log.info("[AGGREGATOR] 데이터 취합 완료: Current Supplements Count={}", currentSupplements.size());
+        log.info("[AGGREGATOR] ✅ 데이터 취합 완료: Type A={}개, 기존 섭취={}개",
+                matchedProductIds.size(), currentSupplements.size());
 
         return AggregatedAnalysisData.builder()
                 .newTargets(targets)
