@@ -41,6 +41,11 @@ public class ProductLinker {
     // Stage 2: StopWords
     private Set<String> stopWords = new HashSet<>();
 
+    // 코드 레벨 필수 제거 목록 (stopwords.txt와 별개로 무조건 필터링)
+    private static final Set<String> HARDCODED_NOISE_WORDS = Set.of(
+            "가능품", "가능", "건강", "기능", "식품", "9가지", "맛있는",
+            "구미젤리", "KA의스", "OEM", "함유", "섭취");
+
     // OKT 초기화 여부
     private boolean oktInitialized = false;
 
@@ -305,6 +310,15 @@ public class ProductLinker {
      */
     private boolean isStopWord(String text) {
         String normalized = text.toLowerCase().trim();
+
+        // 1. 하드코딩 금칙어 우선 체크
+        if (HARDCODED_NOISE_WORDS.stream()
+                .anyMatch(sw -> normalized.contains(sw.toLowerCase()))) {
+            log.debug("[Stage 2] 🚫 하드코딩 금칙어 감지: '{}'", text);
+            return true;
+        }
+
+        // 2. stopwords.txt 체크
         return stopWords.stream()
                 .anyMatch(sw -> normalized.contains(sw.toLowerCase()));
     }
