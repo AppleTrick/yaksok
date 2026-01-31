@@ -37,7 +37,7 @@ public class LlmAnalyzer {
         String prompt = buildPrompt(data);
 
         try {
-            String rawResponse = llmService.query(prompt, 0.3);
+            String rawResponse = llmService.query(prompt);
             if (rawResponse == null || rawResponse.isBlank()) {
                 log.warn("[LLM_ANALYZER] 응답이 비어있음 - 빈 리포트 반환");
                 return createEmptyOverdoseAnalysis();

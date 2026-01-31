@@ -38,6 +38,12 @@ public class AnalyzeService {
                         // 2. Product Linker: DB 매칭
                         List<AnalysisTarget> targets = productLinker.linkProducts(aiResult);
 
+                        // 2-1. Early Return: 탐지된 제품이 없으면 LLM 호출 생략
+                        if (targets.isEmpty()) {
+                                log.info("[PIPELINE] 탐지된 제품이 없습니다. 조기 리턴합니다.");
+                                return assembleEmptyResponse();
+                        }
+
                         // 3. Data Aggregator: 데이터 취합
                         AggregatedAnalysisData aggregatedData = dataAggregator.aggregateAnalysisData(userId, targets);
 
@@ -92,6 +98,22 @@ public class AnalyzeService {
                                 .reportData(SupplementAnalysisResponse.ReportData.builder()
                                                 .products(reportProductInfos)
                                                 .overdoseAnalysis(overdoseAnalysis)
+                                                .build())
+                                .build();
+        }
+
+        /**
+         * 탐지된 제품이 없을 때 빈 응답 생성
+         */
+        private SupplementAnalysisResponse assembleEmptyResponse() {
+                return SupplementAnalysisResponse.builder()
+                                .displayData(SupplementAnalysisResponse.DisplayData.builder()
+                                                .objectCount(0)
+                                                .products(new ArrayList<>())
+                                                .build())
+                                .reportData(SupplementAnalysisResponse.ReportData.builder()
+                                                .products(new ArrayList<>())
+                                                .overdoseAnalysis(null)
                                                 .build())
                                 .build();
         }
