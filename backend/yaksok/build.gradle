@@ -42,6 +42,8 @@ dependencies {
     implementation 'net.javacrumbs.shedlock:shedlock-provider-jdbc-template:5.16.0'
     // 문자열 유사도 계산 라이브러리 (여기에 추가)
     implementation 'org.apache.commons:commons-text:1.10.0'
+    // Open Korean Text - 한국어 형태소 분석 (명사 추출용)
+    implementation 'org.openkoreantext:open-korean-text:2.3.1'
     compileOnly 'org.projectlombok:lombok'
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
     runtimeOnly 'com.mysql:mysql-connector-j'
