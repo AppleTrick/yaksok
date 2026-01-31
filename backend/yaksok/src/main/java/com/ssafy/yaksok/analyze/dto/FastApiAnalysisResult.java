@@ -1,5 +1,6 @@
 package com.ssafy.yaksok.analyze.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -13,6 +14,7 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class FastApiAnalysisResult {
     private boolean success;
     private String message;
@@ -27,6 +29,7 @@ public class FastApiAnalysisResult {
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class RawAnalysisResult {
         private List<Double> box;
         private double confidence;
