@@ -21,7 +21,7 @@ public class OpenAILLMServiceImpl implements LLMService {
     @Value("${openai.api.key}")
     private String apiKey;
 
-    @Value("${openai.model:gpt-5-nano}")
+    @Value("${openai.model:gpt-4o-mini}")
     private String model;
 
     @Value("${openai.api.url:https://gms.ssafy.io/gmsapi/api.openai.com/v1/chat/completions}")
