@@ -13,7 +13,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -143,6 +145,19 @@ public class AnalyzeService {
                         SupplementAnalysisResponse.OverdoseAnalysis overdoseAnalysis) {
                 log.info("[ASSEMBLER] 최종 응답 조립 시작");
 
+                // ═══════════════════════════════════════════════════════════════
+                // LLM 추론 제품명 맵 생성 (Type B 이름 보정용)
+                // ═══════════════════════════════════════════════════════════════
+                Map<String, String> llmInferredNames = new HashMap<>();
+                if (overdoseAnalysis != null && overdoseAnalysis.getDetectedProducts() != null) {
+                        for (var dp : overdoseAnalysis.getDetectedProducts()) {
+                                if (dp.getOcrHint() != null && dp.getInferredName() != null) {
+                                        llmInferredNames.put(dp.getOcrHint(), dp.getInferredName());
+                                }
+                        }
+                        log.info("[ASSEMBLER] 📦 LLM 추론 제품명 맵: {}", llmInferredNames);
+                }
+
                 List<SupplementAnalysisResponse.ProductDisplayInfo> productDisplayInfos = new ArrayList<>();
                 List<SupplementAnalysisResponse.ReportProductInfo> reportProductInfos = new ArrayList<>();
 
@@ -150,9 +165,22 @@ public class AnalyzeService {
                         AnalysisTarget t = targets.get(i);
                         long tempId = (long) i + 1;
 
+                        // ═══════════════════════════════════════════════════════════════
+                        // DB 매칭 실패 시 LLM 추론 이름으로 대체
+                        // ═══════════════════════════════════════════════════════════════
+                        String displayName = t.getName();
+                        if (t.getProduct() == null) {
+                                // ocrName에서 LLM 추론 이름 찾기
+                                String llmName = llmInferredNames.get(t.getOcrName());
+                                if (llmName != null && !llmName.isBlank()) {
+                                        displayName = llmName + " (추정)";
+                                        log.info("[ASSEMBLER] 🔄 이름 보정: '{}' → '{}'", t.getOcrName(), displayName);
+                                }
+                        }
+
                         productDisplayInfos.add(SupplementAnalysisResponse.ProductDisplayInfo.builder()
                                         .tempId(tempId)
-                                        .name(t.getName())
+                                        .name(displayName)
                                         .confidence(t.getRawResult().getConfidence())
                                         .box(t.getRawResult().getBox())
                                         .isExactMatch(t.getProduct() != null)
@@ -160,7 +188,7 @@ public class AnalyzeService {
 
                         reportProductInfos.add(SupplementAnalysisResponse.ReportProductInfo.builder()
                                         .productId(t.getProduct() != null ? t.getProduct().getId() : null)
-                                        .name(t.getName())
+                                        .name(displayName)
                                         .confidence(t.getRawResult().getConfidence())
                                         .ingredients(t.getIngredients())
                                         .build());
