@@ -31,6 +31,8 @@ public class AnalyzeController {
             @AuthenticationPrincipal UserPrincipal principal,
             @RequestParam("file") MultipartFile file) {
 
+        // principal가 없어도 통과할수 있게 코드 작성
+
         // 1. 파일 유효성 검사 (비어있는지, 이미지 맞는지)
         String contentType = file.getContentType();
         if (file.isEmpty() || contentType == null || !contentType.startsWith("image")) {
@@ -39,12 +41,15 @@ public class AnalyzeController {
         }
 
         long startTime = System.currentTimeMillis();
-        log.info("[Analyze] Start: userId={}, filename={}", principal.getUserId(), file.getOriginalFilename());
+        log.info("[Analyze API 호출됨] principal 존재여부: {}, filename: {}", (principal != null), file.getOriginalFilename());
 
-        SupplementAnalysisResponse response = analyzeService.analyzeSupplement(principal.getUserId(), file);
+        Long userId = (principal != null) ? principal.getUserId() : null;
+        log.info("[Analyze] 진입 완료: userId={}", userId);
+
+        SupplementAnalysisResponse response = analyzeService.analyzeSupplement(userId, file);
 
         long duration = System.currentTimeMillis() - startTime;
-        log.info("[Analyze] End: duration={}ms", duration); // 성능 체크 필수다 친구야
+        log.info("[Analyze] End: duration={}ms", duration);
 
         return ResponseUtil.ok(response);
     }

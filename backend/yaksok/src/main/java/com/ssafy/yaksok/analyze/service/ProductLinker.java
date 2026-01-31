@@ -26,27 +26,34 @@ public class ProductLinker {
             return new ArrayList<>();
         }
 
+        // 개별 제품 매칭 실패 시 try-catch로 처리되므로 병렬 스트림 사용 가능
         return aiResult.getAnalysisResults().parallelStream()
                 .map(raw -> {
                     String ocrName = (raw.getOcrTexts() != null && !raw.getOcrTexts().isEmpty())
                             ? raw.getOcrTexts().get(0)
                             : raw.getOcrText();
 
-                    Product product = null;
-                    if (ocrName != null && !ocrName.isBlank()) {
-                        try {
+                    try {
+                        Product product = null;
+                        if (ocrName != null && !ocrName.isBlank()) {
                             product = productMatchingService.findProduct(ocrName);
-                            log.debug("[LINKER] 매칭 성공: {} -> {}", ocrName, product.getPrdlstNm());
-                        } catch (Exception e) {
-                            log.debug("[LINKER] 매칭 실패 (OCR: {}): {}", ocrName, e.getMessage());
+                            if (product != null) {
+                                log.debug("[LINKER] 매칭 성공: {} -> {}", ocrName, product.getPrdlstNm());
+                            }
                         }
-                    }
 
-                    return AnalysisTarget.builder()
-                            .product(product)
-                            .ocrName(ocrName)
-                            .rawResult(raw)
-                            .build();
+                        return AnalysisTarget.builder()
+                                .product(product)
+                                .ocrName(ocrName)
+                                .rawResult(raw)
+                                .build();
+                    } catch (Exception e) {
+                        log.error("[LINKER] 개별 제품 매칭 중 오류 발생 (무시하고 계속): {}", e.getMessage());
+                        return AnalysisTarget.builder()
+                                .ocrName(ocrName)
+                                .rawResult(raw)
+                                .build();
+                    }
                 })
                 .collect(Collectors.toList());
     }
