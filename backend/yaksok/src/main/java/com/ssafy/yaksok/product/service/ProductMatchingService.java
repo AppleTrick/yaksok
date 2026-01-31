@@ -124,15 +124,15 @@ public class ProductMatchingService {
 
         long elapsed = System.currentTimeMillis() - startTime;
 
-        // 임계값 이상이면 매칭 성공
-        final double THRESHOLD = 0.7; // 70% 이상 유사 (임계값 낮춤)
+        // 임계값 이상이면 매칭 성공 (OCR 오타 허용을 위해 0.55로 하향)
+        final double THRESHOLD = 0.55; // 55% 이상 유사 (센트롱→센트룸 매칭 허용)
         if (bestScore >= THRESHOLD && bestMatch != null) {
             log.info("[2단계] ✅ 유사도 매칭 성공: '{}' → '{}' (score: {:.2f}, {}ms)",
                     ocrProductName, bestMatch.getPrdlstNm(), bestScore, elapsed);
             return Optional.of(bestMatch);
         }
 
-        log.info("[2단계] ❌ 유사도 매칭 실패 - 최고 점수: {:.2f} (임계값: 0.7), 소요: {}ms", bestScore, elapsed);
+        log.info("[2단계] ❌ 유사도 매칭 실패 - 최고 점수: {:.2f} (임계값: 0.55), 소요: {}ms", bestScore, elapsed);
         return Optional.empty();
     }
 
