@@ -110,8 +110,8 @@ def parse_ppocrv5_result(result):
                 score = float(rec_scores[i]) if i < len(rec_scores) else 0.99
                 coords = rec_polys[i].tolist() if i < len(rec_polys) and hasattr(rec_polys[i], 'tolist') else []
                 
-                # 50% 이상 신뢰도만 포함 (노이즈 제거를 위해 0.4 -> 0.5 상향)
-                if score >= 0.5:
+                # 40% 이상 신뢰도만 포함 (유색 로고 대응)
+                if score >= 0.4:
                     parsed_items.append({
                         "text": str(text).strip(),
                         "confidence": score,
@@ -211,8 +211,8 @@ def group_text_to_lines(items: list, threshold_ratio: float = 0.5) -> dict:
             
         line_conf = sum([it["confidence"] for it in line]) / len(line)
         
-        # 줄 단위 70% 임계값 적용
-        if line_conf >= 0.7:
+        # 줄 단위 50% 임계값 적용 (로고 인식률 향상)
+        if line_conf >= 0.5:
             lines_with_meta.append({
                 "text": cleaned_line_text,
                 "confidence": line_conf
@@ -298,12 +298,12 @@ def extract_text(image: np.ndarray, rotations: list = None, save_image: bool = F
             
             # 터미널에 OCR 결과 출력
             filtered_count = sum(len(line) for line in grouped_result["lines"])
-            print(f"[OCR] ✅ {filtered_count}개 텍스트 추출 (70% 미만 제외, 전체 평균 신뢰도: {avg_conf:.1%})")
+            print(f"[OCR] ✅ {filtered_count}개 텍스트 추출 (50% 미만 제외, 전체 평균 신뢰도: {avg_conf:.1%})")
             print("[OCR] --- 추출된 텍스트 및 줄별 정확도 ---")
             for i, lm in enumerate(lines_meta):
                 print(f"  [{i+1:02d}] ({lm['confidence']:.0%}) {lm['text']}")
             if not lines_meta:
-                print("  (70% 이상의 신뢰도를 가진 텍스트가 없습니다)")
+                print("  (50% 이상의 신뢰도를 가진 텍스트가 없습니다)")
             print("[OCR] --------------------------------------")
             
             return {
