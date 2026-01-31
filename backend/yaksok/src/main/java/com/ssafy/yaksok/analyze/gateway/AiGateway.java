@@ -14,9 +14,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
-import reactor.util.retry.Retry;
-
-import java.io.IOException;
 import java.time.Duration;
 import java.util.ArrayList;
 
@@ -53,10 +50,7 @@ public class AiGateway {
                     .body(BodyInserters.fromMultipartData(builder.build()))
                     .retrieve()
                     .bodyToMono(String.class)
-                    .timeout(Duration.ofSeconds(30))
-                    .retryWhen(Retry.backoff(2, Duration.ofSeconds(2))
-                            .filter(throwable -> throwable instanceof java.util.concurrent.TimeoutException
-                                    || throwable instanceof IOException))
+                    .timeout(Duration.ofSeconds(120)) // 충분히 기다림
                     .block();
 
             if (rawResponse == null) {
