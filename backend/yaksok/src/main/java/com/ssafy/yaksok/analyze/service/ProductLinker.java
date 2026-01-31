@@ -128,19 +128,25 @@ public class ProductLinker {
                 if (product != null) {
                     log.info("[LINKER] ✅ DB 매칭 성공 → Type A: '{}'", product.getPrdlstNm());
                 } else {
-                    log.info("[LINKER] ❌ DB 매칭 실패 → Type B로 보존");
+                    log.info("[LINKER] ❌ DB 매칭 실패 → Type B (정제 키워드: '{}')", topKeyword);
                 }
+
+                // Type B: 전체 OCR 텍스트 대신 정제된 키워드를 ocrName으로 설정
+                // 프론트 출력 시 "HALE 건강..." 대신 "센트롱 (추정)" 형태로 표시됨
+                String displayName = product != null
+                        ? product.getPrdlstNm()
+                        : topKeyword + " (추정)";
 
                 results.add(AnalysisTarget.builder()
                         .product(product)
-                        .ocrName(product != null ? product.getPrdlstNm() : originalText)
+                        .ocrName(displayName)
                         .rawResult(raw)
                         .build());
 
             } catch (Exception e) {
                 log.error("[LINKER] ⚠️ 처리 중 오류 (무시): {}", e.getMessage());
                 results.add(AnalysisTarget.builder()
-                        .ocrName(originalText)
+                        .ocrName("알 수 없음")
                         .rawResult(raw)
                         .build());
             }
