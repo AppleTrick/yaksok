@@ -38,68 +38,115 @@ public class LlmAnalyzer {
 
         try {
             String rawResponse = llmService.query(prompt);
+
+            // ═══════════════════════════════════════════════════════════════
+            // LLM Raw Response 로깅 (디버깅 및 가시성)
+            // ═══════════════════════════════════════════════════════════════
+            log.info("[LLM_RAW_RESPONSE] ═══════════════════════════════════════════");
+            log.info("{}", rawResponse);
+            log.info("═══════════════════════════════════════════════════════════════");
+
             if (rawResponse == null || rawResponse.isBlank()) {
-                log.warn("[LLM_ANALYZER] 응답이 비어있음 - 빈 리포트 반환");
+                log.warn("[LLM_ANALYZER] ⚠️ 응답이 비어있음 - 빈 리포트 반환");
                 return createEmptyOverdoseAnalysis();
             }
 
             String jsonResponse = extractJson(rawResponse);
-            log.info("[LLM_ANALYZER] 분석 결과 파싱 시도");
+            log.info("[LLM_ANALYZER] ✅ JSON 추출 완료 ({}자)", jsonResponse.length());
 
             return objectMapper.readValue(jsonResponse, SupplementAnalysisResponse.OverdoseAnalysis.class);
 
         } catch (Exception e) {
-            log.error("[LLM_ANALYZER] 분석 또는 파싱 실패 (Fallback 실행): {}", e.getMessage());
+            log.error("[LLM_ANALYZER] ❌ 분석 또는 파싱 실패 (Fallback 실행): {}", e.getMessage());
             return createEmptyOverdoseAnalysis();
         }
     }
 
     /**
-     * 고도화된 프롬프트 템플릿을 빌드합니다. (Java 17 Text Blocks)
+     * 고도화된 프롬프트 템플릿 (Type A/B 구분 + Chain of Thought + 노이즈 필터링)
      */
     private String buildPrompt(AggregatedAnalysisData data) {
-        String newSupplementsInfo = formatNewSupplements(data.getNewTargets());
+        StringBuilder typeABuilder = new StringBuilder();
+        StringBuilder typeBBuilder = new StringBuilder();
+
+        int typeACount = 0, typeBCount = 0;
+
+        // Type A/B 분류
+        for (AnalysisTarget t : data.getNewTargets()) {
+            if (t.getProduct() != null) {
+                // Type A: DB 매칭 성공 (확정 데이터)
+                typeABuilder.append("- 제품명: ").append(t.getName())
+                        .append("\n  성분: ").append(formatIngredients(t.getIngredients()))
+                        .append("\n");
+                typeACount++;
+            } else {
+                // Type B: OCR 원본만 존재 (추론 필요)
+                typeBBuilder.append("- OCR 원본: ").append(t.getOcrName())
+                        .append("\n");
+                typeBCount++;
+            }
+        }
+
+        log.info("[LLM] 프롬프트 구성 - Type A(확정): {}개, Type B(추론): {}개", typeACount, typeBCount);
+
         String currentSupplementsInfo = formatCurrentSupplements(data.getCurrentSupplements());
 
         return """
-                당신은 임상 경험이 풍부한 전문 약사이자 영양사입니다.
-                제시된 영양제 섭취 정보를 바탕으로 다음 지침에 따라 전문적인 분석 리포트를 작성하세요.
+                [역할] 임상 경험이 풍부한 전문 약사이자 영양사입니다.
 
-                [지침]
-                1. comparison: 각 성분별 일일 권장량을 기준으로 현재 복용량과 신규 추가량을 합산하여 과복용 여부를 정밀 분석하세요.
-                2. interactions: 제품 간 흡수 방해(예: 칼슘과 철분의 경쟁 흡수)나 부작용, 시너지 효과를 약학적 관점에서 분석하세요.
-                3. timingGuides: 각 제품의 성분 특성(지용성 비타민의 식후 복용, 위장 장애 예방 등)을 고려하여 아침/점심/저녁/취침전 중 최적의 시간과 이유를 명시하세요.
-                4. dosageInfo: 주요 성분별 일일 최소/권장/최대 섭취량 대비 현재 상태를 status(good, warning)로 표시하세요.
+                === 데이터 분류 ===
 
-                [새로 분석된 영양제]
+                [Type A - 확정 데이터] (DB 매칭 성공, 성분 정보 포함)
                 %s
 
-                [현재 복용 중인 영양제]
+                [Type B - 추론 필요] (OCR 원본만 존재)
                 %s
 
-                [JSON 출력 요구사항]
-                인사말이나 부연 설명 없이, 반드시 아래 스키마를 따르는 순수 JSON 블록만 출력하세요.
+                [현재 복용 중]
+                %s
+
+                === 중요 지침 ===
+
+                ⚠️ 노이즈 필터링:
+                - HALE, YaD, 608, H1 등 의미없는 영문/숫자 조합은 즉시 무시
+                - 분석 대상이 아닌 텍스트는 언급하지 마세요
+
+                📋 분석 원칙:
+                1. Type A는 확정 정보로 바로 분석
+                2. Type B는 오타 가능성 감안하여 가장 유사한 실제 제품 추론
+                3. 추론 불가능한 Type B는 건너뛰기
+
+                📝 응답 원칙:
+                - 핵심 위주 간결한 분석
+                - 과복용/상호작용 위험 시에만 warning
+                - 불필요한 설명 생략
+
+                === JSON 출력 (순수 JSON만) ===
                 {
                   "comparison": [ { "name": "성분명", "myAmount": "0mg", "newAmount": "10mg", "totalAmount": "10mg", "status": "good|warning|new" } ],
                   "recommendations": {
                     "interactions": [ { "type": "tip|warning", "text": "내용" } ],
-                    "timingGuides": [ { "time": "아침", "products": ["제품명"], "reason": "이유(식전/식후 구분 포함)" } ],
+                    "timingGuides": [ { "time": "아침|저녁", "products": ["제품명"], "reason": "이유" } ],
                     "dosageInfo": [ { "name": "성분명", "min": "최소", "recommended": "권장", "max": "최대", "current": "현재", "status": "good|warning" } ],
-                    "productNotes": [ "제품별 시각적 특이사항이나 복용 팁" ]
+                    "productNotes": [ "핵심 복용 팁만" ]
                   }
                 }
                 """
-                .formatted(newSupplementsInfo, currentSupplementsInfo);
+                .formatted(
+                        typeABuilder.length() > 0 ? typeABuilder.toString() : "없음",
+                        typeBBuilder.length() > 0 ? typeBBuilder.toString() : "없음",
+                        currentSupplementsInfo.isBlank() ? "없음" : currentSupplementsInfo);
     }
 
-    /**
-     * 신규 영양제 정보 포맷팅
+    // 신규 영양제 포맷팅은 buildPrompt 내부에서 Type A/B 분류로 대체됨
+    /*
+     * private String formatNewSupplements(List<AnalysisTarget> targets) {
+     * return targets.stream()
+     * .map(t -> "- 제품명: %s\n  성분: %s".formatted(t.getName(),
+     * formatIngredients(t.getIngredients())))
+     * .collect(Collectors.joining("\n"));
+     * }
      */
-    private String formatNewSupplements(List<AnalysisTarget> targets) {
-        return targets.stream()
-                .map(t -> "- 제품명: %s\n  성분: %s".formatted(t.getName(), formatIngredients(t.getIngredients())))
-                .collect(Collectors.joining("\n"));
-    }
 
     /**
      * 현재 영양제 정보 포맷팅
