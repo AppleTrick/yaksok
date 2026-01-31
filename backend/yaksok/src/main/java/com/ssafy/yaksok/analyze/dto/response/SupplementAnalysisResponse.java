@@ -75,6 +75,7 @@ public class SupplementAnalysisResponse {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class OverdoseAnalysis {
+        private List<DetectedProduct> detectedProducts; // LLM 추론 제품명 (UI 표시용)
         private List<ComparisonResult> comparison;
         private Recommendations recommendations;
     }
@@ -132,5 +133,17 @@ public class SupplementAnalysisResponse {
         private String max;
         private String current;
         private String status;
+    }
+
+    /**
+     * LLM이 추론한 제품명 정보 (Type B 보정용)
+     */
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class DetectedProduct {
+        private String ocrHint; // 원본 OCR 힌트 (예: "가능품 (추정)")
+        private String inferredName; // LLM 추론 제품명 (예: "센트롱")
     }
 }

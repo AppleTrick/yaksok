@@ -111,6 +111,12 @@ public class LlmAnalyzer {
                 - HALE, YaD, 608, H1 등 의미없는 영문/숫자 조합은 즉시 무시
                 - 분석 대상이 아닌 텍스트는 언급하지 마세요
 
+                📦 제품명 추론 (필수 - Type B 항목):
+                - OCR 텍스트에서 **정확한 제품명**을 추론하라
+                - "센트롱", "비맥스 메타", "센트룸 멀티 구미" 등 실제 제품명으로 보정
+                - 노이즈(가능품, 건강기능식품 등)가 섞여 있어도 핵심 브랜드/제품명만 추출
+                - detectedProducts 배열에 ocrHint(원본)와 inferredName(추론명)을 담아 반환
+
                 📋 분석 원칙:
                 1. Type A는 확정 정보로 바로 분석
                 2. Type B는 오타 가능성 감안하여 가장 유사한 실제 제품 추론
@@ -123,6 +129,7 @@ public class LlmAnalyzer {
 
                 === JSON 출력 (순수 JSON만) ===
                 {
+                  "detectedProducts": [ { "ocrHint": "OCR 원본 키워드", "inferredName": "추론된 정확한 제품명" } ],
                   "comparison": [ { "name": "성분명", "myAmount": "0mg", "newAmount": "10mg", "totalAmount": "10mg", "status": "good|warning|new" } ],
                   "recommendations": {
                     "interactions": [ { "type": "tip|warning", "text": "내용" } ],
@@ -184,6 +191,7 @@ public class LlmAnalyzer {
 
     private SupplementAnalysisResponse.OverdoseAnalysis createEmptyOverdoseAnalysis() {
         return SupplementAnalysisResponse.OverdoseAnalysis.builder()
+                .detectedProducts(new ArrayList<>())
                 .comparison(new ArrayList<>())
                 .recommendations(SupplementAnalysisResponse.Recommendations.builder()
                         .interactions(new ArrayList<>())
