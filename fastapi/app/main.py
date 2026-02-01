@@ -75,6 +75,7 @@ def read_root():
     }
 
 
+
 @app.post("/analyze")
 async def analyze_image_endpoint(file: UploadFile = File(...)):
     """
@@ -102,6 +103,39 @@ async def analyze_image_endpoint(file: UploadFile = File(...)):
     except Exception as e:
         print(f"[에러] 분석 중 오류 발생: {e}")
         raise HTTPException(status_code=500, detail=f"분석 중 오류가 발생했습니다: {str(e)}")
+
+
+from app.services.vision_service import analyze_with_vision_api
+
+@app.post("/analyze2")
+async def analyze_image_vision_api(file: UploadFile = File(...)):
+    """
+    Google Cloud Vision API 기반 영양제 분석 엔드포인트
+    
+    [Logic Workflow]
+    1. Object Localization: 'Bottle', 'Container', 'Packaged goods' 탐지
+    2. Image Cropping: 탐지된 객체 영역 Crop
+    3. Individual OCR: 각 Crop 이미지에 대해 Document Text Detection 수행
+    4. Heuristic Extraction: 제품명 추론
+    
+    Returns:
+        List[Dict]: 각 객체별 분석 결과 리스트 (ID, 신뢰도, 제품명, 전체 텍스트)
+    """
+    if not file.content_type or not file.content_type.startswith("image/"):
+        raise HTTPException(status_code=400, detail="이미지 파일만 업로드 가능합니다")
+        
+    try:
+        image_bytes = await file.read()
+        
+        # vision_service의 비동기 함수 호출
+        # 내부적으로 스레드풀을 사용하여 비동기 처리됨
+        results = await analyze_with_vision_api(image_bytes)
+        
+        return results
+        
+    except Exception as e:
+        print(f"[에러] Vision API 분석 중 오류 발생: {e}")
+        raise HTTPException(status_code=500, detail=f"Vision API 분석 중 오류가 발생했습니다: {str(e)}")
 
 
 # ============================================================
@@ -456,6 +490,397 @@ async def read_test_page():
     </html>
     """
 
+
+
+@app.get("/test2", response_class=HTMLResponse)
+async def read_test_page_v2():
+    """
+    Google Cloud Vision API 테스트 페이지
+    /analyze2 엔드포인트의 결과를 시각적으로 확인합니다.
+    """
+    return """
+    <!DOCTYPE html>
+    <html lang="ko">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Google Vision API 테스트</title>
+        <style>
+            * { box-sizing: border-box; margin: 0; padding: 0; }
+            body { 
+                font-family: 'Pretendard', 'Segoe UI', sans-serif;
+                background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+                min-height: 100vh;
+                padding: 40px 20px;
+                color: #333;
+            }
+            .container {
+                max-width: 1000px;
+                margin: 0 auto;
+                background: rgba(255, 255, 255, 0.95);
+                border-radius: 24px;
+                padding: 40px;
+                box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+                backdrop-filter: blur(10px);
+            }
+            h1 {
+                text-align: center;
+                color: #2c3e50;
+                margin-bottom: 10px;
+                font-size: 2.2rem;
+                font-weight: 800;
+            }
+            .subtitle {
+                text-align: center;
+                color: #5d6d7e;
+                margin-bottom: 40px;
+                font-size: 1.1rem;
+            }
+            
+            /* Upload Section */
+            .upload-section {
+                background: white;
+                border: 3px dashed #bdc3c7;
+                border-radius: 20px;
+                padding: 60px 40px;
+                text-align: center;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                margin-bottom: 30px;
+                position: relative;
+                overflow: hidden;
+            }
+            .upload-section:hover {
+                border-color: #4facfe;
+                background: #f0f9ff;
+                transform: translateY(-2px);
+            }
+            .upload-icon { font-size: 4rem; margin-bottom: 20px; display: block; }
+            .upload-text { font-size: 1.2rem; color: #7f8c8d; font-weight: 600; }
+            input[type="file"] { display: none; }
+            
+            /* Buttons */
+            .action-btn {
+                background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+                color: white;
+                border: none;
+                padding: 16px 40px;
+                font-size: 1.1rem;
+                font-weight: 700;
+                border-radius: 12px;
+                cursor: pointer;
+                transition: transform 0.2s, box-shadow 0.2s;
+                width: 100%;
+                max-width: 300px;
+                margin: 0 auto;
+                display: block;
+                box-shadow: 0 10px 20px rgba(79, 172, 254, 0.3);
+            }
+            .action-btn:hover:not(:disabled) {
+                transform: translateY(-2px);
+                box-shadow: 0 15px 30px rgba(79, 172, 254, 0.4);
+            }
+            .action-btn:disabled {
+                background: #bdc3c7;
+                cursor: not-allowed;
+                box-shadow: none;
+                transform: none;
+            }
+            
+            /* Loading */
+            .loading {
+                display: none;
+                text-align: center;
+                margin: 30px 0;
+            }
+            .spinner {
+                width: 50px;
+                height: 50px;
+                border: 5px solid #f3f3f3;
+                border-top: 5px solid #4facfe;
+                border-radius: 50%;
+                animation: spin 1s linear infinite;
+                margin: 0 auto 15px;
+            }
+            @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+            
+            /* Results */
+            .result-container {
+                display: none;
+                margin-top: 40px;
+                animation: slideUp 0.5s ease-out;
+            }
+            @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+            
+            .preview-box {
+                text-align: center;
+                margin-bottom: 30px;
+                background: #2c3e50;
+                padding: 20px;
+                border-radius: 16px;
+            }
+            #previewWrapper img {
+                max-width: 100%;
+                max-height: 500px;
+                border-radius: 8px;
+                box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            }
+            
+            /* Product Cards */
+            .product-list {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+                gap: 20px;
+                margin-bottom: 30px;
+            }
+            .product-card {
+                background: white;
+                border-radius: 16px;
+                padding: 25px;
+                box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+                border: 1px solid #eef2f7;
+                transition: transform 0.3s;
+                position: relative;
+                overflow: hidden;
+            }
+            .product-card:hover { transform: translateY(-5px); box-shadow: 0 15px 35px rgba(0,0,0,0.1); }
+            .product-card::before {
+                content: '';
+                position: absolute;
+                top: 0; left: 0; width: 100%; height: 6px;
+                background: linear-gradient(90deg, #4facfe, #00f2fe);
+            }
+            
+            .card-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: start;
+                margin-bottom: 15px;
+            }
+            .product-name {
+                font-size: 1.4rem;
+                font-weight: 800;
+                color: #2c3e50;
+                margin-bottom: 5px;
+                word-break: break-word;
+            }
+            .object-type {
+                font-size: 0.9rem;
+                color: #7f8c8d;
+                background: #f0f3f4;
+                padding: 4px 10px;
+                border-radius: 20px;
+                display: inline-block;
+            }
+            .confidence-badge {
+                background: #e8f8f5;
+                color: #1abc9c;
+                padding: 6px 12px;
+                border-radius: 12px;
+                font-weight: 700;
+                font-size: 0.9rem;
+            }
+            
+            .text-content {
+                background: #f8f9fa;
+                border-radius: 10px;
+                padding: 15px;
+                font-size: 0.9rem;
+                color: #555;
+                border-left: 4px solid #bdc3c7;
+                max-height: 200px;
+                overflow-y: auto;
+                white-space: pre-wrap;
+            }
+            .section-label {
+                font-weight: 700;
+                color: #95a5a6;
+                font-size: 0.8rem;
+                margin-bottom: 8px;
+                display: block;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+            }
+            
+            .raw-json {
+                background: #2d3436;
+                color: #dfe6e9;
+                padding: 20px;
+                border-radius: 12px;
+                overflow-x: auto;
+                font-family: 'Consolas', monospace;
+                font-size: 0.85rem;
+            }
+            
+            .empty-state {
+                text-align: center;
+                padding: 40px;
+                color: #7f8c8d;
+                background: #f8f9fa;
+                border-radius: 16px;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1>💊 Google Vision 분석 (v2)</h1>
+            <p class="subtitle">Cloud Vision API를 활용한 고정밀 영양제 인식 및 텍스트 추출</p>
+            
+            <div class="upload-section" id="dropZone" onclick="document.getElementById('fileInput').click()">
+                <span class="upload-icon">📸</span>
+                <p class="upload-text">여기를 클릭하거나 이미지를 드래그하세요</p>
+                <div id="selectedFileName" style="margin-top: 15px; color: #4facfe; font-weight: 700;"></div>
+            </div>
+            <input type="file" id="fileInput" accept="image/*">
+            
+            <button id="analyzeBtn" class="action-btn" disabled onclick="startAnalysis()">
+                분석 시작하기
+            </button>
+            
+            <div id="loading" class="loading">
+                <div class="spinner"></div>
+                <p>Google Cloud Vision API 요청 중...</p>
+                <p style="font-size: 0.9rem; color: #999;">객체 탐지 → 크롭 → OCR 분석 진행</p>
+            </div>
+            
+            <div id="resultContainer" class="result-container">
+                <div class="preview-box">
+                    <div id="previewWrapper">
+                        <img id="previewImg" src="" alt="Origin Image">
+                    </div>
+                </div>
+                
+                <h3 style="margin-bottom: 20px; color: #2c3e50;">💡 분석 결과</h3>
+                <div id="productList" class="product-list">
+                    <!-- Cards will be injected here -->
+                </div>
+                
+                <details>
+                    <summary style="cursor: pointer; padding: 10px; font-weight: 600; color: #7f8c8d;">🔧 Raw JSON Data</summary>
+                    <pre id="rawJson" class="raw-json"></pre>
+                </details>
+            </div>
+        </div>
+        
+        <script>
+            const fileInput = document.getElementById('fileInput');
+            const dropZone = document.getElementById('dropZone');
+            const analyzeBtn = document.getElementById('analyzeBtn');
+            const previewImg = document.getElementById('previewImg');
+            
+            // File Handling
+            fileInput.addEventListener('change', handleFileSelect);
+            
+            dropZone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                dropZone.style.borderColor = '#4facfe';
+                dropZone.style.background = '#f0f9ff';
+            });
+            
+            dropZone.addEventListener('dragleave', (e) => {
+                dropZone.style.borderColor = '#bdc3c7';
+                dropZone.style.background = 'white';
+            });
+            
+            dropZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dropZone.style.borderColor = '#bdc3c7';
+                dropZone.style.background = 'white';
+                
+                if (e.dataTransfer.files.length) {
+                    fileInput.files = e.dataTransfer.files;
+                    handleFileSelect();
+                }
+            });
+            
+            function handleFileSelect() {
+                const file = fileInput.files[0];
+                if (file) {
+                    document.getElementById('selectedFileName').textContent = file.name;
+                    analyzeBtn.disabled = false;
+                    
+                    const reader = new FileReader();
+                    reader.onload = (e) => previewImg.src = e.target.result;
+                    reader.readAsDataURL(file);
+                }
+            }
+            
+            async function startAnalysis() {
+                const file = fileInput.files[0];
+                if (!file) return;
+                
+                // UI Update
+                analyzeBtn.disabled = true;
+                document.getElementById('loading').style.display = 'block';
+                document.getElementById('resultContainer').style.display = 'none';
+                
+                const formData = new FormData();
+                formData.append('file', file);
+                
+                try {
+                    const response = await fetch('/analyze2', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    if (!response.ok) {
+                        const err = await response.json();
+                        throw new Error(err.detail || '분석 실패');
+                    }
+                    
+                    const data = await response.json();
+                    renderResults(data);
+                    
+                } catch (e) {
+                    alert('에러 발생: ' + e.message);
+                } finally {
+                    analyzeBtn.disabled = false;
+                    document.getElementById('loading').style.display = 'none';
+                }
+            }
+            
+            function renderResults(data) {
+                const listEl = document.getElementById('productList');
+                const jsonEl = document.getElementById('rawJson');
+                
+                jsonEl.textContent = JSON.stringify(data, null, 2);
+                listEl.innerHTML = '';
+                
+                if (!data || data.length === 0) {
+                    listEl.innerHTML = '<div class="empty-state">탐지된 영양제 객체가 없습니다.</div>';
+                } else {
+                    data.forEach(item => {
+                        const card = document.createElement('div');
+                        card.className = 'product-card';
+                        
+                        // 제품명 (없으면 '알 수 없음')
+                        const productName = item.product_name || '이름 인식 불가';
+                        const scorePercent = Math.round(item.score * 100);
+                        
+                        card.innerHTML = `
+                            <div class="card-header">
+                                <div>
+                                    <div class="product-name">${productName}</div>
+                                    <span class="object-type">${item.name}</span>
+                                </div>
+                                <div class="confidence-badge">${scorePercent}% 일치</div>
+                            </div>
+                            
+                            <div>
+                                <span class="section-label">DETECTED TEXT (OCR)</span>
+                                <div class="text-content">${item.full_text || '(추출된 텍스트 없음)'}</div>
+                            </div>
+                        `;
+                        listEl.appendChild(card);
+                    });
+                }
+                
+                document.getElementById('resultContainer').style.display = 'block';
+            }
+        </script>
+    </body>
+    </html>
+    """
 
 # ============================================================
 # 라우터 등록 및 서버 실행
