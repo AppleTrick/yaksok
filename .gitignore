@@ -44,9 +44,11 @@ build/
 # Firebase service account key
 serviceAccountKey.json
 firebase.json
-OCRLearning.zip
 
 
+# ignore File
 /Memo
-
+/OCRLearning
+OCRLearning.zip
 .DS_Store
+
