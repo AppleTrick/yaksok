@@ -19,10 +19,20 @@ const messaging = firebase.messaging();
 messaging.onBackgroundMessage((payload) => {
     console.log('[firebase-messaging-sw.js] 백그라운드 메시지 수신:', payload);
 
-    // 알림 데이터 파싱
+    // 알림 데이터 파싱 (Data-Only 메시지 대응)
+    // 백엔드에서 notification 필드 없이 data 필드만 보내야 함
     const data = payload.data || {};
-    const notificationTitle = payload.notification?.title || data.title || '💊 복용 시간이에요!';
-    const notificationBody = payload.notification?.body || data.body || '영양제 드실 시간입니다.';
+
+    // 제목과 본문은 data 필드에서 우선적으로 가져옴 (없으면 Fallback)
+    const notificationTitle = data.title || payload.notification?.title || '💊 복용 시간이에요!';
+    const notificationBody = data.body || payload.notification?.body || '영양제 드실 시간입니다.';
+
+    // 고유 태그 생성 (notificationId + timestamp)
+    // timestamp가 없으면 현재 시간 사용. 이를 통해 동일 알림도 덮어쓰지 않고 쌓이게 할 수 있음.
+    // 단, 너무 많이 쌓이면 사용자 경험에 좋지 않으므로 정책에 따라 결정.
+    // 여기서는 알림 유실 방지를 위해 timestamp를 포함하여 유니크하게 설정.
+    const timestamp = data.timestamp || Date.now();
+    const uniqueTag = `medication-${data.notificationId}-${timestamp}`;
 
     const notificationOptions = {
         body: notificationBody,
@@ -36,7 +46,8 @@ messaging.onBackgroundMessage((payload) => {
             userProductId: data.userProductId,
             productName: data.productName,
         },
-        tag: `medication-${data.notificationId || Date.now()}`,
+        tag: uniqueTag, // 고유 태그 설정
+        renotify: true, // 태그가 같더라도(혹은 갱신되더라도) 다시 알림(진동/소리) 발생
         requireInteraction: true, // 사용자가 직접 닫을 때까지 유지
         actions: [
             {
@@ -58,8 +69,6 @@ messaging.onBackgroundMessage((payload) => {
 // 알림 클릭 이벤트 처리
 self.addEventListener('notificationclick', (event) => {
     console.log('[firebase-messaging-sw.js] 알림 클릭:', event);
-    console.log('액션:', event.action);
-    console.log('데이터:', event.notification.data);
 
     event.notification.close();
 
@@ -135,7 +144,7 @@ async function handleMedicationSnooze(data) {
     console.log('나중에 알림 처리:', data);
 
     try {
-        // 백엔드 API 호출 (5분 후 재알림 요청)
+        // 백엔드 API 호출 (5분 후 재알림 요청) - 오타 수정: snoose -> snooze
         const response = await fetch(`${self.location.origin}/api/v1/notification/snooze`, {
             method: 'PUT',
             headers: {
