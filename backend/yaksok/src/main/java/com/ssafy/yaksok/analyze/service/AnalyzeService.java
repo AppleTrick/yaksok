@@ -91,10 +91,13 @@ public class AnalyzeService {
 
                 log.info("============== AI 분석 결과 상세 로그 ==============");
                 result.getAnalysisResults().forEach(raw -> {
-                        log.info("Conf: {}, Barcode: {}, OCR: {}",
+                        log.info("Conf: {}, Product: {}, OCR: {}",
                                         raw.getConfidence(),
-                                        raw.getBarcode() != null ? raw.getBarcode() : "N/A",
-                                        raw.getOcrTexts());
+                                        raw.getProductName(),
+                                        raw.getOcrText() != null
+                                                        ? raw.getOcrText().substring(0,
+                                                                        Math.min(raw.getOcrText().length(), 20)) + "..."
+                                                        : "Empty");
                 });
                 log.info("================================================");
         }
@@ -103,35 +106,18 @@ public class AnalyzeService {
          * AI 분석 결과(FastAPI)와 비즈니스 데이터를 결합하여 최종 응답 객체를 생성합니다.
          */
         private SupplementAnalysisResponse buildUnifiedResponse(Long userId, FastApiAnalysisResult aiResult) {
-                // 1. 화면 표시용 데이터(DisplayData) 구성 및 실시간 매칭
+                // 1. 화면 표시용 데이터(DisplayData) - Pass-through Logic
                 List<SupplementAnalysisResponse.ProductDisplayInfo> displayProducts = new ArrayList<>();
-                List<Product> matchedProducts = new ArrayList<>();
 
                 if (aiResult != null && aiResult.isSuccess() && aiResult.getAnalysisResults() != null) {
                         for (FastApiAnalysisResult.RawAnalysisResult raw : aiResult.getAnalysisResults()) {
-                                // OCR 텍스트가 있을 경우 첫 번째 텍스트를 대표 이름으로 사용 (추후 고도화 가능)
-                                String ocrName = (raw.getOcrTexts() != null && !raw.getOcrTexts().isEmpty())
-                                                ? raw.getOcrTexts().get(0)
-                                                : null;
-
-                                Product product = null;
-                                if (ocrName != null) {
-                                        try {
-                                                product = productMatchingService.findProduct(ocrName);
-                                                matchedProducts.add(product);
-                                        } catch (Exception e) {
-                                                log.warn("제품 매칭 실패 (OCR: {}): {}", ocrName, e.getMessage());
-                                        }
-                                }
-
                                 displayProducts.add(SupplementAnalysisResponse.ProductDisplayInfo.builder()
-                                                .tempId(product != null ? product.getId() : null)
-                                                .name(product != null ? product.getPrdlstNm()
-                                                                : (ocrName != null ? ocrName : "알 수 없는 제품"))
-                                                .barcode(raw.getBarcode())
+                                                .tempId(null) // 매칭 안함
+                                                .name(raw.getProductName() != null ? raw.getProductName() : "이름 없음")
+                                                .barcode(null) // raw.getOcrText() 사용 안함
                                                 .confidence(raw.getConfidence())
                                                 .box(raw.getBox())
-                                                .isExactMatch(product != null)
+                                                .isExactMatch(false)
                                                 .build());
                         }
                 }
@@ -141,12 +127,11 @@ public class AnalyzeService {
                                 .products(displayProducts)
                                 .build();
 
-                // 2. 분석 리포트 데이터(ReportData) 구성
-                List<UserProductResponse> currentUserSupplements = (userId != null)
-                                ? userProductService.getUserProducts(userId)
-                                : new ArrayList<>();
-                SupplementAnalysisResponse.ReportData reportData = generateRealReportData(matchedProducts,
-                                currentUserSupplements);
+                // 2. 분석 리포트 데이터(ReportData) - Empty Return (Simplified)
+                SupplementAnalysisResponse.ReportData reportData = SupplementAnalysisResponse.ReportData.builder()
+                                .products(new ArrayList<>())
+                                .overdoseAnalysis(createEmptyOverdoseAnalysis())
+                                .build();
 
                 return SupplementAnalysisResponse.builder()
                                 .displayData(displayData)
@@ -154,29 +139,8 @@ public class AnalyzeService {
                                 .build();
         }
 
-        private SupplementAnalysisResponse.ReportData generateRealReportData(
-                        List<Product> matchedProducts,
-                        List<UserProductResponse> currentSupplements) {
-
-                // 리포트용 제품 정보 변환
-                List<SupplementAnalysisResponse.ReportProductInfo> reportProducts = matchedProducts.stream()
-                                .map(p -> SupplementAnalysisResponse.ReportProductInfo.builder()
-                                                .productId(p.getId())
-                                                .name(p.getPrdlstNm())
-                                                .confidence(1.0) // 매칭된 결과이므로 1.0 부여
-                                                .ingredients(new ArrayList<>()) // 필요시 DB 조회 로직 추가
-                                                .build())
-                                .collect(Collectors.toList());
-
-                // LLM을 통한 통합 분석 리포트 생성
-                SupplementAnalysisResponse.OverdoseAnalysis overdoseAnalysis = generateLLMReport(matchedProducts,
-                                currentSupplements);
-
-                return SupplementAnalysisResponse.ReportData.builder()
-                                .products(reportProducts)
-                                .overdoseAnalysis(overdoseAnalysis)
-                                .build();
-        }
+        // generateRealReportData 메서드는 더 이상 사용하지 않음
+        // generateLLMReport 메서드는 더 이상 사용하지 않음
 
         private SupplementAnalysisResponse.OverdoseAnalysis generateLLMReport(
                         List<Product> matchedProducts,
