@@ -1,7 +1,13 @@
 package com.ssafy.yaksok.analyze.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ssafy.yaksok.analyze.dto.FastApiAnalysisResult;
 import com.ssafy.yaksok.analyze.dto.SupplementAnalysisResponse;
+import com.ssafy.yaksok.global.llm.service.LLMService;
+import com.ssafy.yaksok.product.dto.UserProductResponse;
+import com.ssafy.yaksok.product.entity.Product;
+import com.ssafy.yaksok.product.service.ProductMatchingService;
+import com.ssafy.yaksok.product.service.UserProductService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -15,7 +21,6 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -28,29 +33,24 @@ import java.util.stream.Collectors;
 public class AnalyzeService {
 
         private final WebClient.Builder webClientBuilder;
+        private final ProductMatchingService productMatchingService;
+        private final UserProductService userProductService;
+        private final LLMService llmService;
 
         @Value("${fastapi.url}")
         private String fastApiUrl;
 
-        // ========================================================================
-        // [MOCK DATA 전용 상수] - 실제 데이터 연동 전까지 화면 개발을 위해 사용합니다.
-        // ========================================================================
-        private static final String MOCK_PRODUCT_VITAMIN = "내츄럴웨이 고함량 비타민 D3 2000IU";
-        private static final String MOCK_PRODUCT_ZINC = "파워에너지 징크 아연 플러스 15mg";
-        private static final String STATUS_WARNING = "warning";
-        private static final String STATUS_GOOD = "good";
-
         /**
          * 영양제 이미지 분석 실행 메인 로직
          */
-        public SupplementAnalysisResponse analyzeSupplement(MultipartFile file) {
-                log.info("영양제 분석 요청 시작: filename={}", file.getOriginalFilename());
+        public SupplementAnalysisResponse analyzeSupplement(Long userId, MultipartFile file) {
+                log.info("영양제 분석 요청 시작: userId={}, filename={}", userId, file.getOriginalFilename());
 
                 // 1. FastAPI 호출 (AI 분석 요청)
                 FastApiAnalysisResult aiResult = callFastApi(file);
 
                 // 2. 결과 결합 및 통합 응답(Display + Report) 생성
-                return buildUnifiedResponse(aiResult);
+                return buildUnifiedResponse(userId, aiResult);
         }
 
         /**
@@ -91,35 +91,33 @@ public class AnalyzeService {
 
                 log.info("============== AI 분석 결과 상세 로그 ==============");
                 result.getAnalysisResults().forEach(raw -> {
-                        log.info("Conf: {}, Barcode: {}, OCR: {}",
+                        log.info("Conf: {}, Product: {}, OCR: {}",
                                         raw.getConfidence(),
-                                        raw.getBarcode() != null ? raw.getBarcode() : "N/A",
-                                        raw.getOcrTexts());
+                                        raw.getProductName(),
+                                        raw.getOcrText() != null
+                                                        ? raw.getOcrText().substring(0,
+                                                                        Math.min(raw.getOcrText().length(), 20)) + "..."
+                                                        : "Empty");
                 });
                 log.info("================================================");
         }
 
         /**
-         * AI 분석 결과(FastAPI)와 비즈니스/Mock 데이터를 결합하여 최종 응답 객체를 생성합니다.
+         * AI 분석 결과(FastAPI)와 비즈니스 데이터를 결합하여 최종 응답 객체를 생성합니다.
          */
-        private SupplementAnalysisResponse buildUnifiedResponse(FastApiAnalysisResult aiResult) {
-                // 1. 화면 표시용 데이터(DisplayData) 구성
+        private SupplementAnalysisResponse buildUnifiedResponse(Long userId, FastApiAnalysisResult aiResult) {
+                // 1. 화면 표시용 데이터(DisplayData) - Pass-through Logic
                 List<SupplementAnalysisResponse.ProductDisplayInfo> displayProducts = new ArrayList<>();
 
-                if (aiResult != null && aiResult.getAnalysisResults() != null) {
-                        long tempId = 1000;
+                if (aiResult != null && aiResult.isSuccess() && aiResult.getAnalysisResults() != null) {
                         for (FastApiAnalysisResult.RawAnalysisResult raw : aiResult.getAnalysisResults()) {
-                                String name = (raw.getOcrTexts() != null && !raw.getOcrTexts().isEmpty())
-                                                ? raw.getOcrTexts().get(0)
-                                                : "인식된 제품";
-
                                 displayProducts.add(SupplementAnalysisResponse.ProductDisplayInfo.builder()
-                                                .tempId(++tempId)
-                                                .name(name)
-                                                .barcode(raw.getBarcode())
+                                                .tempId(null) // 매칭 안함
+                                                .name(raw.getProductName() != null ? raw.getProductName() : "이름 없음")
+                                                .barcode(null) // raw.getOcrText() 사용 안함
                                                 .confidence(raw.getConfidence())
                                                 .box(raw.getBox())
-                                                .isExactMatch(raw.getBarcode() != null)
+                                                .isExactMatch(false)
                                                 .build());
                         }
                 }
@@ -129,9 +127,11 @@ public class AnalyzeService {
                                 .products(displayProducts)
                                 .build();
 
-                // 2. 분석 리포트 데이터(ReportData) 구성 - 현재는 Mock 사용
-                // FIXME: 추후 DB 연동 시 바코드 기반 검색 및 유저 맞춤 분석 로직으로 대체
-                SupplementAnalysisResponse.ReportData reportData = buildMockReportData(displayProducts);
+                // 2. 분석 리포트 데이터(ReportData) - Empty Return (Simplified)
+                SupplementAnalysisResponse.ReportData reportData = SupplementAnalysisResponse.ReportData.builder()
+                                .products(new ArrayList<>())
+                                .overdoseAnalysis(createEmptyOverdoseAnalysis())
+                                .build();
 
                 return SupplementAnalysisResponse.builder()
                                 .displayData(displayData)
@@ -139,64 +139,60 @@ public class AnalyzeService {
                                 .build();
         }
 
-        private SupplementAnalysisResponse.ReportData buildMockReportData(
-                        List<SupplementAnalysisResponse.ProductDisplayInfo> products) {
-                // 제품 상세 정보 생성
-                List<SupplementAnalysisResponse.ReportProductInfo> reportProducts = products.stream()
-                                .map(p -> SupplementAnalysisResponse.ReportProductInfo.builder()
-                                                .productId(p.getTempId())
-                                                .name(p.getName())
-                                                .confidence(p.getConfidence())
-                                                .ingredients(createMockIngredients())
-                                                .build())
-                                .collect(Collectors.toList());
+        // generateRealReportData 메서드는 더 이상 사용하지 않음
+        // generateLLMReport 메서드는 더 이상 사용하지 않음
 
-                // 과복용 분석 정보 생성
-                SupplementAnalysisResponse.OverdoseAnalysis overdoseAnalysis = createMockOverdoseAnalysis();
+        private SupplementAnalysisResponse.OverdoseAnalysis generateLLMReport(
+                        List<Product> matchedProducts,
+                        List<UserProductResponse> currentSupplements) {
 
-                return SupplementAnalysisResponse.ReportData.builder()
-                                .products(reportProducts)
-                                .overdoseAnalysis(overdoseAnalysis)
-                                .build();
+                // 프롬프트 구성
+                StringBuilder prompt = new StringBuilder();
+                prompt.append("당신은 전문 영양사입니다. 다음 영양제 정보를 바탕으로 과복용 분석 및 권장사항 리포트를 작성해주세요.\n\n");
+
+                prompt.append("[새로 분석된 영양제]\n");
+                matchedProducts.forEach(p -> prompt.append("- ").append(p.getPrdlstNm()).append("\n"));
+
+                prompt.append("\n[현재 복용 중인 영양제]\n");
+                currentSupplements.forEach(s -> prompt.append("- ").append(s.getProductName()).append("\n"));
+
+                prompt.append("\n위 영양제들을 함께 복용했을 때:\n");
+                prompt.append("1. 성분 중복이나 과복용 위험이 있는 요소\n");
+                prompt.append("2. 함께 먹으면 좋은 궁합 또는 피해야 할 궁합\n");
+                prompt.append("3. 일일 권장 섭취량 대비 현재 상태\n\n");
+
+                prompt.append("다음 JSON 형식으로만 응답해주세요:\n");
+                prompt.append("{\n");
+                prompt.append("  \"comparison\": [\n");
+                prompt.append("    { \"name\": \"성분명\", \"myAmount\": \"복용중양\", \"newAmount\": \"신규양\", \"totalAmount\": \"합계\", \"status\": \"good|warning|new\" }\n");
+                prompt.append("  ],\n");
+                prompt.append("  \"recommendations\": {\n");
+                prompt.append("    \"interactions\": [ { \"type\": \"tip|warning\", \"text\": \"설명\" } ],\n");
+                prompt.append("    \"dosageInfo\": [ { \"name\": \"성분명\", \"min\": \"최소\", \"recommended\": \"권장\", \"max\": \"최대\", \"current\": \"현재\", \"status\": \"good|warning\" } ],\n");
+                prompt.append("    \"productNotes\": [ \"제품 특이사항\" ]\n");
+                prompt.append("  }\n");
+                prompt.append("}\n");
+
+                try {
+                        String response = llmService.query(prompt.toString(), 0.5);
+                        // JSON 파싱 로직 (간소화 위해 Jackson 사용 가능)
+                        ObjectMapper mapper = new ObjectMapper();
+                        String cleanJson = response.replaceAll("```json|```", "").trim();
+                        return mapper.readValue(cleanJson, SupplementAnalysisResponse.OverdoseAnalysis.class);
+                } catch (Exception e) {
+                        log.error("LLM 리포트 생성 실패", e);
+                        return createEmptyOverdoseAnalysis();
+                }
         }
 
-        private List<SupplementAnalysisResponse.ProductIngredientInfo> createMockIngredients() {
-                return Arrays.asList(
-                                createIngredient(MOCK_PRODUCT_VITAMIN, "1000", "IU", 250),
-                                createIngredient(MOCK_PRODUCT_ZINC, "10", "mg", 85));
-        }
-
-        private SupplementAnalysisResponse.ProductIngredientInfo createIngredient(String n, String a, String u, int d) {
-                return SupplementAnalysisResponse.ProductIngredientInfo.builder()
-                                .name(n).amount(a).unit(u).dailyPercent(d).build();
-        }
-
-        private SupplementAnalysisResponse.OverdoseAnalysis createMockOverdoseAnalysis() {
+        private SupplementAnalysisResponse.OverdoseAnalysis createEmptyOverdoseAnalysis() {
                 return SupplementAnalysisResponse.OverdoseAnalysis.builder()
-                                .comparison(Arrays.asList(
-                                                createComparison(MOCK_PRODUCT_VITAMIN, "800IU", "1000IU", "1800IU",
-                                                                STATUS_WARNING),
-                                                createComparison(MOCK_PRODUCT_ZINC, "0mg", "10mg", "10mg",
-                                                                STATUS_GOOD)))
+                                .comparison(new ArrayList<>())
                                 .recommendations(SupplementAnalysisResponse.Recommendations.builder()
-                                                .interactions(List.of(
-                                                                SupplementAnalysisResponse.InteractionInfo.builder()
-                                                                                .type("tip").text("식사 직후 섭취가 좋습니다.")
-                                                                                .build()))
-                                                .dosageInfo(List.of(
-                                                                SupplementAnalysisResponse.DosageInfo.builder()
-                                                                                .name(MOCK_PRODUCT_VITAMIN).min("400IU")
-                                                                                .recommended("800IU").max("4000IU")
-                                                                                .current("1800IU")
-                                                                                .status(STATUS_WARNING).build()))
-                                                .productNotes(List.of(MOCK_PRODUCT_VITAMIN + " 함량이 높으니 주의하세요."))
+                                                .interactions(new ArrayList<>())
+                                                .dosageInfo(new ArrayList<>())
+                                                .productNotes(List.of("리포트 생성 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요."))
                                                 .build())
                                 .build();
-        }
-
-        private SupplementAnalysisResponse.ComparisonResult createComparison(String n, String m, String nw, String t,
-                        String s) {
-                return SupplementAnalysisResponse.ComparisonResult.builder()
-                                .name(n).myAmount(m).newAmount(nw).totalAmount(t).status(s).build();
         }
 }

@@ -47,13 +47,12 @@ export default function CameraPage() {
 
       // 개발환경: Spring Boot 로컬 서버 호출 (8080 포트)
       // 프로덕션: nginx가 /api를 백엔드로 라우팅함
-      const apiUrl = process.env.NODE_ENV === 'development'
-        ? "http://localhost:8080/api/v1/analyze"
-        : "/api/v1/analyze";
+      const apiUrl = "/api/v1/analyze";
 
       console.log("[DEBUG] Fetching", apiUrl);
       const apiResponse = await fetch(apiUrl, {
         method: "POST",
+        credentials: "include",
         body: formData,
       });
 

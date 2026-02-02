@@ -80,3 +80,24 @@ uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 ## 📦 5. 모델 관리
 `yolo11m.pt` 등 모델 파일은 서버 실행 시 `app/services/` 경로 혹은 루트 경로에서 자동으로 로드됩니다. 파일이 없을 경우 Ultralytics 공식 Repo에서 자동으로 다운로드됩니다.
 
+## ☁️ 6. Google Cloud Vision API 설정 (신규)
+`/analyze2` 엔드포인트를 사용하기 위해서는 Google Cloud 서비스 계정 키가 필요합니다.
+
+1. Google Cloud Console에서 서비스 계정을 생성하고 키(JSON)를 다운로드합니다.
+2. 환경 변수 `GOOGLE_APPLICATION_CREDENTIALS`에 키 파일 경로를 설정합니다.
+
+```bash
+# macOS/Linux
+export GOOGLE_APPLICATION_CREDENTIALS="/path/to/your/service-account-file.json"
+
+# Windows (PowerShell)
+$env:GOOGLE_APPLICATION_CREDENTIALS="C:\path\to\your\service-account-file.json"
+```
+
+### [POST] `/analyze2`
+Google Cloud Vision API를 활용하여 정밀하게 영양제를 분석합니다.
+
+- **기능**: Object Localization → Cropping → Individual OCR → Heuristic Extraction
+- **Request Body**: `multipart/form-data`
+  - `file`: 이미지 파일
+- **Response**: `application/json` (List[Dict])

@@ -38,6 +38,15 @@ bin/
 build/
 .gradle/
 
+/OCRLearning
+
+
 # Firebase service account key
 serviceAccountKey.json
 firebase.json
+OCRLearning.zip
+
+
+/Memo
+
+.DS_Store
