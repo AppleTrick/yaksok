@@ -134,6 +134,7 @@ export default function MySupplementsPage() {
                         setSelectedItem(prev => prev ? { ...prev, status: newStatus } : null);
                     }}
                     onEdit={() => openRegisterModal(selectedItem)}
+                    onSave={() => setSelectedItem(null)} // 저장 후 모달 닫기
                 />
             )}
 
