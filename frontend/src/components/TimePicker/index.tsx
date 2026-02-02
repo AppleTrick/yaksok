@@ -10,6 +10,12 @@ interface TimePickerProps {
 
 type AmPm = '오전' | '오후';
 
+// ✅ Move constants outside component to avoid recreation and dependency issues
+const AM_PM_OPTIONS: AmPm[] = ['오전', '오후'];
+const HOUR_OPTIONS = Array.from({ length: 12 }, (_, i) => i + 1);
+const MINUTE_OPTIONS = Array.from({ length: 60 }, (_, i) => i);
+const ITEM_HEIGHT = 40;
+
 const TimePicker: React.FC<TimePickerProps> = ({
     value,
     onChange,
@@ -25,13 +31,43 @@ const TimePicker: React.FC<TimePickerProps> = ({
         return { ampm, hour, minute: m };
     };
 
-    const [selected, setSelected] = useState(parseTime(value || "09:00"));
+    const initialParsed = parseTime(value || "09:00");
+
+    const [parsedTime, setParsedTime] = useState(initialParsed);
     const [editingColumn, setEditingColumn] = useState<'hour' | 'minute' | null>(null);
     const [inputValue, setInputValue] = useState("");
+
+    // Independent states for visual selection
+    const [activeAmpm, setActiveAmpm] = useState<AmPm>(initialParsed.ampm);
+    const [activeHour, setActiveHour] = useState<number>(initialParsed.hour);
+    const [activeMinute, setActiveMinute] = useState<number>(initialParsed.minute);
+
     const inputRef = useRef<HTMLInputElement>(null);
 
+    // Column Refs
+    const ampmRef = useRef<HTMLDivElement>(null);
+    const hourRef = useRef<HTMLDivElement>(null);
+    const minuteRef = useRef<HTMLDivElement>(null);
+
+    // Interaction Flags
+    // Active state ref to avoid closure issues (Source of Truth for Observer)
+    const activeStateRef = useRef({ ampm: initialParsed.ampm, hour: initialParsed.hour, minute: initialParsed.minute });
+
+    const isProgrammaticScroll = useRef(false);
+    const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+    const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+    // Sync state with prop value
     useEffect(() => {
-        setSelected(parseTime(value || "09:00"));
+        const parsed = parseTime(value || "09:00");
+        setParsedTime(parsed);
+        // Sync active state and ref if not scrolling
+        if (!isProgrammaticScroll.current) {
+            setActiveAmpm(parsed.ampm);
+            setActiveHour(parsed.hour);
+            setActiveMinute(parsed.minute);
+            activeStateRef.current = { ampm: parsed.ampm, hour: parsed.hour, minute: parsed.minute };
+        }
     }, [value]);
 
     useEffect(() => {
@@ -40,7 +76,7 @@ const TimePicker: React.FC<TimePickerProps> = ({
         }
     }, [editingColumn]);
 
-    // Handle updates
+    // Update parent logic (Stable function)
     const updateTime = useCallback((newAmpm: AmPm, newHour: number, newMinute: number) => {
         let h = newHour;
         if (newAmpm === '오후' && h < 12) h += 12;
@@ -51,45 +87,198 @@ const TimePicker: React.FC<TimePickerProps> = ({
         onChange(`${hStr}:${mStr}`);
     }, [onChange]);
 
+
+    /**
+     * ✅ Partial Update Logic wrapped in useCallback
+     */
+    const triggerUpdate = useCallback((type: 'ampm' | 'hour' | 'minute', value: any) => {
+        // 1. Get Latest State from Ref
+        const current = { ...activeStateRef.current };
+
+        // 2. Apply Change
+        if (type === 'ampm') current.ampm = value;
+        if (type === 'hour') current.hour = value;
+        if (type === 'minute') current.minute = value;
+
+        // 3. Update Ref immediately
+        activeStateRef.current = current;
+
+        // 4. Update Visual State (so UI reflects immediately)
+        if (type === 'ampm') setActiveAmpm(value);
+        if (type === 'hour') setActiveHour(value);
+        if (type === 'minute') setActiveMinute(value);
+
+        // 5. Debounce Parent Update
+        if (isProgrammaticScroll.current) return;
+
+        if (timerRef.current) clearTimeout(timerRef.current);
+        timerRef.current = setTimeout(() => {
+            updateTime(current.ampm, current.hour, current.minute);
+        }, 150);
+    }, [updateTime]); // Dependencies: updateTime (which depends on onChange)
+
+
+    // Intersection Observer Logic
+    useEffect(() => {
+        if (disabled) return;
+
+        const createObserver = (
+            root: HTMLDivElement,
+            optionsList: any[],
+            type: 'ampm' | 'hour' | 'minute'
+        ) => {
+            const observer = new IntersectionObserver(
+                (entries) => {
+                    entries.forEach((entry) => {
+                        if (entry.isIntersecting) {
+                            const val = entry.target.getAttribute('data-value');
+                            if (val) {
+                                let parsedVal: any = val;
+                                if (typeof optionsList[0] === 'number') {
+                                    parsedVal = Number(val);
+                                }
+                                triggerUpdate(type, parsedVal);
+                            }
+                        }
+                    });
+                },
+                {
+                    root: root,
+                    rootMargin: '-50% 0px -50% 0px', // Center line detection
+                    threshold: 0
+                }
+            );
+            return observer;
+        };
+
+        const observers: IntersectionObserver[] = [];
+
+        if (ampmRef.current) {
+            const observer = createObserver(ampmRef.current, AM_PM_OPTIONS, 'ampm');
+            Array.from(ampmRef.current.children).forEach(child => {
+                if (child.classList.contains('picker-item')) observer.observe(child);
+            });
+            observers.push(observer);
+        }
+
+        if (hourRef.current) {
+            const observer = createObserver(hourRef.current, HOUR_OPTIONS, 'hour');
+            Array.from(hourRef.current.children).forEach(child => {
+                if (child.classList.contains('picker-item')) observer.observe(child);
+            });
+            observers.push(observer);
+        }
+
+        if (minuteRef.current) {
+            const observer = createObserver(minuteRef.current, MINUTE_OPTIONS, 'minute');
+            Array.from(minuteRef.current.children).forEach(child => {
+                if (child.classList.contains('picker-item')) observer.observe(child);
+            });
+            observers.push(observer);
+        }
+
+        return () => {
+            observers.forEach(obs => obs.disconnect());
+        };
+    }, [disabled, triggerUpdate]); // ✅ Added triggerUpdate to dependencies
+
+
+    // Initial Scroll Position
+    useEffect(() => {
+        const initScroll = (ref: React.RefObject<HTMLDivElement>, list: any[], val: any) => {
+            if (ref.current) {
+                const idx = list.indexOf(val);
+                if (idx >= 0) ref.current.scrollTop = idx * ITEM_HEIGHT;
+            }
+        };
+        initScroll(ampmRef, AM_PM_OPTIONS, parsedTime.ampm);
+        initScroll(hourRef, HOUR_OPTIONS, parsedTime.hour);
+        initScroll(minuteRef, MINUTE_OPTIONS, parsedTime.minute);
+    }, []); // Empty deps is intended for mount only (using parsedTime from closure is safe for initial render)
+
+
+    // --- Click & Scroll Logic ---
+
+    const handleItemClick = (
+        ref: React.RefObject<HTMLDivElement>,
+        value: any,
+        list: any[],
+        type: 'ampm' | 'hour' | 'minute'
+    ) => {
+        if (disabled || !ref.current) return;
+
+        const idx = list.indexOf(value);
+        if (idx === -1) return;
+
+        isProgrammaticScroll.current = true;
+
+        ref.current.style.scrollSnapType = 'none';
+
+        ref.current.scrollTo({
+            top: idx * ITEM_HEIGHT,
+            behavior: 'smooth'
+        });
+
+        // Manual Update (using ref for stability)
+        const current = { ...activeStateRef.current };
+        if (type === 'ampm') current.ampm = value;
+        if (type === 'hour') current.hour = value;
+        if (type === 'minute') current.minute = value;
+        activeStateRef.current = current;
+
+        if (type === 'ampm') setActiveAmpm(value);
+        if (type === 'hour') setActiveHour(value);
+        if (type === 'minute') setActiveMinute(value);
+
+        updateTime(current.ampm, current.hour, current.minute);
+
+        if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
+        scrollTimeoutRef.current = setTimeout(() => {
+            if (ref.current) {
+                ref.current.style.scrollSnapType = 'y mandatory';
+                isProgrammaticScroll.current = false;
+            }
+        }, 500);
+    };
+
+
     // Input Handlers
-    const handleColumnClick = (type: 'hour' | 'minute') => {
+    const handleColumnClickRaw = (type: 'hour' | 'minute') => {
         if (disabled) return;
         setEditingColumn(type);
-        setInputValue(""); // Clear for fresh typing
+        setInputValue("");
     };
 
     const handleInputBlur = () => {
         if (editingColumn && inputValue) {
             const num = parseInt(inputValue, 10);
             if (!isNaN(num)) {
+                const current = { ...activeStateRef.current };
+
                 if (editingColumn === 'hour') {
-                    // Validate hour 1-12
-                    let validHour = num;
-                    if (num < 1) validHour = 1;
-                    if (num > 12) validHour = 12;
-                    updateTime(selected.ampm, validHour, selected.minute);
+                    let validHour = Math.max(1, Math.min(12, num));
+                    current.hour = validHour;
+                    setActiveHour(validHour);
+                    const idx = HOUR_OPTIONS.indexOf(validHour);
+                    if (hourRef.current) hourRef.current.scrollTop = idx * ITEM_HEIGHT;
                 } else {
-                    // Validate minute 0-59
-                    let validMinute = num;
-                    if (num < 0) validMinute = 0;
-                    if (num > 59) validMinute = 59;
-                    updateTime(selected.ampm, selected.hour, validMinute);
+                    let validMinute = Math.max(0, Math.min(59, num));
+                    current.minute = validMinute;
+                    setActiveMinute(validMinute);
+                    const idx = MINUTE_OPTIONS.indexOf(validMinute);
+                    if (minuteRef.current) minuteRef.current.scrollTop = idx * ITEM_HEIGHT;
                 }
+
+                activeStateRef.current = current;
+                updateTime(current.ampm, current.hour, current.minute);
             }
         }
         setEditingColumn(null);
     };
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
-        if (e.key === 'Enter') {
-            handleInputBlur();
-        }
+        if (e.key === 'Enter') handleInputBlur();
     };
-
-    // simplified scroll simulation logic for UI structure
-    const amPmOptions: AmPm[] = ['오전', '오후'];
-    const hourOptions = Array.from({ length: 12 }, (_, i) => i + 1);
-    const minuteOptions = Array.from({ length: 60 }, (_, i) => i);
 
     return (
         <div className={`time-picker-wrapper ${disabled ? 'disabled' : ''}`}>
@@ -99,13 +288,14 @@ const TimePicker: React.FC<TimePickerProps> = ({
                 <div className="picker-highlight"></div>
 
                 {/* AM/PM */}
-                <div className="picker-column">
+                <div className="picker-column" ref={ampmRef}>
                     <div className="picker-spacer"></div>
-                    {amPmOptions.map((opt) => (
+                    {AM_PM_OPTIONS.map((opt) => (
                         <div
                             key={opt}
-                            className={`picker-item ${selected.ampm === opt ? 'selected' : ''}`}
-                            onClick={() => !disabled && updateTime(opt, selected.hour, selected.minute)}
+                            className={`picker-item ${activeAmpm === opt ? 'selected' : ''}`}
+                            data-value={opt}
+                            onClick={() => handleItemClick(ampmRef, opt, AM_PM_OPTIONS, 'ampm')}
                         >
                             {opt}
                         </div>
@@ -114,7 +304,11 @@ const TimePicker: React.FC<TimePickerProps> = ({
                 </div>
 
                 {/* Hour */}
-                <div className="picker-column" onClick={() => !editingColumn && handleColumnClick('hour')}>
+                <div
+                    className="picker-column"
+                    ref={hourRef}
+                    onClick={() => !editingColumn && handleColumnClickRaw('hour')}
+                >
                     <div className="picker-spacer"></div>
                     {editingColumn === 'hour' ? (
                         <div className="picker-input-overlay">
@@ -126,23 +320,18 @@ const TimePicker: React.FC<TimePickerProps> = ({
                                 onChange={(e) => setInputValue(e.target.value)}
                                 onBlur={handleInputBlur}
                                 onKeyDown={handleKeyDown}
-                                placeholder={selected.hour.toString()}
+                                placeholder={activeHour.toString()}
                             />
                         </div>
                     ) : (
-                        hourOptions.map((h) => (
+                        HOUR_OPTIONS.map((h) => (
                             <div
                                 key={h}
-                                className={`picker-item ${selected.hour === h ? 'selected' : ''}`}
+                                className={`picker-item ${activeHour === h ? 'selected' : ''}`}
+                                data-value={h}
                                 onClick={(e) => {
                                     e.stopPropagation();
-                                    if (!disabled) {
-                                        if (selected.hour === h) {
-                                            handleColumnClick('hour');
-                                        } else {
-                                            updateTime(selected.ampm, h, selected.minute);
-                                        }
-                                    }
+                                    handleItemClick(hourRef, h, HOUR_OPTIONS, 'hour');
                                 }}
                             >
                                 {h.toString().padStart(2, '0')}
@@ -155,7 +344,11 @@ const TimePicker: React.FC<TimePickerProps> = ({
                 <div className="picker-separator">:</div>
 
                 {/* Minute */}
-                <div className="picker-column" onClick={() => !editingColumn && handleColumnClick('minute')}>
+                <div
+                    className="picker-column"
+                    ref={minuteRef}
+                    onClick={() => !editingColumn && handleColumnClickRaw('minute')}
+                >
                     <div className="picker-spacer"></div>
                     {editingColumn === 'minute' ? (
                         <div className="picker-input-overlay">
@@ -167,23 +360,18 @@ const TimePicker: React.FC<TimePickerProps> = ({
                                 onChange={(e) => setInputValue(e.target.value)}
                                 onBlur={handleInputBlur}
                                 onKeyDown={handleKeyDown}
-                                placeholder={selected.minute.toString().padStart(2, '0')}
+                                placeholder={activeMinute.toString().padStart(2, '0')}
                             />
                         </div>
                     ) : (
-                        minuteOptions.map((m) => (
+                        MINUTE_OPTIONS.map((m) => (
                             <div
                                 key={m}
-                                className={`picker-item ${selected.minute === m ? 'selected' : ''}`}
+                                className={`picker-item ${activeMinute === m ? 'selected' : ''}`}
+                                data-value={m}
                                 onClick={(e) => {
                                     e.stopPropagation();
-                                    if (!disabled) {
-                                        if (selected.minute === m) {
-                                            handleColumnClick('minute');
-                                        } else {
-                                            updateTime(selected.ampm, selected.hour, m);
-                                        }
-                                    }
+                                    handleItemClick(minuteRef, m, MINUTE_OPTIONS, 'minute');
                                 }}
                             >
                                 {m.toString().padStart(2, '0')}

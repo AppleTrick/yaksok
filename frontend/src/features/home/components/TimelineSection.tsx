@@ -27,7 +27,7 @@ export default function TimelineSection({ today, schedules, onToggleItem }: Time
     // If all return null, the container might be empty.
 
     const renderedSchedules = activeSchedules.map(schedule => {
-        const dueItems = schedule.items.filter(item => isItemDue(item, today));
+        const dueItems = schedule.items.filter(item => isItemDue(item, today) && item.status !== 'stopped');
         if (dueItems.length === 0) return null;
 
         const hour = parseInt(schedule.rawTime.split(':')[0]);

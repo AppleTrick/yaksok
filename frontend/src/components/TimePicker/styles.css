@@ -72,6 +72,7 @@
     font-size: 1.25rem;
     color: var(--text-muted);
     scroll-snap-align: center;
+    scroll-snap-stop: always;
     cursor: pointer;
     transition: all 0.2s ease;
     font-weight: 400;
@@ -79,8 +80,10 @@
 
 .picker-item.selected {
     color: var(--foreground-color);
-    font-weight: 600;
-    font-size: 1.35rem;
+    font-weight: 700;
+    font-size: 1.5rem;
+    transform: scale(1.1);
+    /* 강조 효과 */
 }
 
 .picker-spacer {

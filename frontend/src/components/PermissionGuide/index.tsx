@@ -1,6 +1,9 @@
+'use client';
+
 import React, { useState, useEffect } from 'react';
 import Modal from '@/components/Modal';
 import Button from '@/components/Button';
+import { useFCM } from '@/features/notification/hooks/useFCM';
 import './styles.css';
 
 interface PermissionGuideProps {
@@ -11,6 +14,7 @@ interface PermissionGuideProps {
 
 export default function PermissionGuide({ isOpen, onClose, onRetry }: PermissionGuideProps) {
     const [browser, setBrowser] = useState<string>('');
+    const { requestPermission, isLoading, error } = useFCM();
 
     useEffect(() => {
         const userAgent = navigator.userAgent;
@@ -54,12 +58,23 @@ export default function PermissionGuide({ isOpen, onClose, onRetry }: Permission
         ]
     };
 
+    const handleRetry = async () => {
+        await requestPermission();
+        await onRetry();
+    };
+
     return (
         <Modal isOpen={isOpen} onClose={onClose} title="알림 권한 안내">
             <div className="permission-guide-content">
                 <p className="permission-guide-desc">
                     약 복용 알림을 받으려면 브라우저 알림 권한이 필요합니다.
                 </p>
+
+                {error && (
+                    <div className="permission-error">
+                        <p>{error}</p>
+                    </div>
+                )}
 
                 <div className="browser-instructions">
                     <h4>{browser} 설정 방법</h4>
@@ -75,8 +90,8 @@ export default function PermissionGuide({ isOpen, onClose, onRetry }: Permission
                 <Button variant="secondary" onClick={onClose}>
                     나중에
                 </Button>
-                <Button variant="primary" onClick={onRetry}>
-                    다시 시도
+                <Button variant="primary" onClick={handleRetry} disabled={isLoading}>
+                    {isLoading ? '설정 중...' : '다시 시도'}
                 </Button>
             </div>
         </Modal>
