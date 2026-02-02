@@ -25,7 +25,7 @@
 //
 //    @Override
 //    public void run(String... args) {
-//        if (diseaseRepository.count() > 0) {
+//        if (diseaseRepository.count() > 1) {
 //            log.info("Diseases already loaded. Skipping initialization.");
 //            return;
 //        }

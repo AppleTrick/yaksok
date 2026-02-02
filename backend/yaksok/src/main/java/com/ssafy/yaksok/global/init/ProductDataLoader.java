@@ -30,7 +30,7 @@
 //    @Override
 //    public void run(String... args) {
 //
-//        if (productRepository.count() > 0) {
+//        if (productRepository.count() > 1) {
 //            log.info("Products already loaded. Skipping initialization.");
 //            return;
 //        }
