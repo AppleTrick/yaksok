@@ -10,7 +10,6 @@ import ActionButton from './common/ActionButton';
 
 interface DetectedObject {
     name: string;
-    barcode: string | null;
     confidence: number;
     box: number[]; // [x1, y1, x2, y2]
 }
@@ -135,7 +134,7 @@ export default function ResultStep({ imageSrc, result, onRetake, onRegister }: R
                 <div className="result-list-section">
                     <div className="section-title-row">
                         <h3 className="card-item-title" style={{ fontSize: '1.4rem', color: '#1A1A1A' }}>인식된 영양제</h3>
-                        <span className="count-badge">{result.displayData?.objectCount || 0}개 발견</span>
+                        <span className="count-badge">{(result.displayData?.products || []).length}개 발견</span>
                     </div>
 
                     {(result.displayData?.products || []).map((obj, idx) => (
@@ -151,12 +150,6 @@ export default function ResultStep({ imageSrc, result, onRetake, onRegister }: R
                                     <h4 className="card-item-title" style={{ fontSize: '1.1rem', fontWeight: 800 }}>{obj.name}</h4>
                                     <button className="btn-edit-small">수정</button>
                                 </div>
-                                {obj.barcode && (
-                                    <div style={{ fontSize: '0.8rem', color: '#888', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                        <Info size={12} />
-                                        코드: {obj.barcode}
-                                    </div>
-                                )}
 
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
                                     <div style={{ flex: 1, height: 6, background: '#f1f5f9', borderRadius: 10, overflow: 'hidden' }}>

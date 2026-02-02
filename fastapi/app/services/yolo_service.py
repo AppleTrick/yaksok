@@ -4,6 +4,8 @@ YOLO 객체탐지 서비스 - UPDATED BY Z-MINAI
 
 import os
 import io
+import numpy as np
+import cv2
 from PIL import Image, ImageOps
 from ultralytics import YOLO
 
@@ -118,3 +120,36 @@ def detect_supplements(image_input, confidence_threshold: float = 0.3) -> dict:
         "count": len(detected_objects),
         "scale_info": scale_info
     }
+
+
+def enhance_for_ocr(crop_img: np.ndarray) -> np.ndarray:
+    """
+    고도화된 OCR 전처리 루틴 (OpenCV 기반 - Color Preserved)
+    1. LAB 변환 (Grayscale 대신 밝기 채널 사용)
+    2. 선명도 강화 (Laplacian) - L채널
+    3. 대비 개선 (CLAHE) - L채널
+    4. 노이즈 제거 - L채널
+    5. 색상 정보(A, B) 병합 후 반환
+    """
+    if crop_img is None:
+        return None
+    
+    # 1. LAB 변환 (Grayscale 대신 Lightness 채널 추출)
+    lab = cv2.cvtColor(crop_img, cv2.COLOR_BGR2LAB)
+    l, a, b = cv2.split(lab)
+    
+    # 2. 이미지 선명도 강화 (Laplacian) - 기존 로직 유지
+    kernel = np.array([[-1,-1,-1], [-1,9,-1], [-1,-1,-1]])
+    l_sharpened = cv2.filter2D(l, -1, kernel)
+    
+    # 3. 대비 개선 (CLAHE) - 기존 로직 유지
+    clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8,8))
+    l_enhanced = clahe.apply(l_sharpened)
+    
+    # 4. 노이즈 제거 - 기존 로직 유지
+    l_denoised = cv2.fastNlMeansDenoising(l_enhanced, None, 10, 7, 21)
+    
+    # 5. LAB 병합 및 BGR 복구 (색상 정보 보존)
+    final = cv2.cvtColor(cv2.merge([l_denoised, a, b]), cv2.COLOR_LAB2BGR)
+    
+    return final
