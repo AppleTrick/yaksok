@@ -34,7 +34,7 @@ public class UserController {
             @AuthenticationPrincipal UserPrincipal principal){
 
         return ResponseUtil.ok(
-                userService.getUserInfoRespone(principal.getUserId())
+                userService.getUserInfoResponse(principal.getUserId())
         );
     }
 }

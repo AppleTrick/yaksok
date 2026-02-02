@@ -57,7 +57,7 @@ public class UserProductService {
         Map<Long, List<ProductIngredientResponse>> ingredientMap =
                 ingredients.stream()
                         .collect(Collectors.groupingBy(
-                                ProductIngredientResponse::productId
+                                ProductIngredientResponse::getProductId
                         ));
 
         // 5. userProducts에 성분 주입
