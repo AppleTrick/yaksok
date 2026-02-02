@@ -4,7 +4,8 @@ import { MedicationItem, MealCategory } from '@/features/notification/types';
 import TimePicker from '@/components/TimePicker';
 import DaySelector from '@/components/DaySelector';
 import { searchSupplements } from '../api/searchApi';
-import { updateUserProducts, UserProductUpdateItem } from '../api/supplementApi'; // Import API
+import { updateUserProducts, UserProductUpdateItem, getUserProducts } from '../api/supplementApi'; // Import API
+import { createNotification, NotificationCategory } from '@/features/notification/api/notificationApi';
 import { MockSupplement } from '../api/mockData';
 import { Search, Loader2 } from 'lucide-react';
 import '../styles.css';
@@ -122,6 +123,35 @@ export default function ManualRegistrationForm({ onClose, initialData }: ManualR
 
             await updateUserProducts({ products: [apiItem] });
             // console.log("Supplement saved to backend");
+
+            // 3. 알림 생성 API 호출 (Notification Creation)
+            try {
+                // 저장된 제품의 진짜 ID를 조회하기 위해 목록 갱신
+                const response = await getUserProducts();
+
+                // 이름으로 매칭하여 ID 찾기 (최신 등록된 항목 가정)
+                // 주의: 동명이인이 있을 수 있으나, 현재 로직상 이름은 유니크하다고 가정하거나 최신 항목을 픽
+                const addedProduct = response.data.products.find(p => p.nickname === newItem.name);
+
+                if (addedProduct) {
+                    // 카테고리 매핑
+                    let notiCategory: NotificationCategory = 'AFTERMEAL';
+                    if (mealCategory === 'empty_stomach') notiCategory = 'EMPTY';
+                    else if (mealCategory === 'pre_sleep') notiCategory = 'BEFORESLEEP';
+
+                    await createNotification({
+                        userProductId: addedProduct.userProductId,
+                        intakeTime: time,
+                        category: notiCategory
+                    });
+                    console.log('✅ 알림 생성 완료:', addedProduct.userProductId);
+                } else {
+                    console.warn('⚠️ 알림 생성 실패: 저장된 영양제를 찾을 수 없습니다.');
+                }
+            } catch (notiError) {
+                console.error('❌ 알림 생성 중 오류 발생:', notiError);
+                // 알림 실패가 영양제 등록 자체를 막지 않도록 예외 처리
+            }
 
             onClose();
         } catch (error) {

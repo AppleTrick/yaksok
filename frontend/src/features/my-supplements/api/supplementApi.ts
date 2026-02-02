@@ -36,6 +36,15 @@ export const updateUserProducts = async (data: UserProductUpdateRequest): Promis
     await axiosInstance.put<ApiResponse<null>>(USER_PRODUCTS_BASE, data);
 };
 
+/**
+ * 사용자 복용 약 조회
+ * GET /api/v1/users/me/products
+ */
+export const getUserProducts = async () => {
+    const response = await axiosInstance.get<ApiResponse<{ products: UserProductUpdateItem[] }>>(USER_PRODUCTS_BASE);
+    return response.data;
+};
+
 // --- 2. 영양제 스캔 & 분석 ---
 
 export interface IngredientInfo {
