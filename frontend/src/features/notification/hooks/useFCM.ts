@@ -27,7 +27,7 @@ export function useFCM(): UseFCMReturn {
     const [error, setError] = useState<string | null>(null);
     const [messaging, setMessaging] = useState<Messaging | null>(null);
 
-    // Firebase Messaging 초기화
+    // Firebase Messaging 초기화 및 토큰 자동 갱신
     useEffect(() => {
         const initMessaging = async () => {
             try {
@@ -41,6 +41,23 @@ export function useFCM(): UseFCMReturn {
 
                 setMessaging(messagingInstance);
                 setIsSupported(true);
+
+                // 권한이 이미 허용되어 있다면 토큰 자동 갱신
+                if (Notification.permission === 'granted') {
+                    console.log('🔔 알림 권한이 이미 허용됨. 토큰 자동 갱신 시도...');
+                    try {
+                        const token = await getFCMToken(messagingInstance);
+                        if (token) {
+                            setFcmToken(token);
+                            localStorage.setItem('fcmToken', token);
+                            await saveFCMToken(token, 'web');
+                            console.log('✅ FCM 토큰 자동 갱신 완료:', token);
+                        }
+                    } catch (tokenErr) {
+                        console.error('❌ FCM 토큰 자동 갱신 실패:', tokenErr);
+                    }
+                }
+
                 setIsLoading(false);
             } catch (err) {
                 console.error('FCM 초기화 실패:', err);
