@@ -44,6 +44,7 @@ public class SupplementAnalysisResponse {
     public static class ProductDisplayInfo {
         private Long tempId;
         private String name;
+        private String barcode;
         private double confidence;
         private List<Double> box;
         private boolean isExactMatch;
@@ -108,7 +109,6 @@ public class SupplementAnalysisResponse {
     public static class Recommendations {
         private List<InteractionInfo> interactions;
         private List<DosageInfo> dosageInfo;
-        private List<TimingGuide> timingGuides; // 추가: 복용 시간대 가이드
         private List<String> productNotes;
     }
 
@@ -119,16 +119,6 @@ public class SupplementAnalysisResponse {
     public static class InteractionInfo {
         private String type; // tip, warning
         private String text;
-    }
-
-    @Data
-    @Builder
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class TimingGuide {
-        private String time; // 아침, 점심, 저녁, 취침 전
-        private List<String> products; // 해당 시간대에 권장되는 제품명 목록
-        private String reason; // 추천 이유
     }
 
     @Data
