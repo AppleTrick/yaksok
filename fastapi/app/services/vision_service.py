@@ -143,12 +143,22 @@ def process_single_object(pil_image: Image.Image, obj_annotation, width: int, he
     # 3. Heuristic Extraction
     product_name = extract_candidate_name(text_annotations)
     
+    # 4. Box Coordinates (Normalized)
+    # [min_x, min_y, max_x, max_y] format for Frontend
+    box = [
+        min([v.x for v in vertices]),
+        min([v.y for v in vertices]),
+        max([v.x for v in vertices]),
+        max([v.y for v in vertices])
+    ]
+    
     return {
         "mid": obj_annotation.mid,
         "name": obj_annotation.name,
         "score": obj_annotation.score,
         "product_name": product_name,
-        "full_text": text
+        "full_text": text,
+        "box": box
     }
 
 def analyze_logic(image_content: bytes) -> List[Dict[str, Any]]:

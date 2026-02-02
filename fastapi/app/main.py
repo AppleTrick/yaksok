@@ -107,7 +107,7 @@ async def analyze_image_endpoint(file: UploadFile = File(...)):
 
 from app.services.vision_service import analyze_with_vision_api
 
-@app.post("/analyze2")
+@app.post("/v1/analyze2")
 async def analyze_image_vision_api(file: UploadFile = File(...)):
     """
     Google Cloud Vision API 기반 영양제 분석 엔드포인트
@@ -129,9 +129,24 @@ async def analyze_image_vision_api(file: UploadFile = File(...)):
         
         # vision_service의 비동기 함수 호출
         # 내부적으로 스레드풀을 사용하여 비동기 처리됨
-        results = await analyze_with_vision_api(image_bytes)
+        raw_results = await analyze_with_vision_api(image_bytes)
         
-        return results
+        # Java Backend DTO (FastApiAnalysisResult) 구조에 맞게 변환
+        analysis_results = []
+        for item in raw_results:
+            analysis_results.append({
+                "box": item.get("box", [0, 0, 0, 0]),
+                "confidence": item.get("score", 0.0),
+                "product_name": item.get("product_name", ""),
+                "ocr_text": item.get("full_text", "")
+            })
+            
+        return {
+            "success": True,
+            "message": "Vision API Analysis Successful",
+            "step": "VISION_API",
+            "analysis_results": analysis_results
+        }
         
     except Exception as e:
         print(f"[에러] Vision API 분석 중 오류 발생: {e}")
@@ -818,7 +833,8 @@ async def read_test_page_v2():
                 formData.append('file', file);
                 
                 try {
-                    const response = await fetch('/analyze2', {
+                    // Update URL to /v1/analyze2
+                    const response = await fetch('/v1/analyze2', {
                         method: 'POST',
                         body: formData
                     });
@@ -846,29 +862,33 @@ async def read_test_page_v2():
                 jsonEl.textContent = JSON.stringify(data, null, 2);
                 listEl.innerHTML = '';
                 
-                if (!data || data.length === 0) {
+                // Data structure changed: data -> data.analysis_results
+                const results = data.analysis_results || [];
+                
+                if (results.length === 0) {
                     listEl.innerHTML = '<div class="empty-state">탐지된 영양제 객체가 없습니다.</div>';
                 } else {
-                    data.forEach(item => {
+                    results.forEach((item, index) => {
                         const card = document.createElement('div');
                         card.className = 'product-card';
                         
-                        // 제품명 (없으면 '알 수 없음')
+                        // New fields: confidence, product_name, ocr_text
                         const productName = item.product_name || '이름 인식 불가';
-                        const scorePercent = Math.round(item.score * 100);
+                        const scorePercent = Math.round((item.confidence || 0) * 100);
+                        const allText = item.ocr_text || '(추출된 텍스트 없음)';
                         
                         card.innerHTML = `
                             <div class="card-header">
                                 <div>
                                     <div class="product-name">${productName}</div>
-                                    <span class="object-type">${item.name}</span>
+                                    <span class="object-type">Object #${index + 1}</span>
                                 </div>
                                 <div class="confidence-badge">${scorePercent}% 일치</div>
                             </div>
                             
                             <div>
-                                <span class="section-label">DETECTED TEXT (OCR)</span>
-                                <div class="text-content">${item.full_text || '(추출된 텍스트 없음)'}</div>
+                                <span class="section-label">OCR TEXT</span>
+                                <div class="text-content">${allText}</div>
                             </div>
                         `;
                         listEl.appendChild(card);
