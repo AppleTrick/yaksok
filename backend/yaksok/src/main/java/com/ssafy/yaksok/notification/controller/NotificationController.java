@@ -111,7 +111,7 @@ public class NotificationController {
     @GetMapping("/test")
     public ResponseEntity<ApiResponse<Void>> testNotification(
             @AuthenticationPrincipal UserPrincipal userPrincipal) {
-        notificationService.sendTestNotificaion(userPrincipal.getUserId());
+        notificationService.sendTestNotification(userPrincipal.getUserId());
         return ResponseEntity.ok().build();
     }
 }

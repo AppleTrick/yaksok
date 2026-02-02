@@ -1,14 +1,25 @@
 package com.ssafy.yaksok.notification.infrastructure.fcm.sender;
 
-import com.google.firebase.messaging.FirebaseMessaging;
-import com.google.firebase.messaging.Message;
-import com.google.firebase.messaging.Notification;
+import com.google.firebase.messaging.*;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+@Slf4j
 @Component
 public class FcmSender {
 
-    public void testSend(String token, String title, String body) {
+    public void sendWeb(String token, String title, String body) {
+        Message message = Message.builder()
+                .setToken(token)
+                .putData("title", title)
+                .putData("body", body)
+                .putData("timestamp", String.valueOf(System.currentTimeMillis()))
+                .build();
+
+            FirebaseMessaging.getInstance().sendAsync(message);
+            log.info("전송 완료");
+        }
+    public void sendAndroid(String token, String title, String body) {
         Message message = Message.builder()
                 .setToken(token)
                 .setNotification(
@@ -19,11 +30,11 @@ public class FcmSender {
                 )
                 .build();
 
-        try {
-            FirebaseMessaging.getInstance().send(message);
-        } catch (Exception e) {
-            throw new RuntimeException("FCM testSend fail", e);
-        }
+        FirebaseMessaging.getInstance().sendAsync(message);
+    }
+    public void sendIos(String token, String title, String body) {
+        // iOS도 Notification payload 필수
+        sendAndroid(token, title, body);
     }
 }
 
