@@ -13,7 +13,7 @@ public class FastApiAnalysisResult {
     private boolean success;
     private String message;
     private String step;
-    
+
     /**
      * AI 분석 결과 목록 (객체별 좌표, 바코드, OCR 텍스트)
      */
@@ -24,9 +24,11 @@ public class FastApiAnalysisResult {
     public static class RawAnalysisResult {
         private List<Double> box;
         private double confidence;
-        private String barcode;
-        
-        @JsonProperty("ocr_texts")
-        private List<String> ocrTexts;
+
+        @JsonProperty("product_name")
+        private String productName;
+
+        @JsonProperty("ocr_text")
+        private String ocrText;
     }
 }
