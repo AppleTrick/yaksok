@@ -25,14 +25,15 @@ public class IngredientUnitConversionService {
      * LLM으로 비표준 단위 변환
      *
      * @param ingredientName 성분명
-     * @param amount         수량
-     * @param fromUnit       현재 단위
+     * @param amount 수량
+     * @param fromUnit 현재 단위
      * @return 변환 결과
      */
     public UnitConversionResultDto convertUnit(
             String ingredientName,
             BigDecimal amount,
-            String fromUnit) {
+            String fromUnit
+    ) {
         log.info("LLM 단위 변환 요청: {} {} {}", ingredientName, amount, fromUnit);
 
         try {
@@ -40,7 +41,7 @@ public class IngredientUnitConversionService {
             String prompt = buildConversionPrompt(ingredientName, amount, fromUnit);
 
             // LLM 호출
-            String response = llmService.query(prompt);
+            String response = llmService.query(prompt, 1);
 
             // 응답 파싱
             UnitConversionResultDto result = parseResponse(response);
@@ -66,33 +67,34 @@ public class IngredientUnitConversionService {
     private String buildConversionPrompt(
             String ingredientName,
             BigDecimal amount,
-            String fromUnit) {
+            String fromUnit
+    ) {
         return String.format("""
-                당신은 영양학 전문가입니다.
-
-                영양 성분의 단위를 식약처 표준 단위로 변환해주세요.
-
-                성분명: %s
-                현재값: %s %s
-
-                변환 규칙:
-                1. 식약처 표준 단위: mg, μg, g, mcg
-                2. 흡수율, 생체이용률 고려
-                3. 정확한 계산
-
-                JSON 형식으로만 답변:
-                {
-                  "success": true,
-                  "amount": 숫자만,
-                  "unit": "표준 단위"
-                }
-
-                변환 불가능하면:
-                {
-                  "success": false,
-                  "error": "이유"
-                }
-                """, ingredientName, amount, fromUnit);
+            당신은 영양학 전문가입니다.
+            
+            영양 성분의 단위를 식약처 표준 단위로 변환해주세요.
+            
+            성분명: %s
+            현재값: %s %s
+            
+            변환 규칙:
+            1. 식약처 표준 단위: mg, μg, g, mcg
+            2. 흡수율, 생체이용률 고려
+            3. 정확한 계산
+            
+            JSON 형식으로만 답변:
+            {
+              "success": true,
+              "amount": 숫자만,
+              "unit": "표준 단위"
+            }
+            
+            변환 불가능하면:
+            {
+              "success": false,
+              "error": "이유"
+            }
+            """, ingredientName, amount, fromUnit);
     }
 
     /**

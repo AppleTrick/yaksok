@@ -1,237 +1,233 @@
 package com.ssafy.yaksok.analyze.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ssafy.yaksok.analyze.dto.FastApiAnalysisResult;
-import com.ssafy.yaksok.analyze.dto.internal.AggregatedAnalysisData;
-import com.ssafy.yaksok.analyze.dto.internal.AnalysisTarget;
-import com.ssafy.yaksok.analyze.dto.response.SupplementAnalysisResponse;
-import com.ssafy.yaksok.analyze.exception.AnalyzeException;
-import com.ssafy.yaksok.analyze.gateway.AiGateway;
-import com.ssafy.yaksok.global.exception.ErrorCode;
+import com.ssafy.yaksok.analyze.dto.SupplementAnalysisResponse;
+import com.ssafy.yaksok.global.llm.service.LLMService;
+import com.ssafy.yaksok.product.dto.UserProductResponse;
+import com.ssafy.yaksok.product.entity.Product;
+import com.ssafy.yaksok.product.service.ProductMatchingService;
+import com.ssafy.yaksok.product.service.UserProductService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.http.MediaType;
+import org.springframework.http.client.MultipartBodyBuilder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.reactive.function.BodyInserters;
+import org.springframework.web.reactive.function.client.WebClient;
 
+import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-
+/**
+ * 영양제 이미지 분석 서비스
+ */
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class AnalyzeService {
 
-        private final AiGateway aiGateway;
-        private final ProductLinker productLinker;
-        private final DataAggregator dataAggregator;
-        private final LlmAnalyzer llmAnalyzer;
-        private final ObjectMapper objectMapper = new ObjectMapper()
-                        .enable(SerializationFeature.INDENT_OUTPUT);
+        private final WebClient.Builder webClientBuilder;
+        private final ProductMatchingService productMatchingService;
+        private final UserProductService userProductService;
+        private final LLMService llmService;
+
+        @Value("${fastapi.url}")
+        private String fastApiUrl;
 
         /**
-         * 영양제 이미지 분석 실행 메인 로직 (Facade)
+         * 영양제 이미지 분석 실행 메인 로직
          */
         public SupplementAnalysisResponse analyzeSupplement(Long userId, MultipartFile file) {
-                log.info("╔══════════════════════════════════════════════════════════════╗");
-                log.info("║       🚀 영양제 분석 파이프라인 시작 (Modular Pipeline)        ║");
-                log.info("╚══════════════════════════════════════════════════════════════╝");
-                log.info("[PIPELINE] 📁 파일: {}, 👤 userId: {}",
-                                file != null ? file.getOriginalFilename() : "null",
-                                userId != null ? userId : "Guest");
+                log.info("영양제 분석 요청 시작: userId={}, filename={}", userId, file.getOriginalFilename());
 
-                long pipelineStart = System.currentTimeMillis();
+                // 1. FastAPI 호출 (AI 분석 요청)
+                FastApiAnalysisResult aiResult = callFastApi(file);
 
-                try {
-                        // ════════════════════════════════════════════════════════════
-                        // STEP 1: AI Gateway - FastAPI 호출 (YOLO + OCR)
-                        // ════════════════════════════════════════════════════════════
-                        log.info("┌─────────────────────────────────────────────────────────────");
-                        log.info("│ [STEP 1] 🤖 AI Gateway 호출 시작");
-                        long step1Start = System.currentTimeMillis();
-
-                        FastApiAnalysisResult aiResult = aiGateway.callAiServer(file);
-
-                        long step1Elapsed = System.currentTimeMillis() - step1Start;
-                        int objectCount = aiResult != null && aiResult.getAnalysisResults() != null
-                                        ? aiResult.getAnalysisResults().size()
-                                        : 0;
-                        log.info("│ [STEP 1] ✅ 완료 - {}개 객체 탐지 ({}ms)", objectCount, step1Elapsed);
-                        log.info("└─────────────────────────────────────────────────────────────");
-
-                        // ════════════════════════════════════════════════════════════
-                        // STEP 2: Product Linker - DB 매칭 (4-Stage Pipeline)
-                        // ════════════════════════════════════════════════════════════
-                        log.info("┌─────────────────────────────────────────────────────────────");
-                        log.info("│ [STEP 2] 🔗 Product Linker 시작");
-                        long step2Start = System.currentTimeMillis();
-
-                        List<AnalysisTarget> targets = productLinker.linkProducts(aiResult);
-
-                        long step2Elapsed = System.currentTimeMillis() - step2Start;
-                        String matchSummary = targets.stream()
-                                        .map(t -> (t.getProduct() != null ? "✅" : "❌") + t.getOcrName())
-                                        .collect(Collectors.joining(", "));
-                        log.info("│ [STEP 2] 매칭 결과: [{}]", matchSummary);
-                        log.info("│ [STEP 2] ✅ 완료 - {}개 타겟 ({}ms)", targets.size(), step2Elapsed);
-                        log.info("└─────────────────────────────────────────────────────────────");
-
-                        // 2-1. Early Return: 탐지된 제품이 없으면 LLM 호출 생략
-                        if (targets.isEmpty()) {
-                                log.warn("[PIPELINE] ⚠️ 탐지된 제품이 없습니다. 조기 리턴합니다.");
-                                return assembleEmptyResponse();
-                        }
-
-                        // ════════════════════════════════════════════════════════════
-                        // STEP 3: Data Aggregator - 데이터 취합
-                        // ════════════════════════════════════════════════════════════
-                        log.info("┌─────────────────────────────────────────────────────────────");
-                        log.info("│ [STEP 3] 📊 Data Aggregator 시작 (userId: {})",
-                                        userId != null && userId > 0 ? userId : "Guest");
-                        long step3Start = System.currentTimeMillis();
-
-                        AggregatedAnalysisData aggregatedData = dataAggregator.aggregateAnalysisData(userId, targets);
-
-                        long step3Elapsed = System.currentTimeMillis() - step3Start;
-                        long typeACount = targets.stream().filter(t -> t.getProduct() != null).count();
-                        long typeBCount = targets.size() - typeACount;
-                        log.info("│ [STEP 3] LLM 전달 데이터: Type A={}개, Type B={}개, 기존 섭취={}개",
-                                        typeACount, typeBCount, aggregatedData.getCurrentSupplements().size());
-                        log.info("│ [STEP 3] ✅ 완료 ({}ms)", step3Elapsed);
-                        log.info("└─────────────────────────────────────────────────────────────");
-
-                        // ════════════════════════════════════════════════════════════
-                        // STEP 4: LLM Analyzer - 상세 분석
-                        // ════════════════════════════════════════════════════════════
-                        log.info("┌─────────────────────────────────────────────────────────────");
-                        log.info("│ [STEP 4] 🧠 LLM Analyzer 시작");
-                        long step4Start = System.currentTimeMillis();
-
-                        SupplementAnalysisResponse.OverdoseAnalysis overdoseAnalysis = llmAnalyzer
-                                        .performLlmAnalysis(aggregatedData);
-
-                        long step4Elapsed = System.currentTimeMillis() - step4Start;
-                        log.info("│ [STEP 4] ✅ LLM 분석 완료 ({}ms)", step4Elapsed);
-                        log.info("└─────────────────────────────────────────────────────────────");
-
-                        // ════════════════════════════════════════════════════════════
-                        // STEP 5: Final Result - 응답 조립
-                        // ════════════════════════════════════════════════════════════
-                        SupplementAnalysisResponse response = assembleUnifiedResponse(targets, overdoseAnalysis);
-
-                        long totalElapsed = System.currentTimeMillis() - pipelineStart;
-                        log.info("╔══════════════════════════════════════════════════════════════╗");
-                        log.info("║  ✅ 파이프라인 완료 - 총 소요시간: {}ms                      ║", totalElapsed);
-                        log.info("║  📊 Step1(AI): {}ms, Step2(Link): {}ms, Step3(Agg): {}ms, Step4(LLM): {}ms ║",
-                                        step1Elapsed, step2Elapsed, step3Elapsed, step4Elapsed);
-                        log.info("╚══════════════════════════════════════════════════════════════╝");
-
-                        return response;
-
-                } catch (AnalyzeException e) {
-                        log.error("[Pipeline Failure] ❌ Stage: {}, Message: {}", e.getStage(), e.getMessage());
-                        throw e;
-                } catch (Exception e) {
-                        log.error("[Pipeline Failure] ❌ Unexpected System Error", e);
-                        throw new AnalyzeException(ErrorCode.INTERNAL_SERVER_ERROR, "ORCHESTRATOR", e.getMessage());
-                }
-        }
-
-        private SupplementAnalysisResponse assembleUnifiedResponse(List<AnalysisTarget> targets,
-                        SupplementAnalysisResponse.OverdoseAnalysis overdoseAnalysis) {
-                log.info("[ASSEMBLER] 최종 응답 조립 시작");
-
-                // ═══════════════════════════════════════════════════════════════
-                // LLM 추론 제품명 맵 생성 (Type B 이름 보정용)
-                // ═══════════════════════════════════════════════════════════════
-                Map<String, String> llmInferredNames = new HashMap<>();
-                if (overdoseAnalysis != null && overdoseAnalysis.getDetectedProducts() != null) {
-                        for (var dp : overdoseAnalysis.getDetectedProducts()) {
-                                if (dp.getOcrHint() != null && dp.getInferredName() != null) {
-                                        llmInferredNames.put(dp.getOcrHint(), dp.getInferredName());
-                                }
-                        }
-                        log.info("[ASSEMBLER] 📦 LLM 추론 제품명 맵: {}", llmInferredNames);
-                }
-
-                List<SupplementAnalysisResponse.ProductDisplayInfo> productDisplayInfos = new ArrayList<>();
-                List<SupplementAnalysisResponse.ReportProductInfo> reportProductInfos = new ArrayList<>();
-
-                for (int i = 0; i < targets.size(); i++) {
-                        AnalysisTarget t = targets.get(i);
-                        long tempId = (long) i + 1;
-
-                        // ═══════════════════════════════════════════════════════════════
-                        // DB 매칭 실패 시 LLM 추론 이름으로 대체
-                        // ═══════════════════════════════════════════════════════════════
-                        String displayName = t.getName();
-                        if (t.getProduct() == null) {
-                                // ocrName에서 LLM 추론 이름 찾기
-                                String llmName = llmInferredNames.get(t.getOcrName());
-                                if (llmName != null && !llmName.isBlank()) {
-                                        displayName = llmName + " (추정)";
-                                        log.info("[ASSEMBLER] 🔄 이름 보정: '{}' → '{}'", t.getOcrName(), displayName);
-                                }
-                        }
-
-                        productDisplayInfos.add(SupplementAnalysisResponse.ProductDisplayInfo.builder()
-                                        .tempId(tempId)
-                                        .name(displayName)
-                                        .confidence(t.getRawResult().getConfidence())
-                                        .box(t.getRawResult().getBox())
-                                        .isExactMatch(t.getProduct() != null)
-                                        .build());
-
-                        reportProductInfos.add(SupplementAnalysisResponse.ReportProductInfo.builder()
-                                        .productId(t.getProduct() != null ? t.getProduct().getId() : null)
-                                        .name(displayName)
-                                        .confidence(t.getRawResult().getConfidence())
-                                        .ingredients(t.getIngredients())
-                                        .build());
-                }
-
-                SupplementAnalysisResponse response = SupplementAnalysisResponse.builder()
-                                .displayData(SupplementAnalysisResponse.DisplayData.builder()
-                                                .objectCount(targets.size())
-                                                .products(productDisplayInfos)
-                                                .build())
-                                .reportData(SupplementAnalysisResponse.ReportData.builder()
-                                                .products(reportProductInfos)
-                                                .overdoseAnalysis(overdoseAnalysis)
-                                                .build())
-                                .build();
-
-                // ═══════════════════════════════════════════════════════════════
-                // 최종 응답 JSON 로깅 (프론트엔드 전달 데이터 확인용)
-                // ═══════════════════════════════════════════════════════════════
-                try {
-                        String jsonResponse = objectMapper.writeValueAsString(response);
-                        log.info("[FINAL_RESPONSE] ═══════════════════════════════════════════");
-                        log.info("{}", jsonResponse);
-                        log.info("═══════════════════════════════════════════════════════════════");
-                } catch (Exception e) {
-                        log.warn("[FINAL_RESPONSE] JSON 직렬화 실패: {}", e.getMessage());
-                }
-
-                return response;
+                // 2. 결과 결합 및 통합 응답(Display + Report) 생성
+                return buildUnifiedResponse(userId, aiResult);
         }
 
         /**
-         * 탐지된 제품이 없을 때 빈 응답 생성
+         * AI 서버(FastAPI)와 통신하여 이미지 분석 결과를 받아옵니다.
          */
-        private SupplementAnalysisResponse assembleEmptyResponse() {
+        private FastApiAnalysisResult callFastApi(MultipartFile file) {
+                try {
+                        WebClient webClient = webClientBuilder.build();
+
+                        MultipartBodyBuilder builder = new MultipartBodyBuilder();
+                        builder.part("file", new ByteArrayResource(file.getBytes()))
+                                        .filename(file.getOriginalFilename())
+                                        .contentType(MediaType.IMAGE_JPEG);
+
+                        FastApiAnalysisResult result = webClient.post()
+                                        .uri(fastApiUrl)
+                                        .contentType(MediaType.MULTIPART_FORM_DATA)
+                                        .body(BodyInserters.fromMultipartData(builder.build()))
+                                        .retrieve()
+                                        .bodyToMono(FastApiAnalysisResult.class)
+                                        .block();
+
+                        logAiAnalysisDetails(result);
+                        return result;
+
+                } catch (IOException e) {
+                        log.error("파일 처리 실패", e);
+                        throw new RuntimeException("이미지 파일 처리 중 오류가 발생했습니다.");
+                } catch (Exception e) {
+                        log.error("AI 서버 통신 실패", e);
+                        throw new RuntimeException("AI 분석 서버와의 네트워크 통신에 실패했습니다.");
+                }
+        }
+
+        private void logAiAnalysisDetails(FastApiAnalysisResult result) {
+                if (result == null || result.getAnalysisResults() == null)
+                        return;
+
+                log.info("============== AI 분석 결과 상세 로그 ==============");
+                result.getAnalysisResults().forEach(raw -> {
+                        log.info("Conf: {}, Barcode: {}, OCR: {}",
+                                        raw.getConfidence(),
+                                        raw.getBarcode() != null ? raw.getBarcode() : "N/A",
+                                        raw.getOcrTexts());
+                });
+                log.info("================================================");
+        }
+
+        /**
+         * AI 분석 결과(FastAPI)와 비즈니스 데이터를 결합하여 최종 응답 객체를 생성합니다.
+         */
+        private SupplementAnalysisResponse buildUnifiedResponse(Long userId, FastApiAnalysisResult aiResult) {
+                // 1. 화면 표시용 데이터(DisplayData) 구성 및 실시간 매칭
+                List<SupplementAnalysisResponse.ProductDisplayInfo> displayProducts = new ArrayList<>();
+                List<Product> matchedProducts = new ArrayList<>();
+
+                if (aiResult != null && aiResult.isSuccess() && aiResult.getAnalysisResults() != null) {
+                        for (FastApiAnalysisResult.RawAnalysisResult raw : aiResult.getAnalysisResults()) {
+                                // OCR 텍스트가 있을 경우 첫 번째 텍스트를 대표 이름으로 사용 (추후 고도화 가능)
+                                String ocrName = (raw.getOcrTexts() != null && !raw.getOcrTexts().isEmpty())
+                                                ? raw.getOcrTexts().get(0)
+                                                : null;
+
+                                Product product = null;
+                                if (ocrName != null) {
+                                        try {
+                                                product = productMatchingService.findProduct(ocrName);
+                                                matchedProducts.add(product);
+                                        } catch (Exception e) {
+                                                log.warn("제품 매칭 실패 (OCR: {}): {}", ocrName, e.getMessage());
+                                        }
+                                }
+
+                                displayProducts.add(SupplementAnalysisResponse.ProductDisplayInfo.builder()
+                                                .tempId(product != null ? product.getId() : null)
+                                                .name(product != null ? product.getPrdlstNm()
+                                                                : (ocrName != null ? ocrName : "알 수 없는 제품"))
+                                                .barcode(raw.getBarcode())
+                                                .confidence(raw.getConfidence())
+                                                .box(raw.getBox())
+                                                .isExactMatch(product != null)
+                                                .build());
+                        }
+                }
+
+                SupplementAnalysisResponse.DisplayData displayData = SupplementAnalysisResponse.DisplayData.builder()
+                                .objectCount(displayProducts.size())
+                                .products(displayProducts)
+                                .build();
+
+                // 2. 분석 리포트 데이터(ReportData) 구성
+                List<UserProductResponse> currentUserSupplements = (userId != null)
+                                ? userProductService.getUserProducts(userId)
+                                : new ArrayList<>();
+                SupplementAnalysisResponse.ReportData reportData = generateRealReportData(matchedProducts,
+                                currentUserSupplements);
+
                 return SupplementAnalysisResponse.builder()
-                                .displayData(SupplementAnalysisResponse.DisplayData.builder()
-                                                .objectCount(0)
-                                                .products(new ArrayList<>())
+                                .displayData(displayData)
+                                .reportData(reportData)
+                                .build();
+        }
+
+        private SupplementAnalysisResponse.ReportData generateRealReportData(
+                        List<Product> matchedProducts,
+                        List<UserProductResponse> currentSupplements) {
+
+                // 리포트용 제품 정보 변환
+                List<SupplementAnalysisResponse.ReportProductInfo> reportProducts = matchedProducts.stream()
+                                .map(p -> SupplementAnalysisResponse.ReportProductInfo.builder()
+                                                .productId(p.getId())
+                                                .name(p.getPrdlstNm())
+                                                .confidence(1.0) // 매칭된 결과이므로 1.0 부여
+                                                .ingredients(new ArrayList<>()) // 필요시 DB 조회 로직 추가
                                                 .build())
-                                .reportData(SupplementAnalysisResponse.ReportData.builder()
-                                                .products(new ArrayList<>())
-                                                .overdoseAnalysis(null)
+                                .collect(Collectors.toList());
+
+                // LLM을 통한 통합 분석 리포트 생성
+                SupplementAnalysisResponse.OverdoseAnalysis overdoseAnalysis = generateLLMReport(matchedProducts,
+                                currentSupplements);
+
+                return SupplementAnalysisResponse.ReportData.builder()
+                                .products(reportProducts)
+                                .overdoseAnalysis(overdoseAnalysis)
+                                .build();
+        }
+
+        private SupplementAnalysisResponse.OverdoseAnalysis generateLLMReport(
+                        List<Product> matchedProducts,
+                        List<UserProductResponse> currentSupplements) {
+
+                // 프롬프트 구성
+                StringBuilder prompt = new StringBuilder();
+                prompt.append("당신은 전문 영양사입니다. 다음 영양제 정보를 바탕으로 과복용 분석 및 권장사항 리포트를 작성해주세요.\n\n");
+
+                prompt.append("[새로 분석된 영양제]\n");
+                matchedProducts.forEach(p -> prompt.append("- ").append(p.getPrdlstNm()).append("\n"));
+
+                prompt.append("\n[현재 복용 중인 영양제]\n");
+                currentSupplements.forEach(s -> prompt.append("- ").append(s.getProductName()).append("\n"));
+
+                prompt.append("\n위 영양제들을 함께 복용했을 때:\n");
+                prompt.append("1. 성분 중복이나 과복용 위험이 있는 요소\n");
+                prompt.append("2. 함께 먹으면 좋은 궁합 또는 피해야 할 궁합\n");
+                prompt.append("3. 일일 권장 섭취량 대비 현재 상태\n\n");
+
+                prompt.append("다음 JSON 형식으로만 응답해주세요:\n");
+                prompt.append("{\n");
+                prompt.append("  \"comparison\": [\n");
+                prompt.append("    { \"name\": \"성분명\", \"myAmount\": \"복용중양\", \"newAmount\": \"신규양\", \"totalAmount\": \"합계\", \"status\": \"good|warning|new\" }\n");
+                prompt.append("  ],\n");
+                prompt.append("  \"recommendations\": {\n");
+                prompt.append("    \"interactions\": [ { \"type\": \"tip|warning\", \"text\": \"설명\" } ],\n");
+                prompt.append("    \"dosageInfo\": [ { \"name\": \"성분명\", \"min\": \"최소\", \"recommended\": \"권장\", \"max\": \"최대\", \"current\": \"현재\", \"status\": \"good|warning\" } ],\n");
+                prompt.append("    \"productNotes\": [ \"제품 특이사항\" ]\n");
+                prompt.append("  }\n");
+                prompt.append("}\n");
+
+                try {
+                        String response = llmService.query(prompt.toString(), 0.5);
+                        // JSON 파싱 로직 (간소화 위해 Jackson 사용 가능)
+                        ObjectMapper mapper = new ObjectMapper();
+                        String cleanJson = response.replaceAll("```json|```", "").trim();
+                        return mapper.readValue(cleanJson, SupplementAnalysisResponse.OverdoseAnalysis.class);
+                } catch (Exception e) {
+                        log.error("LLM 리포트 생성 실패", e);
+                        return createEmptyOverdoseAnalysis();
+                }
+        }
+
+        private SupplementAnalysisResponse.OverdoseAnalysis createEmptyOverdoseAnalysis() {
+                return SupplementAnalysisResponse.OverdoseAnalysis.builder()
+                                .comparison(new ArrayList<>())
+                                .recommendations(SupplementAnalysisResponse.Recommendations.builder()
+                                                .interactions(new ArrayList<>())
+                                                .dosageInfo(new ArrayList<>())
+                                                .productNotes(List.of("리포트 생성 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요."))
                                                 .build())
                                 .build();
         }

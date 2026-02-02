@@ -21,7 +21,7 @@ public class OpenAILLMServiceImpl implements LLMService {
     @Value("${openai.api.key}")
     private String apiKey;
 
-    @Value("${openai.model:gpt-4o-mini}")
+    @Value("${openai.model:gpt-5-mini}")
     private String model;
 
     @Value("${openai.api.url:https://gms.ssafy.io/gmsapi/api.openai.com/v1/chat/completions}")
@@ -32,7 +32,12 @@ public class OpenAILLMServiceImpl implements LLMService {
 
     @Override
     public String query(String prompt) {
-        log.info("OpenAI LLM 호출 (모델: {})", model);
+        return query(prompt, 0.1); // 기본값: 정확성 우선
+    }
+
+    @Override
+    public String query(String prompt, double temperature) {
+        log.info("OpenAI LLM 호출 (temperature: {})", temperature);
 
         try {
             HttpHeaders headers = new HttpHeaders();
@@ -41,7 +46,8 @@ public class OpenAILLMServiceImpl implements LLMService {
 
             Map<String, Object> body = Map.of(
                     "model", model,
-                    "messages", List.of(Map.of("role", "user", "content", prompt)));
+                    "messages", List.of(Map.of("role", "user", "content", prompt)),
+                    "temperature", temperature);
 
             HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, headers);
             ResponseEntity<String> response = restTemplate.postForEntity(
