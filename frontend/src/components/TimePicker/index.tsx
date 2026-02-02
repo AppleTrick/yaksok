@@ -185,7 +185,7 @@ const TimePicker: React.FC<TimePickerProps> = ({
 
     // Initial Scroll Position
     useEffect(() => {
-        const initScroll = (ref: React.RefObject<HTMLDivElement>, list: any[], val: any) => {
+        const initScroll = (ref: React.RefObject<HTMLDivElement | null>, list: any[], val: any) => {
             if (ref.current) {
                 const idx = list.indexOf(val);
                 if (idx >= 0) ref.current.scrollTop = idx * ITEM_HEIGHT;
@@ -200,7 +200,7 @@ const TimePicker: React.FC<TimePickerProps> = ({
     // --- Click & Scroll Logic ---
 
     const handleItemClick = (
-        ref: React.RefObject<HTMLDivElement>,
+        ref: React.RefObject<HTMLDivElement | null>,
         value: any,
         list: any[],
         type: 'ampm' | 'hour' | 'minute'
@@ -210,11 +210,14 @@ const TimePicker: React.FC<TimePickerProps> = ({
         const idx = list.indexOf(value);
         if (idx === -1) return;
 
+        const element = ref.current;
+        if (!element) return; // 추가 안전 체크
+
         isProgrammaticScroll.current = true;
 
-        ref.current.style.scrollSnapType = 'none';
+        element.style.scrollSnapType = 'none';
 
-        ref.current.scrollTo({
+        element.scrollTo({
             top: idx * ITEM_HEIGHT,
             behavior: 'smooth'
         });
@@ -234,8 +237,9 @@ const TimePicker: React.FC<TimePickerProps> = ({
 
         if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
         scrollTimeoutRef.current = setTimeout(() => {
-            if (ref.current) {
-                ref.current.style.scrollSnapType = 'y mandatory';
+            const currentElement = ref.current;
+            if (currentElement) {
+                currentElement.style.scrollSnapType = 'y mandatory';
                 isProgrammaticScroll.current = false;
             }
         }, 500);
