@@ -11,11 +11,6 @@ export interface NotificationRequest {
     userProductId: number;
     intakeTime: string; // "HH:mm"
     category: NotificationCategory;
-    // Note: Spec for Create/Update doesn't explicitly mention 'enabled' in Request Body for Create, but Response has 'enable'.
-    // Spec for Update (PUT /) has 'userProductId', 'intakeTime', 'category', 'notificationId'.
-    // We will make 'notificationId' optional here or separate the types if needed.
-    // Spec Create Request: { userProductId, intakeTime, category }
-    // Spec Update Request: { notificationId, userProductId, intakeTime, category }
 }
 
 export interface NotificationEditRequest extends NotificationRequest {
@@ -66,7 +61,7 @@ export interface NotificationProductResponse {
     category: NotificationCategory;
 }
 
-// 8. 알림 설정 (방해금지 등) Request
+// 7. 알림 설정 (방해금지 등) Request
 export interface NotificationSettingRequest {
     quietStart: string; // "HH:mm"
     quietEnd: string;   // "HH:mm"
@@ -75,6 +70,16 @@ export interface NotificationSettingRequest {
 export interface NotificationSettingEditRequest extends NotificationSettingRequest {
     notificationId: number;
     enabled: boolean;
+}
+
+// 8. FCM 토큰 관련
+export interface FcmTokenRequest {
+    fcmToken: string;
+}
+
+export interface TokenVerifyResponse {
+    valid: boolean;
+    message?: string;
 }
 
 // Common API Response Wrapper
@@ -90,7 +95,7 @@ export interface ApiResponse<T> {
  * 1. 알림 생성
  * POST /api/v1/notification/
  */
-export const createNotification = async (data: Omit<NotificationRequest, 'notificationId'>) => {
+export const createNotification = async (data: NotificationRequest) => {
     const response = await axiosInstance.post<ApiResponse<NotificationResponseData>>(`${API_BASE}/`, data);
     return response.data;
 };
@@ -157,12 +162,10 @@ export const updateNotification = async (data: NotificationEditRequest) => {
 
 /**
  * 8. 알림 미루기 (Snooze)
- * PUT /api/v1/notification/snooze (백엔드 오타 snoose 수정 요청 반영)
- * NOTE: 백엔드가 아직 snoose라면 404가 뜰 수 있음.
+ * PUT /api/v1/notification/snoose
  */
 export const snoozeNotification = async (notificationId: number) => {
-    // 백엔드 요청 명세에 따라 /snooze 로 호출
-    const response = await axiosInstance.put<ApiResponse<null>>(`${API_BASE}/snooze`, {
+    const response = await axiosInstance.put<ApiResponse<null>>(`${API_BASE}/snoose`, {
         notificationId,
     });
     return response.data;
@@ -198,21 +201,6 @@ export const deleteNotification = async (notificationId: number) => {
 };
 
 // --- FCM Token & Notification Test APIs ---
-
-/**
- * FCM 토큰 등록 Request
- */
-export interface FcmTokenRequest {
-    fcmToken: string;
-}
-
-/**
- * 토큰 검증 Response
- */
-export interface TokenVerifyResponse {
-    valid: boolean;
-    message?: string;
-}
 
 /**
  * 12. 토큰 검증
