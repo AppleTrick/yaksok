@@ -5,7 +5,6 @@ import React, { createContext, useContext, useState, ReactNode } from 'react';
 // 분석된 제품 정보
 interface DetectedProduct {
     name: string;
-    barcode: string | null;
     confidence: number;
     box: number[];
 }
