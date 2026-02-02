@@ -196,3 +196,49 @@ export const deleteNotification = async (notificationId: number) => {
     });
     return response.data;
 };
+
+// --- FCM Token & Notification Test APIs ---
+
+/**
+ * FCM 토큰 등록 Request
+ */
+export interface FcmTokenRequest {
+    fcmToken: string;
+}
+
+/**
+ * 토큰 검증 Response
+ */
+export interface TokenVerifyResponse {
+    valid: boolean;
+    message?: string;
+}
+
+/**
+ * 12. 토큰 검증
+ * GET /api/v1/notification/verify
+ */
+export const verifyToken = async () => {
+    const response = await axiosInstance.get<ApiResponse<TokenVerifyResponse>>(`${API_BASE}/verify`);
+    return response.data;
+};
+
+/**
+ * 13. FCM 토큰 등록
+ * POST /api/v1/notification/token
+ */
+export const registerFcmToken = async (fcmToken: string) => {
+    const response = await axiosInstance.post<ApiResponse<null>>(`${API_BASE}/token`, {
+        fcmToken,
+    });
+    return response.data;
+};
+
+/**
+ * 14. 알림 테스트 요청
+ * GET /api/v1/notification/test
+ */
+export const testNotification = async () => {
+    const response = await axiosInstance.get<ApiResponse<null>>(`${API_BASE}/test`);
+    return response.data;
+};
