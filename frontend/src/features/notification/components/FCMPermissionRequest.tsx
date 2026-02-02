@@ -49,8 +49,10 @@ export default function FCMPermissionRequest() {
                 setShowBanner(false);
                 console.log('✅ 알림 권한 허용됨 - 푸시 알림 ON');
             } else if (permission === 'denied') {
-                // 거부 시 배너만 숨김
+                // 거부 시 푸시 알림 OFF
+                updateActions.togglePush(false);
                 setShowBanner(false);
+                console.log('❌ 알림 권한 거부됨 - 푸시 알림 OFF');
             } else {
                 // default 상태 (사용자가 팝업을 닫았을 경우)
                 setShowBanner(false);
@@ -62,7 +64,10 @@ export default function FCMPermissionRequest() {
     };
 
     const handleDismiss = () => {
-        // "나중에" 클릭 시 재고려 메시지 표시
+        // "나중에" 클릭 시 푸시 알림 OFF
+        updateActions.togglePush(false);
+
+        // 재고려 메시지 표시
         setShowBanner(false);
         setShowDeniedMessage(true);
 
@@ -71,6 +76,8 @@ export default function FCMPermissionRequest() {
             setShowDeniedMessage(false);
             setIsDismissed(true);
         }, 5000);
+
+        console.log('⏭️ 알림 권한 나중에 - 푸시 알림 OFF');
     };
 
     const handleReconsider = () => {
