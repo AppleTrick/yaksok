@@ -42,12 +42,15 @@ export function useNotificationHandlers() {
      */
     const handleSnooze = async (eventId: number) => {
         try {
-            const result = await snoozeNotification(eventId, 5);
+            await snoozeNotification(eventId);
+
+            // 스누즈 시간 계산 (현재 시간 + 5분)
+            const snoozedUntil = new Date(Date.now() + 5 * 60 * 1000).toISOString();
 
             // 스누즈 배너 표시
             setSnoozeBanner({
                 visible: true,
-                snoozedUntil: result.snoozedUntil
+                snoozedUntil
             });
 
             // 5분 후 배너 자동 숨김
@@ -55,7 +58,7 @@ export function useNotificationHandlers() {
                 setSnoozeBanner({ visible: false, snoozedUntil: null });
             }, 5 * 60 * 1000);
 
-            return { success: true, snoozedUntil: result.snoozedUntil };
+            return { success: true, snoozedUntil };
         } catch (error) {
             console.error('스누즈 실패:', error);
             alert('재알림 설정에 실패했습니다.');

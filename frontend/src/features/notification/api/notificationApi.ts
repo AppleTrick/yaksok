@@ -165,7 +165,7 @@ export const updateNotification = async (data: NotificationEditRequest) => {
  * PUT /api/v1/notification/snoose
  */
 export const snoozeNotification = async (notificationId: number) => {
-    const response = await axiosInstance.put<ApiResponse<null>>(`${API_BASE}/snoose`, {
+    const response = await axiosInstance.put<ApiResponse<null>>(`${API_BASE}/snooze`, {
         notificationId,
     });
     return response.data;
