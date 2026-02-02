@@ -116,6 +116,8 @@
     min-height: 0;
     overscroll-behavior: contain;
     padding: 0 1.5rem;
+    padding-bottom: calc(80px + 2rem);
+    /* 하단 탭바(80px) + 여백(2rem) */
     /* Crucial for scrolling inside flex items */
 }
 
