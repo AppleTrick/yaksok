@@ -1,91 +1,91 @@
--- ========================================
--- user
--- ========================================
+-- -- ========================================
+-- -- user
+-- -- ========================================
 INSERT INTO `user`
 (email, password, name, role, status, age_group, gender)
 VALUES
     ('test@example.com', 'encoded-password', '테스트유저', 'USER', 'ACTIVE', 'TWENTY', 'MALE');
-
--- ========================================
--- ingredient
--- ========================================
-INSERT INTO ingredient
-(ingredient_name, min_intake_value, max_intake_value, display_unit)
-VALUES
-    ('비타민C', 100, 2000, 'mg');
-
--- ========================================
--- product
--- ========================================
-INSERT INTO product
-(PRDLST_NM, PRIMARY_FNCLTY, NTK_MTHD, IFTKN_ATNT_MATR_CN)
-VALUES
-    ('멀티비타민', '면역력 증진', '1일 1회', '과다 복용 주의');
-
--- ========================================
--- product_ingredient
--- ========================================
-INSERT INTO product_ingredient
-(product_id, ingredient_id, ingredient_amount, amount_unit)
-VALUES
-    (1, 1, 500, 'mg');
-
--- ========================================
--- user_product
--- ========================================
-INSERT INTO user_product
-(user_id, target_member_id, product_id, nickname,
- daily_dose, dose_amount, dose_unit,
- start_date, end_date, active)
-VALUES
-    (1, 1, 1, '매일 먹는 비타민',
-     1, 1, '정',
-     CURDATE(), DATE_ADD(CURDATE(), INTERVAL 30 DAY), true);
-
--- ========================================
--- intake_record
--- ========================================
-INSERT INTO intake_record
-(user_product_id, taken, intake_date)
-VALUES
-    (1, true, CURDATE());
-
--- ========================================
--- notification (알림 이벤트용)
--- ========================================
-INSERT INTO notification
-(user_id, user_product_id, intake_time, enabled, category)
-VALUES
-    (1, 1, '08:00:00', true, 'INTAKE');
-
--- ========================================
--- notification_setting (조용한 시간 설정)
--- ========================================
-INSERT INTO notification_setting
-(user_id, quiet_start, quiet_end, enabled)
-VALUES
-    (1, '2026-01-01 22:00:00', '2026-01-02 07:00:00', true);
-
--- ========================================
--- notification_log
--- ========================================
-INSERT INTO notification_log
-(user_id, user_product_id, notification_type, sent_at)
-VALUES
-    (1, 1, 'INTAKE', NOW());
-
--- ========================================
--- disease
--- ========================================
-INSERT INTO disease
-(sick_name)
-VALUES
-    ('비염');
-
--- ========================================
--- user_disease
--- ========================================
-INSERT INTO user_disease
-(user_id, disease_id)
-VALUES
-    (1, 1);
+--
+-- -- ========================================
+-- -- ingredient
+-- -- ========================================
+-- INSERT INTO ingredient
+-- (ingredient_name, min_intake_value, max_intake_value, display_unit)
+-- VALUES
+--     ('비타민C', 100, 2000, 'mg');
+--
+-- -- ========================================
+-- -- product
+-- -- ========================================
+-- INSERT INTO product
+-- (PRDLST_NM, PRIMARY_FNCLTY, NTK_MTHD, IFTKN_ATNT_MATR_CN)
+-- VALUES
+--     ('멀티비타민', '면역력 증진', '1일 1회', '과다 복용 주의');
+--
+-- -- ========================================
+-- -- product_ingredient
+-- -- ========================================
+-- INSERT INTO product_ingredient
+-- (product_id, ingredient_id, ingredient_amount, amount_unit)
+-- VALUES
+--     (1, 1, 500, 'mg');
+--
+-- -- ========================================
+-- -- user_product
+-- -- ========================================
+-- INSERT INTO user_product
+-- (user_id, target_member_id, product_id, nickname,
+--  daily_dose, dose_amount, dose_unit,
+--  start_date, end_date, active)
+-- VALUES
+--     (1, 1, 1, '매일 먹는 비타민',
+--      1, 1, '정',
+--      CURDATE(), DATE_ADD(CURDATE(), INTERVAL 30 DAY), true);
+--
+-- -- ========================================
+-- -- intake_record
+-- -- ========================================
+-- INSERT INTO intake_record
+-- (user_product_id, taken, intake_date)
+-- VALUES
+--     (1, true, CURDATE());
+--
+-- -- ========================================
+-- -- notification (알림 이벤트용)
+-- -- ========================================
+-- INSERT INTO notification
+-- (user_id, user_product_id, intake_time, enabled, category)
+-- VALUES
+--     (1, 1, '08:00:00', true, 'INTAKE');
+--
+-- -- ========================================
+-- -- notification_setting (조용한 시간 설정)
+-- -- ========================================
+-- INSERT INTO notification_setting
+-- (user_id, quiet_start, quiet_end, enabled)
+-- VALUES
+--     (1, '2026-01-01 22:00:00', '2026-01-02 07:00:00', true);
+--
+-- -- ========================================
+-- -- notification_log
+-- -- ========================================
+-- INSERT INTO notification_log
+-- (user_id, user_product_id, notification_type, sent_at)
+-- VALUES
+--     (1, 1, 'INTAKE', NOW());
+--
+-- -- ========================================
+-- -- disease
+-- -- ========================================
+-- INSERT INTO disease
+-- (sick_name)
+-- VALUES
+--     ('비염');
+--
+-- -- ========================================
+-- -- user_disease
+-- -- ========================================
+-- INSERT INTO user_disease
+-- (user_id, disease_id)
+-- VALUES
+--     (1, 1);
