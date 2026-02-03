@@ -1,6 +1,6 @@
 package com.ssafy.yaksok.global.common.unit;
 
-import com.ssafy.yaksok.global.common.llm.LLMServiceFacade;
+import com.ssafy.yaksok.global.common.llm.prompt.LLMServiceFacade;
 import com.ssafy.yaksok.global.common.llm.prompt.UnitConversionPrompt;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
