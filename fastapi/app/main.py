@@ -106,6 +106,7 @@ async def analyze_image_endpoint(file: UploadFile = File(...)):
 
 
 from app.services.vision_service import analyze_with_vision_api
+from app.services.llm_service import extract_product_name_with_llm
 
 @app.post("/v1/analyze2")
 async def analyze_image_vision_api(file: UploadFile = File(...)):
@@ -116,7 +117,7 @@ async def analyze_image_vision_api(file: UploadFile = File(...)):
     1. Object Localization: 'Bottle', 'Container', 'Packaged goods' 탐지
     2. Image Cropping: 탐지된 객체 영역 Crop
     3. Individual OCR: 각 Crop 이미지에 대해 Document Text Detection 수행
-    4. Heuristic Extraction: 제품명 추론
+    4. LLM Refinement: 전체 OCR 텍스트에서 Gemini를 사용하여 정확한 제품명 추출
     
     Returns:
         List[Dict]: 각 객체별 분석 결과 리스트 (ID, 신뢰도, 제품명, 전체 텍스트)
@@ -127,24 +128,34 @@ async def analyze_image_vision_api(file: UploadFile = File(...)):
     try:
         image_bytes = await file.read()
         
-        # vision_service의 비동기 함수 호출
-        # 내부적으로 스레드풀을 사용하여 비동기 처리됨
+        # 1. Vision API 분석 (객체 탐지 + 크롭 + OCR)
         raw_results = await analyze_with_vision_api(image_bytes)
         
-        # Java Backend DTO (FastApiAnalysisResult) 구조에 맞게 변환
+        # 2. LLM(Gemini)을 이용한 제품명 정제 (병렬 처리)
+        # 각 객체별로 추출된 전체 텍스트를 LLM에 전달하여 제품명만 추출
+        llm_tasks = [extract_product_name_with_llm(item.get("full_text", "")) for item in raw_results]
+        llm_product_names = await asyncio.gather(*llm_tasks)
+        
+        # 3. Java Backend DTO 구조에 맞게 최종 결과 조합
         analysis_results = []
-        for item in raw_results:
+        for i, item in enumerate(raw_results):
+            heuristic_name = item.get("product_name", "") # 기존의 크기 기반 추출 결과
+            llm_name = llm_product_names[i]
+            
+            # LLM 결과가 있으면 사용하고, 없으면 기존 Heuristic 결과 유지
+            final_product_name = llm_name if llm_name else heuristic_name
+            
             analysis_results.append({
                 "box": item.get("box", [0, 0, 0, 0]),
                 "confidence": item.get("score", 0.0),
-                "product_name": item.get("product_name", ""),
+                "product_name": final_product_name,
                 "ocr_text": item.get("full_text", "")
             })
             
         return {
             "success": True,
-            "message": "Vision API Analysis Successful",
-            "step": "VISION_API",
+            "message": "Vision API & LLM Analysis Successful",
+            "step": "VISION_API_WITH_LLM",
             "analysis_results": analysis_results
         }
         
