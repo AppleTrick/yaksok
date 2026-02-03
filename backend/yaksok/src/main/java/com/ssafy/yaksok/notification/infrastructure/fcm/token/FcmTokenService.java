@@ -2,6 +2,7 @@ package com.ssafy.yaksok.notification.infrastructure.fcm.token;
 
 import com.ssafy.yaksok.global.exception.BusinessException;
 import com.ssafy.yaksok.global.exception.ErrorCode;
+import com.ssafy.yaksok.notification.enums.NotificationEnums;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -17,7 +18,7 @@ public class FcmTokenService {
     private final FcmTokenRepository fcmTokenRepository;
 
     public void verifyFcmToken(long userId){
-        if(!findByUserId(userId).isActive()){
+        if (!fcmTokenRepository.existsByUserIdAndActiveTrue(userId)) {
             throw new BusinessException(ErrorCode.FCM_TOKEN_NOT_FOUND);
         }
     }
@@ -36,6 +37,10 @@ public class FcmTokenService {
                                 )
                         )
                 );
+    }
+
+    public Optional<UserFcmToken> findByUserIdAndPlatform(long userId, NotificationEnums.Platform platform){
+        return fcmTokenRepository.findByUserIdAndPlatform(userId, platform);
     }
 
     public List<UserFcmToken> findAllByUserIdAndActiveTrue(long userId){
@@ -60,6 +65,8 @@ public class FcmTokenService {
         userFcmToken.changeActive(active);
     }
 
-
+    public boolean existedByUserId(long userId){
+        return fcmTokenRepository.existsByUserId(userId);
+    }
 
 }
