@@ -15,20 +15,34 @@ from typing import List, Dict, Any
 from google.cloud import vision
 from PIL import Image
 
-# Google Cloud Vision Credential 설정
-# 프로젝트 루트의 JSON 키 파일을 자동으로 찾아서 환경 변수로 설정
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-CREDENTIAL_FILE = "ijip-naejip-9ebfced39702.json"
-CREDENTIAL_PATH = os.path.join(BASE_DIR, CREDENTIAL_FILE)
+from dotenv import load_dotenv
 
-if os.path.exists(CREDENTIAL_PATH) and "GOOGLE_APPLICATION_CREDENTIALS" not in os.environ:
-    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = CREDENTIAL_PATH
-    print(f"[Vision Service] 감지된 키 파일로 인증 설정: {CREDENTIAL_PATH}")
+# .env 파일 로드
+load_dotenv()
+
+# Google Cloud Vision Credential 설정
+# 1. 환경 변수에서 경로를 가져오거나 기본 파일명 사용
+CREDENTIAL_ENV = os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+if CREDENTIAL_ENV:
+    # 절대 경로가 아니면 BASE_DIR 기준으로 변환
+    if not os.path.isabs(CREDENTIAL_ENV):
+        CREDENTIAL_PATH = os.path.join(BASE_DIR, CREDENTIAL_ENV)
+    else:
+        CREDENTIAL_PATH = CREDENTIAL_ENV
+    
+    if os.path.exists(CREDENTIAL_PATH):
+        os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = CREDENTIAL_PATH
+        print(f"[Vision Service] 설정된 키 파일로 인증 시도: {CREDENTIAL_PATH}")
+    else:
+        print(f"[Vision Service] ⚠️ 지정된 키 파일을 찾을 수 없습니다: {CREDENTIAL_PATH}")
 
 # Google Cloud Vision 클라이언트 초기화
 try:
     vision_client = vision.ImageAnnotatorClient()
-    print("[Vision Service] ✅ Vision API 클라이언트 초기화 성공")
+    if vision_client:
+        print("[Vision Service] ✅ Vision API 클라이언트 초기화 성공")
 except Exception as e:
     vision_client = None
     print(f"[Vision Service] ❌ Vision API 클라이언트 초기화 실패: {e}")
