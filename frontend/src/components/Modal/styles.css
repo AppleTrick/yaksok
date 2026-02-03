@@ -9,37 +9,34 @@
     z-index: 1000;
     display: flex;
     justify-content: center;
-    align-items: flex-end;
-    /* Mobile default: bottom sheet */
+    align-items: center;
+    /* Center on all devices */
+    padding: 1rem;
+    /* Ensure spacing from edges */
 }
 
-@media (min-width: 640px) {
-    .cm-modal-overlay {
-        align-items: center;
-        /* Desktop: center */
-    }
-}
+/* Removed redundant media query for overlay alignment */
 
 .cm-modal-content {
     background: white;
     width: 100%;
     max-width: 480px;
-    border-top-left-radius: 28px;
-    border-top-right-radius: 28px;
+    border-radius: 28px;
+    /* Fully rounded on all devices */
     max-height: 90vh;
     overflow: hidden;
     position: relative;
-    animation: slideUp 0.3s ease-out;
+    animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    /* Use smooth fade scale animation */
     display: flex;
     flex-direction: column;
+    margin: 0 auto;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
 }
 
 @media (min-width: 640px) {
-    .cm-modal-content {
-        border-radius: 28px;
-        animation: fadeIn 0.3s ease-out;
-    }
 
+    /* Animation and radius are now global, keeping padding overrides */
     .cm-modal-header {
         padding: 2rem 2rem 0 2rem;
     }
@@ -56,11 +53,11 @@
 /* Animations */
 @keyframes slideUp {
     from {
-        transform: translateY(100%);
+        transform: translate3d(0, 100%, 0);
     }
 
     to {
-        transform: translateY(0);
+        transform: translate3d(0, 0, 0);
     }
 }
 

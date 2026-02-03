@@ -56,7 +56,10 @@ export default function LoginForm({ onSubmit, isLoading }: LoginFormProps) {
                         window.location.href = KAKAO_AUTH_URL;
                     }}
                 >
-                    <img src="/assets/images/kakao_login_large_wide.png" alt="카카오 로그인" />
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 3C6.477 3 2 6.477 2 10.765c0 2.898 2.05 5.434 5.15 6.786-.233.864-.849 3.097-.971 3.558-.153.578.21.569.444.415.18-.119 2.87-1.95 4.02-2.738.98.136 1.988.204 3.003.204 5.523 0 10-3.477 10-7.765S17.523 3 12 3z" />
+                    </svg>
+                    <span>카카오 로그인</span>
                 </button>
             </form>
 
