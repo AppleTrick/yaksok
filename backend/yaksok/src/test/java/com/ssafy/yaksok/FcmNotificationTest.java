@@ -75,10 +75,10 @@ public class FcmNotificationTest {
         void createAndFetchToken() {
             // Given
             String tokenValue = "final_fcm_token_test_abc_123";
-            FcmTokenRequest request = new FcmTokenRequest(tokenValue);
+            FcmTokenRequest request = new FcmTokenRequest(fcmTokenService.findByUserId(testUser.getId()).getToken(),tokenValue);
 
             // When
-            fcmTokenService.createFcmToken(testUser.getId(), request);
+            fcmTokenService.createOrUpdateFcmToken(testUser.getId(), request);
 
             // Then
             UserFcmToken savedToken = fcmTokenService.findByUserId(testUser.getId());
@@ -101,7 +101,7 @@ public class FcmNotificationTest {
         @DisplayName("이미 등록된 토큰 문자열을 새로운 값으로 갱신한다")
         void updateExistingToken() {
             // Given
-            fcmTokenService.createFcmToken(testUser.getId(), new FcmTokenRequest("old_token"));
+            fcmTokenService.createOrUpdateFcmToken(testUser.getId(), new FcmTokenRequest(fcmTokenService.findByUserId(testUser.getId()).getToken(),"old_token"));
 
             // When
             String updatedToken = "new_vibrant_token";
@@ -115,7 +115,7 @@ public class FcmNotificationTest {
         @DisplayName("토큰의 활성화 상태(active)를 켜거나 끌 수 있다")
         void toggleTokenActiveState() {
             // Given
-            fcmTokenService.createFcmToken(testUser.getId(), new FcmTokenRequest("toggle_test_token"));
+            fcmTokenService.createOrUpdateFcmToken(testUser.getId(), new FcmTokenRequest(fcmTokenService.findByUserId(testUser.getId()).getToken(),"toggle_test_token"));
 
             // When & Then: Disable
             fcmTokenService.updateTokenActive(testUser.getId(), false);
@@ -145,7 +145,7 @@ public class FcmNotificationTest {
 
             // When & Then
             assertThrows(RuntimeException.class, () -> {
-                fcmSender.testSend(mockToken, mockTitle, mockBody);
+                fcmSender.sendWeb(mockToken, mockTitle, mockBody);
             });
         }
     }
