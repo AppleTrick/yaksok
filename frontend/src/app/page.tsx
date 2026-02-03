@@ -71,15 +71,19 @@ export default function Home() {
         isLoading={isLoading}
       />
 
-      <DailyProgressCard total={totalMeds} taken={takenMeds} />
-
-      <HomeActionCard />
-
-      <TimelineSection
-        today={today}
-        schedules={schedules}
-        onToggleItem={toggleItemTaken}
-      />
+      <div className="dashboard-content">
+        <div className="left-column">
+          <DailyProgressCard total={totalMeds} taken={takenMeds} />
+          <HomeActionCard />
+        </div>
+        <div className="right-column">
+          <TimelineSection
+            today={today}
+            schedules={schedules}
+            onToggleItem={toggleItemTaken}
+          />
+        </div>
+      </div>
 
       {/* Spacing for Bottom Tab Bar */}
       <div style={{ height: "100px" }}></div>

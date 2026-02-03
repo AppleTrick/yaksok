@@ -11,7 +11,8 @@ export default function BottomTabBar() {
     const pathname = usePathname();
 
     // Hide tab bar on camera and report page to allow full screen UI
-    if (pathname === '/camera' || pathname === '/report') {
+    // Hide tab bar on camera, report, and auth pages (login/signup)
+    if (pathname === '/camera' || pathname === '/report' || pathname === '/login' || pathname === '/signup' || pathname === '/find-password') {
         return null;
     }
 
