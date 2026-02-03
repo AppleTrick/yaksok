@@ -1,4 +1,4 @@
-package com.ssafy.yaksok.global.common.llm;
+package com.ssafy.yaksok.global.common.llm.prompt;
 
 import com.ssafy.yaksok.global.common.llm.parser.LLMResponseParser;
 import com.ssafy.yaksok.global.common.llm.prompt.PromptTemplate;
@@ -6,6 +6,7 @@ import com.ssafy.yaksok.global.llm.service.LLMService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import com.ssafy.yaksok.global.common.llm.LLMServiceException;
 
 import java.util.Map;
 
