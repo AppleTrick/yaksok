@@ -9,7 +9,7 @@ import './FCMPermissionBanner.css';
  * 사용자가 알림 권한을 허용하지 않았을 때 표시됩니다.
  */
 export default function FCMPermissionBanner() {
-    const { isSupported, requestPermission, isLoading, error } = useFCM();
+    const { isSupported, requestPermission, isLoading, error, permission } = useFCM();
     const [showBanner, setShowBanner] = useState(false);
     const [isDismissed, setIsDismissed] = useState(false);
 
@@ -17,16 +17,14 @@ export default function FCMPermissionBanner() {
         // 브라우저가 알림을 지원하고, 권한이 아직 요청되지 않았을 때만 배너 표시
         if (
             isSupported &&
-            typeof window !== 'undefined' &&
-            'Notification' in window &&
-            Notification.permission === 'default' &&
+            permission === 'default' &&
             !isDismissed
         ) {
             setShowBanner(true);
         } else {
             setShowBanner(false);
         }
-    }, [isSupported, isDismissed]);
+    }, [isSupported, permission, isDismissed]);
 
     const handleRequestPermission = async () => {
         await requestPermission();
