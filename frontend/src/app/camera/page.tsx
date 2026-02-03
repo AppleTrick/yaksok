@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import "@/features/camera/styles.css";
 import CaptureStep from "@/features/camera/components/CaptureStep";
@@ -18,6 +18,16 @@ export default function CameraPage() {
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [analysisResult, setAnalysisResult] = useState<any>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+
+  useEffect(() => {
+    // 간단한 로그인 체크: localStorage에 userName이나 userId가 있는지 확인하거나
+    // 실제로는 API 호출을 통해 세션 유효성을 확인하는 것이 좋습니다.
+    const userName = localStorage.getItem("userName");
+    if (!userName) {
+      alert("로그인이 필요한 서비스입니다.");
+      router.push("/login");
+    }
+  }, [router]);
 
   const handleCapture = (imageDataUrl: string) => {
     setCapturedImage(imageDataUrl);
