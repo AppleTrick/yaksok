@@ -95,3 +95,27 @@
 .selection-btn.active:hover {
     background-color: var(--sub-background);
 }
+
+/* Dark Mode Overrides */
+[data-theme='dark'] .selection-btn {
+    background-color: var(--surface-1);
+    border-color: var(--border-color);
+    color: var(--text-muted);
+}
+
+[data-theme='dark'] .selection-btn.active {
+    background-color: rgba(255, 171, 145, 0.15);
+    /* Primary tint */
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+}
+
+[data-theme='dark'] .signup-form .input-field {
+    background-color: var(--surface-1);
+    border-color: var(--border-color);
+    color: var(--foreground-color);
+}
+
+[data-theme='dark'] .signup-form .input-field:focus {
+    border-color: var(--primary-color);
+}

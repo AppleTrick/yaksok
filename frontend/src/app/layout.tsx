@@ -40,30 +40,39 @@ import { AnimatePresence } from "framer-motion";
 
 import AppContainer from "@/layout/AppContainer";
 
+import { ThemeProvider } from "../contexts/ThemeContext";
+
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="ko">
+      <head>
+        <link rel="manifest" href="/manifest.json" />
+        <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <ScheduleProvider>
-          <ReportProvider>
-            <AppContainer>
-              <AnimatePresence mode="wait">
-                <PageTransition>
-                  {children}
-                </PageTransition>
-              </AnimatePresence>
-              <NotificationManagerEnhanced />
-              <FCMPermissionRequest />
-            </AppContainer>
-            <BottomTabBar />
-          </ReportProvider>
-        </ScheduleProvider>
+        <ThemeProvider>
+          <ScheduleProvider>
+            <ReportProvider>
+              <AppContainer>
+                <AnimatePresence mode="wait">
+                  <PageTransition>
+                    {children}
+                  </PageTransition>
+                </AnimatePresence>
+                <NotificationManagerEnhanced />
+                <FCMPermissionRequest />
+              </AppContainer>
+              <BottomTabBar />
+            </ReportProvider>
+          </ScheduleProvider>
+        </ThemeProvider>
       </body>
     </html>
   );
