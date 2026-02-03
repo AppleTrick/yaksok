@@ -17,45 +17,34 @@ export default function FCMPermissionRequest() {
     const [showDeniedMessage, setShowDeniedMessage] = useState(false);
     const [isDismissed, setIsDismissed] = useState(false);
 
-    const { requestPermission, isLoading } = useFCM();
+    const { requestPermission, isLoading, permission } = useFCM();
     const { updateActions } = useNotificationSettings();
 
     useEffect(() => {
         // 권한이 default일 때만 배너 표시
         if (
-            typeof window !== 'undefined' &&
-            'Notification' in window &&
-            Notification.permission === 'default' &&
+            permission === 'default' &&
             !isDismissed
         ) {
             setShowBanner(true);
         }
-    }, [isDismissed]);
+    }, [permission, isDismissed]);
 
     const handleAllow = async () => {
         try {
             // FCM 토큰 발급 요청 (브라우저 권한 팝업 표시)
-            await requestPermission();
+            const isGranted = await requestPermission();
 
-            // 약간의 지연 후 권한 상태 확인
-            await new Promise(resolve => setTimeout(resolve, 300));
-
-            // 권한 확인
-            const permission = Notification.permission;
-
-            if (permission === 'granted') {
+            if (isGranted) {
                 // 알림 설정 자동 ON
                 updateActions.togglePush(true);
                 setShowBanner(false);
                 console.log('✅ 알림 권한 허용됨 - 푸시 알림 ON');
-            } else if (permission === 'denied') {
-                // 거부 시 푸시 알림 OFF
+            } else {
+                // 거부됨
                 updateActions.togglePush(false);
                 setShowBanner(false);
                 console.log('❌ 알림 권한 거부됨 - 푸시 알림 OFF');
-            } else {
-                // default 상태 (사용자가 팝업을 닫았을 경우)
-                setShowBanner(false);
             }
         } catch (error) {
             console.error('권한 요청 실패:', error);

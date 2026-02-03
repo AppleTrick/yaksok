@@ -7,14 +7,17 @@ import axiosInstance from '@/lib/axios';
  */
 export async function saveFCMToken(token: string, deviceType: 'web' | 'android' | 'ios' = 'web') {
     try {
-        const response = await axiosInstance.post('/api/v1/notification/token', {
-            fcmToken: token,
-            deviceType,
-        });
+        const payload = { fcmToken: token };
+        console.log('📤 FCM 토큰 전송 Payload:', payload);
+        const response = await axiosInstance.post('/api/v1/notification/token', payload);
         console.log('FCM 토큰 저장 완료:', token);
         return response.data;
-    } catch (error) {
-        console.error('FCM 토큰 저장 실패:', error);
+    } catch (error: any) {
+        if (error.response) {
+            console.error('❌ FCM 토큰 저장 서버 에러:', error.response.status, error.response.data);
+        } else {
+            console.error('❌ FCM 토큰 저장 네트워크/기타 에러:', error);
+        }
         throw error;
     }
 }
