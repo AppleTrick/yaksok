@@ -6,12 +6,12 @@
     /* margin: 0 auto; Removed to ensure full viewport width attachment */
     /* Center the fixed element */
     height: 80px;
-    background-color: #ffffff;
+    background-color: var(--surface-1);
     /* Explicitly white to avoid transparency issues */
     display: flex;
     justify-content: space-around;
     align-items: center;
-    border-top: 1px solid #E5E7EB;
+    border-top: 1px solid var(--border-color);
     box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.05);
     border-top-left-radius: 20px;
     border-top-right-radius: 20px;
