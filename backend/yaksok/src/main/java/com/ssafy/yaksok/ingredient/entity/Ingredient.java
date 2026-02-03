@@ -32,11 +32,22 @@ public class Ingredient {
 
     @Builder
     public Ingredient(Long id, String ingredientName, BigDecimal minIntakeValue, BigDecimal maxIntakeValue,
-            String displayUnit) {
+                      String displayUnit) {
         this.id = id;
         this.ingredientName = ingredientName;
         this.minIntakeValue = minIntakeValue;
         this.maxIntakeValue = maxIntakeValue;
         this.displayUnit = displayUnit;
+    }
+
+    /**
+     * 일일 권장 섭취량을 반환하는 메서드
+     * minIntakeValue를 Double로 변환하여 반환
+     */
+    public Double getRecommendedAmount() {
+        if (minIntakeValue == null) {
+            return null;
+        }
+        return minIntakeValue.doubleValue();
     }
 }
