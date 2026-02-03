@@ -6,6 +6,9 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -30,6 +33,13 @@ public class Product {
     @Lob
     @Column(name = "IFTKN_ATNT_MATR_CN", columnDefinition = "TEXT")
     private String iftknAtntMatrCn;
+
+    /**
+     * Product가 가진 성분 목록
+     * ProductIngredient와 1:N 관계
+     */
+    @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
+    private List<ProductIngredient> productIngredients = new ArrayList<>();
 
     @Builder
     public Product(Long id, String prdlstNm, String primaryFnclty, String ntkMthd, String iftknAtntMatrCn) {
