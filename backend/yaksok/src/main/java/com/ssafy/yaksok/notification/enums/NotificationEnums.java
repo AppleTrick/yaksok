@@ -7,4 +7,8 @@ public final class NotificationEnums {
     public enum Category {
         EMPTY, AFTERMEAL, BEFORESLEEP
     }
+
+    public enum Platform{
+        WEB, ANDROID, IOS;
+    }
 }

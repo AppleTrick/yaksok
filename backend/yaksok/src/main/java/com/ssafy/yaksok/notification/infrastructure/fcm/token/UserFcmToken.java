@@ -1,5 +1,6 @@
 package com.ssafy.yaksok.notification.infrastructure.fcm.token;
 
+import com.ssafy.yaksok.notification.enums.NotificationEnums;
 import com.ssafy.yaksok.user.entity.User;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -24,8 +25,9 @@ public class UserFcmToken {
     @Column(name="token", nullable = false)
     private String token;
 
+    @Enumerated(EnumType.STRING)
     @Column(name="platform")
-    private String platform;
+    private NotificationEnums.Platform platform;
 
     @Column(name="active", nullable = false)
     private boolean active;
@@ -36,7 +38,7 @@ public class UserFcmToken {
     @Column(name="updated_at")
     private LocalDateTime updatedAt;
 
-    private UserFcmToken(long userId, String token, String platform){
+    private UserFcmToken(long userId, String token, NotificationEnums.Platform platform){
         this.userId = userId;
         this.token = token;
         this.platform = platform;
@@ -47,7 +49,7 @@ public class UserFcmToken {
     public static UserFcmToken createToken(
             long userId,
             String Token,
-            String platform
+            NotificationEnums.Platform platform
     ){
         return new UserFcmToken(userId, Token, platform);
     }
