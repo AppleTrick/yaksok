@@ -24,12 +24,8 @@ public class UserProduct {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "target_member_id", nullable = false)
-    private User targetMember;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_id", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY, optional = true)
+    @JoinColumn(name = "product_id")
     private Product product;
 
     private String nickname;
@@ -43,10 +39,6 @@ public class UserProduct {
     @Column(nullable = false)
     private String doseUnit;
 
-    private LocalDate startDate;
-
-    private LocalDate endDate;
-
     @Column(nullable = false)
     private boolean active;
 
@@ -56,25 +48,32 @@ public class UserProduct {
 
     public static UserProduct create(
             User user,
-            User targetMember,
             Product product,
             String nickname,
             Integer dailyDose,
             BigDecimal doseAmount,
-            String doseUnit,
-            LocalDate startDate,
-            LocalDate endDate
+            String doseUnit
     ) {
         UserProduct up = new UserProduct();
         up.user = user;
-        up.targetMember = targetMember;
         up.product = product;
         up.nickname = nickname;
         up.dailyDose = dailyDose;
         up.doseAmount = doseAmount;
         up.doseUnit = doseUnit;
-        up.startDate = startDate;
-        up.endDate = endDate;
+        up.active = true;
+        up.createdAt = LocalDateTime.now();
+        return up;
+    }
+
+    public static UserProduct create(User user, String nickname){
+        UserProduct up = new UserProduct();
+        up.user = user;
+        up.product = null;
+        up.nickname = nickname;
+        up.dailyDose = null;
+        up.doseAmount = null;
+        up.doseUnit = null;
         up.active = true;
         up.createdAt = LocalDateTime.now();
         return up;
