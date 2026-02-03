@@ -7,6 +7,7 @@ import com.ssafy.yaksok.notification.dto.*;
 import com.ssafy.yaksok.notification.entity.Notification;
 import com.ssafy.yaksok.notification.entity.NotificationLog;
 import com.ssafy.yaksok.notification.entity.NotificationSetting;
+import com.ssafy.yaksok.notification.enums.NotificationEnums;
 import com.ssafy.yaksok.notification.infrastructure.fcm.sender.FcmSender;
 import com.ssafy.yaksok.notification.infrastructure.fcm.token.FcmTokenService;
 import com.ssafy.yaksok.notification.infrastructure.fcm.token.UserFcmToken;
@@ -21,6 +22,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -146,13 +148,15 @@ public class NotificationService {
         return notificationLog;
     }
 
-    public void sendTestNotification(long userId) {
-        UserFcmToken tokenEntity = fcmTokenService.findByUserId(userId);
+    public void sendTestNotification(long userId, NotificationEnums.Platform platform) {
 
-        if (tokenEntity == null) {
-            log.warn("FCM 토큰 없음 userId={}", userId);
-            return;
-        }
+        UserFcmToken tokenEntity = fcmTokenService
+                .findByUserIdAndPlatform(userId, platform)
+                .filter(UserFcmToken::isActive)
+                .orElseThrow(() -> {
+                    log.warn("FCM 토큰 없음 userId={}, platform={}", userId, platform);
+                    return new BusinessException(ErrorCode.FCM_TOKEN_NOT_FOUND);
+                });
 
         fcmSender.sendWeb(
                 tokenEntity.getToken(),
@@ -160,6 +164,7 @@ public class NotificationService {
                 "버튼 눌러서 온 알림입니다"
         );
     }
+
 
     @Async("notificationExecutor")
     public void processNotifications() {
@@ -209,11 +214,17 @@ public class NotificationService {
         String title = "복약 알림";
         String body = "약 복용 시간입니다.";
 
-        switch (token.getPlatform()) {
-            case "WEB" -> fcmSender.sendWeb(token.getToken(), title, body);
-            case "ANDROID" -> fcmSender.sendAndroid(token.getToken(), title, body);
-            case "IOS" -> fcmSender.sendIos(token.getToken(), title, body);
+        if(token.getPlatform() == NotificationEnums.Platform.WEB){
+            fcmSender.sendWeb(token.getToken(), title, body);
+        }else if(token.getPlatform() == NotificationEnums.Platform.ANDROID){
+            fcmSender.sendAndroid(token.getToken(), title, body);
+        }else{
+            fcmSender.sendIos(token.getToken(), title, body);
         }
+    }
+
+    public Optional<UserFcmToken> findByUserIdAndPlatform(long userId, NotificationEnums.Platform platform){
+        return fcmTokenService.findByUserIdAndPlatform(userId, platform);
     }
 
     //CRUD
