@@ -22,6 +22,10 @@ if (typeof window !== 'undefined') {
  * Firebase Messaging 인스턴스를 가져옵니다.
  * 브라우저 환경에서만 동작하며, FCM을 지원하지 않는 환경에서는 null을 반환합니다.
  */
+/**
+ * Firebase Messaging 인스턴스를 가져옵니다.
+ * 브라우저 환경에서만 동작하며, FCM을 지원하지 않는 환경에서는 null을 반환합니다.
+ */
 export const getFirebaseMessaging = async (): Promise<Messaging | null> => {
     if (typeof window === 'undefined') {
         console.warn('Firebase Messaging은 브라우저 환경에서만 사용 가능합니다.');
@@ -35,13 +39,21 @@ export const getFirebaseMessaging = async (): Promise<Messaging | null> => {
             return null;
         }
 
-        // Service Worker 등록
+        // Service Worker 등록 확인 및 처리
         if ('serviceWorker' in navigator) {
             try {
-                const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
-                console.log('✅ Service Worker 등록 성공:', registration);
+                // 1. 현재 등록된 Service Worker 가져오기 (next-pwa 등과의 충돌 방지)
+                let registration = await navigator.serviceWorker.getRegistration();
+
+                // 2. 등록된 SW가 없으면 수동 등록 (주로 Dev 환경)
+                if (!registration) {
+                    registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+                    console.log('✅ Service Worker 수동 등록 성공 (Dev/Fallback):', registration);
+                } else {
+                    console.log('✅ 기존 Service Worker 재사용:', registration);
+                }
             } catch (error) {
-                console.error('❌ Service Worker 등록 실패:', error);
+                console.error('❌ Service Worker 등록/확인 실패:', error);
             }
         }
 
@@ -66,7 +78,20 @@ export const getFCMToken = async (messaging: Messaging): Promise<string | null> 
             return null;
         }
 
-        const token = await getToken(messaging, { vapidKey });
+        // 현재 활성화된 Service Worker Registration 가져오기
+        let registration = await navigator.serviceWorker.getRegistration();
+
+        // 만약 없다면 (극단적인 케이스), 수동 등록 시도
+        if (!registration) {
+            registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+        }
+
+        // serviceWorkerRegistration 옵션을 명시하여 제어권 충돌 방지
+        const token = await getToken(messaging, {
+            vapidKey,
+            serviceWorkerRegistration: registration
+        });
+
         return token;
     } catch (error) {
         console.error('FCM 토큰 발급 오류:', error);
