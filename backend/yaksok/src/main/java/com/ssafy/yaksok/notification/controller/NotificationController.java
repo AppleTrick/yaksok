@@ -97,7 +97,7 @@ public class NotificationController {
     @PostMapping("/token")
     public ResponseEntity<ApiResponse<Void>> createToken(
             @RequestBody FcmTokenRequest request, @AuthenticationPrincipal UserPrincipal userPrincipal){
-        fcmTokenService.createFcmToken(userPrincipal.getUserId(), request);
+        fcmTokenService.createOrUpdateFcmToken(userPrincipal.getUserId(), request);
         return ResponseUtil.ok();
     }
 
