@@ -10,3 +10,6 @@ paddlepaddle==3.0.0
 paddleocr>=2.9.0
 google-cloud-vision
 Pillow
+python-dotenv
+google-generativeai
+httpx
