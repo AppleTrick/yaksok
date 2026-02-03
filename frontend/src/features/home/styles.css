@@ -3,6 +3,37 @@
     padding-top: 1rem;
     min-height: 100vh;
     background-color: var(--background-color);
+    max-width: 1200px;
+    /* Constrain max content width on huge screens */
+    margin: 0 auto;
+    /* Center content */
+}
+
+/* Desktop Grid Layout (> Large Desktop) */
+@media (min-width: 1280px) {
+    .dashboard-content {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2rem;
+        align-items: start;
+        /* Prevent items from stretching height */
+    }
+
+    .left-column {
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+        /* Cards handle own margins, but we should remove bottom margins from cards inside grid if we use gap here. 
+                   Current cards have margin-bottom. Let's start with 0 gap or rely on card margins. */
+    }
+
+    /* Remove bottom margin from card inside left column except last one potentially, 
+       but action-card has margin-bottom: 2rem. DailyProgressCard isn't shown in CSS but component likely has styles. 
+       Let's leave it natural for now. */
+
+    .right-column {
+        /* Timeline takes right side */
+    }
 }
 
 .home-header {

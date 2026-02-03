@@ -73,3 +73,34 @@ a {
   color: inherit;
   text-decoration: none;
 }
+
+/* --- Responsive App Simulator Layout --- */
+
+/* --- Responsive Full-Width Layout --- */
+
+/* Base Wrapper */
+.app-wrapper {
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  background-color: var(--background-color);
+}
+
+/* App Content */
+.app-content {
+  width: 100%;
+  min-height: 100vh;
+  background-color: var(--background-color);
+  position: relative;
+  z-index: 1;
+  /* Establish base stacking context below floating elements */
+}
+
+/* Desktop/Tablet Adjustments if needed (e.g. max content width for readability) */
+@media (min-width: 1024px) {
+  /* Optional: You can constrain the inner content max-width here if you want 
+     the content to not be too stretched, but the user asked for "Full Screen".
+     We will handle layout inside the pages (Grid). 
+     For now, let's keep the wrapper full. */
+}

@@ -11,7 +11,8 @@ export default function BottomTabBar() {
     const pathname = usePathname();
 
     // Hide tab bar on camera and report page to allow full screen UI
-    if (pathname === '/camera' || pathname === '/report') {
+    // Hide tab bar on camera, report, and auth pages (login/signup)
+    if (pathname === '/camera' || pathname === '/report' || pathname === '/login' || pathname === '/signup' || pathname === '/find-password') {
         return null;
     }
 
@@ -22,12 +23,7 @@ export default function BottomTabBar() {
     ];
 
     return (
-        <motion.nav
-            className="bottom-tab-bar"
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ type: "spring", stiffness: 260, damping: 20 }}
-        >
+        <nav className="bottom-tab-bar">
             {navItems.map((item) => {
                 const isActive = pathname === item.href;
                 return (
@@ -52,6 +48,6 @@ export default function BottomTabBar() {
                     </Link>
                 );
             })}
-        </motion.nav>
+        </nav>
     );
 }

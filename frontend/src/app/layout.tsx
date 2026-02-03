@@ -38,6 +38,8 @@ import { ReportProvider } from "@/features/report/contexts/ReportContext";
 import PageTransition from "@/components/common/PageTransition";
 import { AnimatePresence } from "framer-motion";
 
+import AppContainer from "@/layout/AppContainer";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -50,14 +52,16 @@ export default function RootLayout({
       >
         <ScheduleProvider>
           <ReportProvider>
-            <AnimatePresence mode="wait">
-              <PageTransition>
-                {children}
-              </PageTransition>
-            </AnimatePresence>
+            <AppContainer>
+              <AnimatePresence mode="wait">
+                <PageTransition>
+                  {children}
+                </PageTransition>
+              </AnimatePresence>
+              <NotificationManagerEnhanced />
+              <FCMPermissionRequest />
+            </AppContainer>
             <BottomTabBar />
-            <NotificationManagerEnhanced />
-            <FCMPermissionRequest />
           </ReportProvider>
         </ScheduleProvider>
       </body>

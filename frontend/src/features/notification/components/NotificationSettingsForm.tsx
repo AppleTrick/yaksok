@@ -120,10 +120,7 @@ export default function NotificationSettingsForm() {
                     </div>
                 </section>
 
-                {/* Info Box */}
-                <div className="info-box" style={{ marginTop: '1rem', padding: '1rem', backgroundColor: '#F3F4F6', borderRadius: '12px', color: '#6B7280', fontSize: '0.9rem', textAlign: 'center' }}>
-                    <p>알림 시간과 영양제 목록 수정은<br /><strong>'알림' 탭</strong>에서 카드를 눌러 설정할 수 있습니다.</p>
-                </div>
+
             </div>
         </div>
     );
