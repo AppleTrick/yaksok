@@ -76,19 +76,15 @@ CREATE TABLE IF NOT EXISTS `user` (
 CREATE TABLE IF NOT EXISTS user_product (
                                             id BIGINT AUTO_INCREMENT PRIMARY KEY,
                                             user_id BIGINT NOT NULL,
-                                            target_member_id BIGINT NOT NULL,
                                             product_id BIGINT NOT NULL,
                                             nickname VARCHAR(255),
-    daily_dose INT,
-    dose_amount DECIMAL,
-    dose_unit VARCHAR(255),
-    start_date DATE,
-    end_date DATE,
-    active BOOLEAN,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                                            daily_dose INT,
+                                            dose_amount DECIMAL,
+                                            dose_unit VARCHAR(255),
+                                            active BOOLEAN,
+                                            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT fk_up_user FOREIGN KEY (user_id) REFERENCES `user`(id),
-    CONSTRAINT fk_up_target FOREIGN KEY (target_member_id) REFERENCES `user`(id),
     CONSTRAINT fk_up_product FOREIGN KEY (product_id) REFERENCES product(id)
     ) ENGINE=InnoDB;
 
@@ -211,20 +207,6 @@ SET @idx := (
 );
 SET @sql := IF(@idx = 0,
                'CREATE INDEX idx_user_product_user ON user_product(user_id)',
-               'SELECT 1'
-            );
-PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
-
--- user_product.target_member_id
-SET @idx := (
-    SELECT COUNT(*)
-    FROM INFORMATION_SCHEMA.STATISTICS
-    WHERE table_schema = DATABASE()
-      AND table_name = 'user_product'
-      AND index_name = 'idx_user_product_target'
-);
-SET @sql := IF(@idx = 0,
-               'CREATE INDEX idx_user_product_target ON user_product(target_member_id)',
                'SELECT 1'
             );
 PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;

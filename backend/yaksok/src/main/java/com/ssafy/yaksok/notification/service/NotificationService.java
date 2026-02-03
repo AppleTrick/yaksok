@@ -230,11 +230,17 @@ public class NotificationService {
     //CRUD
     public NotificationResponse createNotification(long userId, NotificationRequest notificationRequest){
 
-        Notification notification = Notification.create(userId, notificationRequest.getUserProductId(),
+        Notification notification = Notification.create(userId, notificationRequest.getUserProductId(), notificationRequest.getNickname(),
                 notificationRequest.getIntakeTime(), notificationRequest.getCategory(),
                 true, false);
 
         notification = notificationRepository.save(notification);
+
+        return notificationConverter.from(notification);
+    }
+
+    public NotificationResponse createNotification(long userId, long userProductId, String nickName, LocalTime inTakeTime, NotificationEnums.Category category){
+        Notification notification = Notification.create(userId, userProductId, nickName, inTakeTime, category, true, false);
 
         return notificationConverter.from(notification);
     }
