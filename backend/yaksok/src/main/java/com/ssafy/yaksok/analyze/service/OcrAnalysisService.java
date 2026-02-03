@@ -2,7 +2,7 @@ package com.ssafy.yaksok.analyze.service;
 
 import com.ssafy.yaksok.analyze.dto.*;
 import com.ssafy.yaksok.global.common.dto.ProductExtractionResponse;
-import com.ssafy.yaksok.global.common.llm.LLMServiceFacade;
+import com.ssafy.yaksok.global.common.llm.prompt.LLMServiceFacade;
 import com.ssafy.yaksok.global.common.llm.prompt.ProductExtractionPrompt;
 import com.ssafy.yaksok.global.common.unit.ConversionResult;
 import com.ssafy.yaksok.global.common.unit.UnitConverter;
