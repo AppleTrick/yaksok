@@ -3,6 +3,8 @@
     bottom: 0;
     left: 0;
     right: 0;
+    margin: 0 auto;
+    /* Center the fixed element */
     height: 80px;
     background-color: var(--background-color);
     display: flex;
@@ -13,6 +15,13 @@
     border-top-right-radius: 20px;
     z-index: 1000;
     padding-bottom: env(safe-area-inset-bottom);
+    width: 100%;
+}
+
+/* Full width tab bar (or constrained if you prefer, but usually full width for full screen apps) */
+.bottom-tab-bar {
+    width: 100%;
+    max-width: 100%;
 }
 
 .tab-item {

@@ -28,24 +28,24 @@ body {
 /* Main Container Shell */
 .camera-container {
     position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+    top: 0;
+    left: 0;
+    transform: none;
+    /* Remove centering transform since we are full width/height */
     width: 100%;
     height: 100%;
-    max-width: 500px;
-    /* Max width for web */
+    /* max-width removed for full-screen web experience */
     background: #000;
     display: flex;
     flex-direction: column;
     overflow: hidden;
     font-family: 'Pretendard', -apple-system, sans-serif;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+    /* box-shadow removed */
 }
 
 @media (max-width: 600px) {
     .camera-container {
-        max-width: 100%;
+        /* max-width already removed */
         border-radius: 0;
     }
 }
@@ -60,17 +60,21 @@ body {
     color: #1a1a1a;
 }
 
-/* Enforced 3:4 Aspect Ratio Container */
+/* Flexible Camera Viewfinder Container */
 .camera-ratio-box {
     position: relative;
     width: 100%;
-    aspect-ratio: 3 / 4;
+    /* aspect-ratio: 3 / 4; Removed to fill screen */
+    flex: 1;
+    /* Fill remaining vertical space */
+    min-height: 0;
+    /* Allow shrinking if needed */
     background: #111;
     overflow: hidden;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+    /* box-shadow removed */
 }
 
 .camera-content-center {
