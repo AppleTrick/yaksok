@@ -70,34 +70,37 @@ messaging.onBackgroundMessage((payload) => {
 self.addEventListener('notificationclick', (event) => {
     console.log('[firebase-messaging-sw.js] 알림 클릭:', event);
 
+    // 클릭된 알림 닫기
     event.notification.close();
 
     const data = event.notification.data || {};
     const action = event.action;
 
     if (action === 'complete') {
-        // 복용 완료 처리
+        // [복용 완료] 버튼 클릭 시
         event.waitUntil(
-            handleMedicationComplete(data).then(() => {
-                // 앱 열기
-                return openApp(data.url || '/');
-            })
+            handleMedicationComplete(data)
+                .then(() => openApp(data.url || '/dev/null')) // 성공 후 앱 열기 (선택)
+                .catch(err => {
+                    console.error('복용 완료 처리 중 오류 발생했지만 앱은 엽니다.', err);
+                    return openApp(data.url || '/');
+                })
         );
     } else if (action === 'snooze') {
-        // 나중에 알림 (5분 후 재알림 요청)
+        // [나중에 알림] 버튼 클릭 시
         event.waitUntil(
-            handleMedicationSnooze(data).then(() => {
-                console.log('5분 후 재알림 예약됨');
-            })
+            handleMedicationSnooze(data)
         );
     } else {
-        // 알림 본문 클릭 시 앱 열기
+        // 알림 본문 클릭 -> 앱 열기
         event.waitUntil(openApp(data.url || '/'));
     }
 });
 
 // 앱 열기 헬퍼 함수
 async function openApp(url) {
+    if (url === '/dev/null') return; // 특정 조건에서 앱 열기 생략 가능
+
     const clientList = await clients.matchAll({ type: 'window', includeUncontrolled: true });
 
     // 이미 열려있는 탭이 있으면 포커스
@@ -113,66 +116,70 @@ async function openApp(url) {
     }
 }
 
-// 복용 완료 처리
+// 1. 복용 완료 API 호출
 async function handleMedicationComplete(data) {
-    console.log('복용 완료 처리:', data);
+    const endpoint = `${self.location.origin}/api/v1/notification/taken`;
+    console.log(`[SW] 복용 완료 요청: POST ${endpoint}`, data);
 
     try {
-        // 백엔드 API 호출 (복용 완료 기록)
-        const response = await fetch(`${self.location.origin}/api/v1/notification/taken`, {
+        const response = await fetch(endpoint, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
             },
+            credentials: 'include', // 쿠키 전송을 위해 필수
             body: JSON.stringify({
-                notificationId: data.notificationId,
+                notificationId: Number(data.notificationId),
             }),
         });
 
-        if (response.ok) {
-            console.log('복용 완료 기록 성공');
-        } else {
-            console.error('복용 완료 기록 실패:', response.status);
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`서버 응답 에러 (${response.status}): ${errorText}`);
         }
+
+        console.log('✅ [SW] 복용 완료 처리 성공');
     } catch (error) {
-        console.error('복용 완료 처리 에러:', error);
+        console.error('❌ [SW] 복용 완료 처리 실패:', error);
+        // 필요 시 재시도 로직이나 사용자에게 실패 알림을 띄우는 로직 추가 가능
+        // self.registration.showNotification('처리 실패', { body: '잠시 후 다시 시도해주세요.' });
     }
 }
 
-// 나중에 알림 처리
+// 2. 나중에 알림 (Snooze) API 호출
 async function handleMedicationSnooze(data) {
-    console.log('나중에 알림 처리:', data);
+    const endpoint = `${self.location.origin}/api/v1/notification/snooze`;
+    console.log(`[SW] 미루기 요청: PUT ${endpoint}`, data);
 
     try {
-        // 백엔드 API 호출 (5분 후 재알림 요청) - 오타 수정: snoose -> snooze
-        const response = await fetch(`${self.location.origin}/api/v1/notification/snooze`, {
+        const response = await fetch(endpoint, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
             },
+            credentials: 'include', // 쿠키 전송을 위해 필수
             body: JSON.stringify({
-                notificationId: data.notificationId,
+                notificationId: Number(data.notificationId),
             }),
         });
 
-        if (response.ok) {
-            console.log('재알림 예약 성공');
-        } else {
-            console.error('재알림 예약 실패:', response.status);
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`서버 응답 에러 (${response.status}): ${errorText}`);
         }
+
+        console.log('✅ [SW] 5분 후 재알림 예약 성공');
     } catch (error) {
-        console.error('재알림 처리 에러:', error);
+        console.error('❌ [SW] 재알림 요청 실패:', error);
     }
 }
 
-
-// Service Worker 설치 이벤트
+// Service Worker 설치 및 활성화
 self.addEventListener('install', (event) => {
     console.log('[firebase-messaging-sw.js] Service Worker 설치됨');
     self.skipWaiting();
 });
 
-// Service Worker 활성화 이벤트
 self.addEventListener('activate', (event) => {
     console.log('[firebase-messaging-sw.js] Service Worker 활성화됨');
     event.waitUntil(clients.claim());
