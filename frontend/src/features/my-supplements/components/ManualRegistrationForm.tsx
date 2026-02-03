@@ -189,36 +189,22 @@ export default function ManualRegistrationForm({ onClose, initialData }: ManualR
 
                     {/* Search Results Dropdown */}
                     {isSearchOpen && (
-                        <div className="search-results-dropdown" style={{
-                            position: 'absolute',
-                            top: '100%',
-                            left: 0,
-                            right: 0,
-                            backgroundColor: 'white',
-                            border: '1px solid #E5E7EB',
-                            borderRadius: '12px',
-                            marginTop: '4px',
-                            maxHeight: '200px',
-                            overflowY: 'auto',
-                            zIndex: 50,
-                            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
-                        }}>
+                        <div className="search-results-dropdown">
                             {searchResults.length > 0 ? (
                                 searchResults.map((item, idx) => (
                                     <div
                                         key={idx}
                                         className="search-result-item"
                                         onClick={() => selectSupplement(item)}
-                                        style={{ padding: '0.75rem 1rem', cursor: 'pointer', borderBottom: '1px solid #F3F4F6' }}
                                     >
-                                        <div style={{ fontWeight: 600, fontSize: '0.95rem' }}>{item.name}</div>
-                                        <div style={{ fontSize: '0.85rem', color: '#6B7280' }}>
+                                        <div className="search-result-name">{item.name}</div>
+                                        <div className="search-result-sub">
                                             {[item.category, item.ingredients].filter(Boolean).join(' | ')}
                                         </div>
                                     </div>
                                 ))
                             ) : (
-                                <div style={{ padding: '1rem', textAlign: 'center', color: '#6B7280', fontSize: '0.9rem' }}>
+                                <div style={{ padding: '1rem', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
                                     검색 결과가 없습니다.<br />
                                     정보를 직접 입력해주세요.
                                 </div>
@@ -229,7 +215,7 @@ export default function ManualRegistrationForm({ onClose, initialData }: ManualR
             )}
 
             {!initialData && (
-                <div className="form-separator" style={{ height: '1px', backgroundColor: '#E5E7EB', margin: '0.5rem 0 1.5rem 0' }}></div>
+                <div className="form-separator"></div>
             )}
 
             <div className="form-group">
@@ -242,6 +228,8 @@ export default function ManualRegistrationForm({ onClose, initialData }: ManualR
                     className="form-input"
                 />
             </div>
+
+            {/* ... Middle fields ... */}
 
             <div className="form-group">
                 <label>종류/카테고리</label>
@@ -305,17 +293,8 @@ export default function ManualRegistrationForm({ onClose, initialData }: ManualR
                         <button
                             key={cat}
                             type="button"
-                            className={`category-btn ${mealCategory === cat ? 'active' : ''}`}
+                            className={`meal-cat-btn ${mealCategory === cat ? 'active' : ''}`}
                             onClick={() => setMealCategory(cat)}
-                            style={{
-                                padding: '10px',
-                                borderRadius: '8px',
-                                border: `1px solid ${mealCategory === cat ? 'var(--primary-color)' : '#E5E7EB'}`,
-                                backgroundColor: mealCategory === cat ? '#FFF7ED' : 'white',
-                                color: mealCategory === cat ? 'var(--primary-color)' : '#6B7280',
-                                fontSize: '0.9rem',
-                                fontWeight: 500
-                            }}
                         >
                             {cat === 'empty_stomach' ? '식전' : cat === 'post_meal' ? '식후' : '취침전'}
                         </button>
