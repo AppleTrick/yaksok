@@ -9,14 +9,20 @@ import com.ssafy.yaksok.notification.entity.NotificationLog;
 import com.ssafy.yaksok.notification.entity.NotificationSetting;
 import com.ssafy.yaksok.notification.infrastructure.fcm.sender.FcmSender;
 import com.ssafy.yaksok.notification.infrastructure.fcm.token.FcmTokenService;
+import com.ssafy.yaksok.notification.infrastructure.fcm.token.UserFcmToken;
 import com.ssafy.yaksok.notification.repository.NotificationLogRepository;
 import com.ssafy.yaksok.notification.repository.NotificationRepository;
 import com.ssafy.yaksok.notification.repository.NotificationSettingRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class NotificationService {
@@ -129,25 +135,85 @@ public class NotificationService {
         return notificationSetting;
     }
 
-    public NotificationLog verifyNotificationLog(long userId, long notificationLogId){
+    public NotificationLog verifyNotificationLog(long userId, long notificationLogId) {
         NotificationLog notificationLog = notificationLogRepository.findById(notificationLogId).orElseThrow(() ->
                 new BusinessException(ErrorCode.NOTIFICATION_LOG_NOT_FOUND));
 
-        if(notificationLog.getUserId() != userId){
+        if (notificationLog.getUserId() != userId) {
             throw new BusinessException(ErrorCode.NOTIFICATION_LOG_NOT_FOUND);
         }
 
         return notificationLog;
     }
 
-    public void sendTestNotificaion(long userId){
-        String token = fcmTokenService.findByUserId(userId).getToken();
+    public void sendTestNotification(long userId) {
+        UserFcmToken tokenEntity = fcmTokenService.findByUserId(userId);
 
-        fcmSender.testSend(
-                token,
+        if (tokenEntity == null) {
+            log.warn("FCM 토큰 없음 userId={}", userId);
+            return;
+        }
+
+        fcmSender.sendWeb(
+                tokenEntity.getToken(),
                 "테스트 알림",
                 "버튼 눌러서 온 알림입니다"
         );
+    }
+
+    @Async("notificationExecutor")
+    public void processNotifications() {
+        LocalDateTime now = LocalDateTime.now();
+
+        List<Notification> notifications =
+                notificationRepository.findSendableNotifications(now);
+
+        for (Notification notification : notifications) {
+
+            if (isQuietTime(notification.getUserId(), now.toLocalTime())) {
+                continue;
+            }
+
+            List<UserFcmToken> tokens =
+                    fcmTokenService.findAllByUserIdAndActiveTrue(notification.getUserId());
+
+            if (tokens.isEmpty()) {
+                continue;
+            }
+
+            for (UserFcmToken token : tokens) {
+                sendByPlatform(token, notification);
+            }
+        }
+    }
+
+    private boolean isQuietTime(Long userId, LocalTime now) {
+        return notificationSettingRepository.findByUserId(userId)
+                .filter(NotificationSetting::getEnabled)
+                .map(setting ->
+                        isBetween(now, setting.getQuietStart(), setting.getQuietEnd())
+                )
+                .orElse(false);
+    }
+
+    private boolean isBetween(LocalTime now, LocalTime start, LocalTime end) {
+        // 같은 날 (예: 22:00 ~ 07:00 같은 케이스 처리)
+        if (start.isBefore(end)) {
+            return !now.isBefore(start) && !now.isAfter(end);
+        }
+        // 자정 넘어가는 경우
+        return !now.isBefore(start) || !now.isAfter(end);
+    }
+
+    private void sendByPlatform(UserFcmToken token, Notification notification) {
+        String title = "복약 알림";
+        String body = "약 복용 시간입니다.";
+
+        switch (token.getPlatform()) {
+            case "WEB" -> fcmSender.sendWeb(token.getToken(), title, body);
+            case "ANDROID" -> fcmSender.sendAndroid(token.getToken(), title, body);
+            case "IOS" -> fcmSender.sendIos(token.getToken(), title, body);
+        }
     }
 
     //CRUD
