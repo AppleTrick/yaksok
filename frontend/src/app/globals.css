@@ -6,7 +6,13 @@
 
   /* Surface/Background Colors */
   --background-color: #FFFFFF;
+  --surface-1: #FFFFFF;
+  /* New: Card Background */
+  --surface-2: #FFFFFF;
+  /* New: Modal/Elevated Background */
+
   --sub-background: #EDF7ED;
+  /* Keeping for legacy compatibility */
   --section-divider: #F6F0DC;
   --highlight-color: #FFDAAB;
   --light-grey: #F5F5F5;
@@ -15,6 +21,10 @@
   /* Text Colors */
   --foreground-color: #1A1A1A;
   --text-muted: #9E9E9E;
+
+  /* Borders */
+  --border-color: rgba(0, 0, 0, 0.08);
+  /* Subtle border for light mode */
 
   /* Contextual/Timeline Colors */
   --morning-color: #F59E0B;
@@ -40,16 +50,38 @@
   --shadow-inner: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background-color: #121212;
-    --foreground-color: #F5F5F5;
-    --sub-background: #1B2B1B;
-    --text-muted: #888888;
-    --light-grey: #2A2A2A;
-    --white: #1E1E1E;
-    --section-divider: #2D2D2A;
-  }
+:root[data-theme='dark'] {
+  /* Material Design Dark Theme Recommendation */
+  --background-color: #121212;
+  --surface-1: #1E1E1E;
+  /* 5% Lighter than bg - Card Level */
+  --surface-2: #252525;
+  /* 7% Lighter than bg - Elevated Level */
+
+  --foreground-color: rgba(255, 255, 255, 0.87);
+  /* High Emphasis */
+  --text-muted: rgba(255, 255, 255, 0.60);
+  /* Medium Emphasis */
+
+  --primary-color: #FFAB91;
+  /* Desaturated Orange (200) for Dark Mode */
+
+  /* Mappings for legacy variables */
+  --sub-background: var(--surface-1);
+  --light-grey: #2C2C2E;
+  --white: var(--surface-1);
+  /* Cards use surface color */
+  --section-divider: #2C2C2E;
+
+  /* Borders & Shadows */
+  --border-color: rgba(255, 255, 255, 0.12);
+  --shadow-sm: none;
+  --shadow-premium: none;
+  --shadow-lg: none;
+
+  /* Glass Overrides */
+  --glass-bg: rgba(30, 30, 30, 0.8);
+  --glass-border: var(--border-color);
 }
 
 * {
