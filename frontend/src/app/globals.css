@@ -93,6 +93,8 @@ a {
   min-height: 100vh;
   background-color: var(--background-color);
   position: relative;
+  z-index: 1;
+  /* Establish base stacking context below floating elements */
 }
 
 /* Desktop/Tablet Adjustments if needed (e.g. max content width for readability) */

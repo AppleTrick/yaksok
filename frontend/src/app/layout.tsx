@@ -58,10 +58,10 @@ export default function RootLayout({
                   {children}
                 </PageTransition>
               </AnimatePresence>
-              <BottomTabBar />
               <NotificationManagerEnhanced />
               <FCMPermissionRequest />
             </AppContainer>
+            <BottomTabBar />
           </ReportProvider>
         </ScheduleProvider>
       </body>

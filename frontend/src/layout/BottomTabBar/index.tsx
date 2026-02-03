@@ -23,12 +23,7 @@ export default function BottomTabBar() {
     ];
 
     return (
-        <motion.nav
-            className="bottom-tab-bar"
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ type: "spring", stiffness: 260, damping: 20 }}
-        >
+        <nav className="bottom-tab-bar">
             {navItems.map((item) => {
                 const isActive = pathname === item.href;
                 return (
@@ -53,6 +48,6 @@ export default function BottomTabBar() {
                     </Link>
                 );
             })}
-        </motion.nav>
+        </nav>
     );
 }
