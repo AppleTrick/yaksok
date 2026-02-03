@@ -5,7 +5,7 @@ import lombok.Getter;
 import java.time.LocalTime;
 
 @Getter
-public class NotificationRequest {
+public class    NotificationRequest {
     long userProductId;
     LocalTime intakeTime;
     NotificationEnums.Category category;
