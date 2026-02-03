@@ -101,7 +101,7 @@ public class NotificationController {
         return ResponseUtil.ok();
     }
 
-    @PostMapping("/verify")
+    @GetMapping("/verify")
     public ResponseEntity<ApiResponse<Void>> checkToken(
             @AuthenticationPrincipal UserPrincipal userPrincipal){
         fcmTokenService.verifyFcmToken(userPrincipal.getUserId());
