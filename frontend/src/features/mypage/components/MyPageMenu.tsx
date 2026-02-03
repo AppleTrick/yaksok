@@ -2,6 +2,7 @@ import React from 'react';
 import { useRouter } from 'next/navigation';
 import { ChevronRight, User, Bell, ShieldCheck } from 'lucide-react';
 import '../styles.css';
+import ThemeToggleItem from './ThemeToggleItem';
 
 export default function MyPageMenu() {
     const router = useRouter();
@@ -29,6 +30,7 @@ export default function MyPageMenu() {
                 </div>
                 <ChevronRight size={18} color="#CBD5E1" />
             </div>
+            <ThemeToggleItem />
         </div>
     );
 }

@@ -287,7 +287,118 @@
 }
 
 .disease-select-item.selected {
+    background-color: var(--primary-color);
     border-color: var(--primary-color);
+    color: white;
+}
+
+
+/* Theme Toggle Switch */
+.theme-toggle-switch {
+    width: 44px;
+    height: 24px;
+    background-color: var(--light-grey);
+    border-radius: 20px;
+    position: relative;
+    transition: background-color 0.3s;
+}
+
+.theme-toggle-switch.dark {
+    background-color: var(--primary-color);
+}
+
+.theme-toggle-circle {
+    width: 20px;
+    height: 20px;
+    background-color: white;
+    border-radius: 50%;
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    transition: transform 0.3s;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.theme-toggle-switch.dark .theme-toggle-circle {
+    transform: translateX(20px);
+}
+
+/* Dark Mode Overrides - Using Semantic Tokens */
+[data-theme='dark'] .profile-section {
+    background: var(--surface-1);
+    border: 1px solid var(--border-color);
+}
+
+[data-theme='dark'] .profile-image-wrapper {
+    background-color: var(--surface-2);
+    border-color: var(--border-color);
+}
+
+[data-theme='dark'] .profile-icon-large {
+    color: var(--primary-color);
+}
+
+[data-theme='dark'] .menu-list,
+[data-theme='dark'] .info-section {
+    background: var(--surface-1);
+    border: 1px solid var(--border-color);
+}
+
+[data-theme='dark'] .menu-item {
+    border-bottom: 1px solid var(--border-color);
+}
+
+[data-theme='dark'] .back-button,
+[data-theme='dark'] .settings-button {
+    background-color: var(--surface-2);
+    color: var(--foreground-color);
+}
+
+[data-theme='dark'] .logout-button-full {
+    background-color: rgba(239, 68, 68, 0.1);
+    /* Dark mode red tint */
+    border-color: rgba(239, 68, 68, 0.2);
+    color: #F87171;
+    /* Lighter red text */
+}
+
+[data-theme='dark'] .logout-button-full:active {
+    background-color: rgba(239, 68, 68, 0.2);
+}
+
+/* Edit Profile Dark Mode Overrides */
+[data-theme='dark'] .form-input,
+[data-theme='dark'] .form-select {
+    background-color: var(--surface-1);
+    border-color: var(--border-color);
+    color: var(--foreground-color);
+}
+
+[data-theme='dark'] .form-input:focus,
+[data-theme='dark'] .form-select:focus {
+    border-color: var(--primary-color);
+}
+
+[data-theme='dark'] .gender-button {
+    background-color: var(--surface-1);
+    border-color: var(--border-color);
+    color: var(--text-muted);
+}
+
+[data-theme='dark'] .gender-button.active {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    color: white;
+}
+
+[data-theme='dark'] .disease-select-item {
+    background-color: var(--surface-1);
+    border-color: var(--border-color);
+    color: var(--foreground-color);
+}
+
+[data-theme='dark'] .disease-select-item.selected {
     background-color: var(--sub-background);
+    border-color: var(--primary-color);
     color: var(--primary-color);
 }
