@@ -16,6 +16,7 @@ export default function BottomTabBar() {
         return null;
     }
 
+
     const navItems = [
         { href: '/', icon: Home, label: '홈' },
         { href: '/my-supplements', icon: Pill, label: '내 영양제' },
