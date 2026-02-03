@@ -9,6 +9,7 @@ const withPWA = withPWAInit({
   disable: process.env.NODE_ENV === "development",
   workboxOptions: {
     disableDevLogs: true,
+    importScripts: ["/firebase-messaging-sw.js"], // PWA SW에 FCM 로직 통합
   },
 });
 
