@@ -4,6 +4,7 @@ import com.ssafy.yaksok.global.exception.BusinessException;
 import com.ssafy.yaksok.global.exception.ErrorCode;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -23,18 +24,18 @@ public class FcmTokenService {
 
     //CRUD
     @Transactional
-    public void createFcmToken(long userId, FcmTokenRequest request){
-
-        UserFcmToken token = fcmTokenRepository.findByUserId(userId)
-                .orElseGet(() -> fcmTokenRepository.save(
-                        UserFcmToken.createToken(
-                                userId,
-                                request.getFcmToken(),
-                                request.getDeviceType()
+    public void createOrUpdateFcmToken(long userId, FcmTokenRequest request) {
+        fcmTokenRepository.findByUserIdAndPlatform(userId, request.getDeviceType())
+                .ifPresentOrElse(
+                        token -> token.updateToken(request.getFcmToken()),
+                        () -> fcmTokenRepository.save(
+                                UserFcmToken.createToken(
+                                        userId,
+                                        request.getFcmToken(),
+                                        request.getDeviceType()
+                                )
                         )
-                ));
-
-        token.updateToken(request.getFcmToken());
+                );
     }
 
     public List<UserFcmToken> findAllByUserIdAndActiveTrue(long userId){
