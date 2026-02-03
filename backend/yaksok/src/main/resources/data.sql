@@ -27,9 +27,9 @@ INSERT INTO product_ingredient (product_id, ingredient_id, ingredient_amount, am
 -- ========================================
 INSERT INTO `user` (email, password, name, role, oauth_provider, oauth_id, status, age_group, gender)
 VALUES
-    ('user1@test.com', 'encoded_pw1', '홍길동', 'USER', NULL, NULL, 'ACTIVE', '20s', 'M'),
-    ('user2@test.com', 'encoded_pw2', '김영희', 'USER', NULL, NULL, 'ACTIVE', '30s', 'F'),
-    ('admin@test.com', 'encoded_pw3', '관리자', 'ADMIN', NULL, NULL, 'ACTIVE', '40s', 'M');
+    ('user1@test.com', 'encoded_pw1', '홍길동', 'USER', NULL, NULL, 'ACTIVE', 'TWENTY', 'MALE'),
+    ('user2@test.com', 'encoded_pw2', '김영희', 'USER', NULL, NULL, 'ACTIVE', 'THIRTY', 'FEMALE'),
+    ('admin@test.com', 'encoded_pw3', '관리자', 'ADMIN', NULL, NULL, 'ACTIVE', 'FORTY', 'MALE');
 
 -- ========================================
 -- user_product
