@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import com.ssafy.yaksok.analyze.service.AnalyzeService;
 import com.ssafy.yaksok.analyze.dto.SupplementAnalysisResponse;
+import com.ssafy.yaksok.security.principal.UserPrincipal;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 
 /**
  * 영양제 분석 컨트롤러
@@ -37,8 +39,8 @@ public class AnalyzeController {
     @PostMapping
     public ResponseEntity<ApiResponse<SupplementAnalysisResponse>> analyzeSupplement(
             @RequestParam("file") MultipartFile file,
-            @RequestParam("userId") Long userId // [수정] userId 파라미터 추가
-    ) {
+            @AuthenticationPrincipal UserPrincipal principal) {
+        Long userId = principal.getUserId();
         log.info("영양제 분석 API 호출됨: User ID={}, File={}", userId, file.getOriginalFilename());
 
         SupplementAnalysisResponse response = analyzeService.analyzeSupplement(file, userId);
