@@ -4,7 +4,7 @@
     left: 50%;
     transform: translateX(-50%);
     z-index: 1000;
-    max-width: 500px;
+    max-width: 480px;
     width: calc(100% - 40px);
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     border-radius: 16px;
