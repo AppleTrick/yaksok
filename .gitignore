@@ -28,7 +28,7 @@ public/swe-worker-*.js.map
 .settings/
 
 # Environment
-.env
+backend/yaksok/.env
 .env.local
 .env.*
 
