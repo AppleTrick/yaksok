@@ -22,8 +22,11 @@ public class Notification {
     @Column(name="user_id", nullable = false)
     private Long userId;
 
-    @Column(name = "user_product_id", nullable = false)
+    @Column(name = "userProductId", nullable = false)
     private Long userProductId;
+
+    @Column(name="nickname", nullable = false)
+    private String nickname;
 
     @Column(name = "intake_time")
     private LocalTime intakeTime;
@@ -47,6 +50,7 @@ public class Notification {
     public static Notification create(
             long userId,
             long userProductId,
+            String nickname,
             LocalTime intakeTime,
             NotificationEnums.Category category,
             boolean enabled,
@@ -55,6 +59,7 @@ public class Notification {
         Notification n = new Notification();
         n.userId = userId;
         n.userProductId = userProductId;
+        n.nickname = nickname;
         n.intakeTime = intakeTime;
         n.category = category;
         n.enabled = enabled;
