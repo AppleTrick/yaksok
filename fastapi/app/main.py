@@ -76,92 +76,7 @@ def read_root():
 
 
 
-@app.post("/analyze")
-async def analyze_image_endpoint(file: UploadFile = File(...)):
-    """
-    영양제 이미지 종합 분석 엔드포인트
-    
-    분석 순서:
-    1. YOLO로 영양제 객체 탐지
-    2. OCR로 텍스트 추출
-    
-    Returns:
-        분석 결과 (YOLO 탐지 결과 + OCR 텍스트)
-    """
-    # 이미지 형식 검증
-    if not file.content_type or not file.content_type.startswith("image/"):
-        raise HTTPException(status_code=400, detail="이미지 파일만 업로드 가능합니다")
-    
-    try:
-        image_bytes = await file.read()
-        
-        # CPU 집약적 작업을 스레드풀에서 실행 (비동기 블로킹 방지)
-        result = await run_in_threadpool(analyze_supplement, image_bytes)
-        
-        return result
-        
-    except Exception as e:
-        print(f"[에러] 분석 중 오류 발생: {e}")
-        raise HTTPException(status_code=500, detail=f"분석 중 오류가 발생했습니다: {str(e)}")
 
-
-from app.services.vision_service import analyze_with_vision_api
-from app.services.llm_service import extract_product_name_with_llm
-
-@app.post("/v1/analyze2")
-async def analyze_image_vision_api(file: UploadFile = File(...)):
-    """
-    Google Cloud Vision API 기반 영양제 분석 엔드포인트
-    
-    [Logic Workflow]
-    1. Object Localization: 'Bottle', 'Container', 'Packaged goods' 탐지
-    2. Image Cropping: 탐지된 객체 영역 Crop
-    3. Individual OCR: 각 Crop 이미지에 대해 Document Text Detection 수행
-    4. LLM Refinement: 전체 OCR 텍스트에서 Gemini를 사용하여 정확한 제품명 추출
-    
-    Returns:
-        List[Dict]: 각 객체별 분석 결과 리스트 (ID, 신뢰도, 제품명, 전체 텍스트)
-    """
-    if not file.content_type or not file.content_type.startswith("image/"):
-        raise HTTPException(status_code=400, detail="이미지 파일만 업로드 가능합니다")
-        
-    try:
-        image_bytes = await file.read()
-        
-        # 1. Vision API 분석 (객체 탐지 + 크롭 + OCR)
-        raw_results = await analyze_with_vision_api(image_bytes)
-        
-        # 2. LLM(Gemini)을 이용한 제품명 정제 (병렬 처리)
-        # 각 객체별로 추출된 전체 텍스트를 LLM에 전달하여 제품명만 추출
-        llm_tasks = [extract_product_name_with_llm(item.get("full_text", "")) for item in raw_results]
-        llm_product_names = await asyncio.gather(*llm_tasks)
-        
-        # 3. Java Backend DTO 구조에 맞게 최종 결과 조합
-        analysis_results = []
-        for i, item in enumerate(raw_results):
-            heuristic_name = item.get("product_name", "") # 기존의 크기 기반 추출 결과
-            llm_name = llm_product_names[i]
-            
-            # LLM 결과가 있으면 사용하고, 없으면 기존 Heuristic 결과 유지
-            final_product_name = llm_name if llm_name else heuristic_name
-            
-            analysis_results.append({
-                "box": item.get("box", [0, 0, 0, 0]),
-                "confidence": item.get("score", 0.0),
-                "product_name": final_product_name,
-                "ocr_text": item.get("full_text", "")
-            })
-            
-        return {
-            "success": True,
-            "message": "Vision API & LLM Analysis Successful",
-            "step": "VISION_API_WITH_LLM",
-            "analysis_results": analysis_results
-        }
-        
-    except Exception as e:
-        print(f"[에러] Vision API 분석 중 오류 발생: {e}")
-        raise HTTPException(status_code=500, detail=f"Vision API 분석 중 오류가 발생했습니다: {str(e)}")
 
 
 # ============================================================
@@ -407,7 +322,7 @@ async def read_test_page():
                 formData.append('file', file);
                 
                 try {
-                    const response = await fetch('/analyze', { method: 'POST', body: formData });
+                    const response = await fetch('/ai/v1/analyze', { method: 'POST', body: formData });
                     const data = await response.json();
                     
                     renderResults(data);
@@ -844,8 +759,8 @@ async def read_test_page_v2():
                 formData.append('file', file);
                 
                 try {
-                    // Update URL to /v1/analyze2
-                    const response = await fetch('/v1/analyze2', {
+                    // Update URL to /ai/v1/analyze2
+                    const response = await fetch('/ai/v1/analyze2', {
                         method: 'POST',
                         body: formData
                     });
@@ -917,8 +832,8 @@ async def read_test_page_v2():
 # 라우터 등록 및 서버 실행
 # ============================================================
 
-# 기존 API 라우터 등록 (하위 호환성)
-app.include_router(api_router, prefix="/v1")
+# /ai/v1 접두사로 API 라우터 일괄 등록
+app.include_router(api_router, prefix="/ai/v1")
 
 if __name__ == "__main__":
     import uvicorn
