@@ -76,6 +76,7 @@ def read_root():
 
 
 
+
 @app.post("/analyze")
 async def analyze_image_endpoint(file: UploadFile = File(...)):
     """
