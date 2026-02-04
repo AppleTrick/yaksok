@@ -56,6 +56,8 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+    touch-action: pan-y;
+    /* Prevent horizontal scroll/swipe on mobile */
 }
 
 .picker-column::-webkit-scrollbar {
@@ -74,16 +76,22 @@
     scroll-snap-align: center;
     scroll-snap-stop: always;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.1s ease-out;
     font-weight: 400;
 }
 
 .picker-item.selected {
-    color: var(--foreground-color);
+    color: #000000;
+    /* Force black for contrast */
     font-weight: 700;
     font-size: 1.5rem;
     transform: scale(1.1);
     /* 강조 효과 */
+}
+
+/* Optimization: Instant feedback during drag */
+.picker-columns.dragging .picker-item {
+    transition: none !important;
 }
 
 .picker-spacer {
