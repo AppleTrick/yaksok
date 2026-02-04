@@ -37,13 +37,25 @@ export function useFCM(): UseFCMReturn {
     const [messaging, setMessaging] = useState<Messaging | null>(null);
 
     // 3. 토큰 발급 및 저장 헬퍼 함수
+    const getDeviceType = (): 'web' | 'android' | 'ios' => {
+        if (typeof window === 'undefined') return 'web';
+        const ua = navigator.userAgent.toLowerCase();
+        if (ua.includes('android')) return 'android';
+        if (ua.includes('iphone') || ua.includes('ipad') || ua.includes('ipod')) return 'ios';
+        return 'web';
+    };
+
     const fetchAndSaveToken = async (msgInstance: Messaging) => {
         try {
             const token = await getFCMToken(msgInstance);
             if (token) {
                 setFcmToken(token);
                 localStorage.setItem('fcmToken', token);
-                await saveFCMToken(token, 'web');
+
+                const deviceType = getDeviceType();
+                console.log(`📱 Device Type Detected: ${deviceType}`);
+
+                await saveFCMToken(token, deviceType);
                 console.log('✅ FCM 토큰 동기화 완료:', token);
             } else {
                 console.warn('⚠️ FCM 토큰을 가져오지 못했습니다.');
