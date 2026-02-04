@@ -244,6 +244,7 @@ public class NotificationService {
 
     public void createNotification(long userId, long userProductId, String nickName, LocalTime inTakeTime, NotificationEnums.Category category){
         Notification notification = Notification.create(userId, userProductId, nickName, inTakeTime, LocalTime.now(), category, true, false);
+        notificationRepository.save(notification);
     }
 
     public void createNotificationSetting(long userId, NotificationSettingRequest request){
