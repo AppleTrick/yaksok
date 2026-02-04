@@ -7,7 +7,17 @@ import axiosInstance from '@/lib/axios';
  */
 export async function saveFCMToken(token: string, deviceType: 'web' | 'android' | 'ios' = 'web') {
     try {
-        const payload = { fcmToken: token };
+        const DEVICE_TYPE_MAP = {
+            'web': 'WEB',
+            'android': 'ANDROID',
+            'ios': 'IOS'
+        };
+
+        const payload = {
+            fcmToken: token,
+            deviceType: DEVICE_TYPE_MAP[deviceType]
+        };
+
         console.log('📤 FCM 토큰 전송 Payload:', payload);
         const response = await axiosInstance.post('/api/v1/notification/token', payload);
         console.log('FCM 토큰 저장 완료:', token);
