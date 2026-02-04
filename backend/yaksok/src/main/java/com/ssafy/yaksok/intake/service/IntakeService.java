@@ -40,17 +40,6 @@ public class IntakeService {
     private boolean isActiveOnDate(UserProduct up, LocalDate date) {
         // 비활성화된 제품 제외
         if (!up.isActive()) return false;
-
-        // 시작일 전이면 제외
-        if (up.getStartDate() != null && date.isBefore(up.getStartDate())) {
-            return false;
-        }
-
-        // 종료일 후면 제외
-        if (up.getEndDate() != null && date.isAfter(up.getEndDate())) {
-            return false;
-        }
-
         return true;
     }
 
