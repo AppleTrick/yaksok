@@ -4,10 +4,12 @@ import React, { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import LoginForm from '@/features/login/components/LoginForm';
 import '@/features/login/styles.css';
+import { useRouter } from 'next/navigation';
 
 function LoginContent() {
     const [isLoading, setIsLoading] = useState(false);
     const searchParams = useSearchParams();
+    const router = useRouter();
 
     useEffect(() => {
         const kakaoCode = searchParams.get('code');
@@ -24,7 +26,7 @@ function LoginContent() {
 
             if (result.success) {
                 console.log('Login successful:', result);
-                window.location.href = '/';
+                router.push('/');
             } else {
                 alert(result.error || '로그인에 실패했습니다.');
             }
