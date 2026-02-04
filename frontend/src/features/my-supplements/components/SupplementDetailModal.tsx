@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { Pill, Clock, AlertCircle, ChevronRight, BarChart2, Bell } from 'lucide-react';
+import { Pill, Clock, AlertCircle, ChevronRight, BarChart2 } from 'lucide-react';
+import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Cell, CartesianGrid } from 'recharts';
 import { MedicationItem, Cycle, MealCategory } from '@/features/notification/types';
 import Modal from '@/components/Modal';
-import NutrientProgressBar from './NutrientProgressBar';
+// import NutrientProgressBar from './NutrientProgressBar'; // Replaced by Chart
 import TimePicker from '@/components/TimePicker';
-import DaySelector from '@/components/DaySelector';
-import ToggleSwitch from '@/components/ToggleSwitch';
+// import DaySelector from '@/components/DaySelector'; // Removed from UI
+// import ToggleSwitch from '@/components/ToggleSwitch';
 import { useScheduleContext } from '@/features/notification/contexts/ScheduleContext';
+import { COLORS } from '@/constants/colors';
 import '../styles.css';
 
 interface SupplementDetailModalProps {
@@ -20,7 +22,12 @@ interface SupplementDetailModalProps {
     onSave?: () => void; // 저장 후 호출될 콜백
 }
 
-import { COLORS } from '@/constants/colors';
+// Extended Color Palette locally if needed (or assume COLORS has them, if not falling back)
+const CHART_COLORS = {
+    primary: COLORS.primary,
+    secondary: '#FED7AA', // Orange-200 or similar
+    text: '#4B5563', // Gray-600
+};
 
 const SupplementDetailModal: React.FC<SupplementDetailModalProps> = ({
     isOpen,
@@ -222,32 +229,16 @@ const SupplementDetailModal: React.FC<SupplementDetailModalProps> = ({
                         <div style={{ display: 'flex', gap: '8px', width: '100%', justifyContent: 'center' }}>
                             <input
                                 type="text"
-                                value={efficacy}
-                                onChange={(e) => setEfficacy(e.target.value)}
-                                placeholder="효능 (예: 피로회복)"
-                                style={{ ...inputStyle, width: '40%' }}
+                                value={name}
+                                onChange={(e) => setName(e.target.value)}
+                                placeholder="영양제 별칭 (예: 내 비타민)"
+                                style={{ ...inputStyle, width: '80%' }}
                             />
-                            <input
-                                type="text"
-                                value={category}
-                                onChange={(e) => setCategory(e.target.value)}
-                                placeholder="카테고리 (예: 비타민)"
-                                style={{ ...inputStyle, width: '40%' }}
-                            />
+                            {/* Category & Efficacy Inputs Removed from UI */}
                         </div>
                     ) : (
                         <>
-                            {item.efficacy && (
-                                <span className="modal-badge efficacy">{item.efficacy}</span>
-                            )}
-                            {item.category && (
-                                <span className="modal-badge category">{item.category}</span>
-                            )}
-                            {!item.efficacy && !item.category && (
-                                <span className="modal-badge" style={{ backgroundColor: COLORS.lightGray, color: COLORS.mediumGray }}>
-                                    상세 정보 없음
-                                </span>
-                            )}
+                            {/* Category & Efficacy Badges Removed from UI */}
                         </>
                     )}
                 </div>
@@ -260,29 +251,76 @@ const SupplementDetailModal: React.FC<SupplementDetailModalProps> = ({
                     <span>영양소 분석</span>
                 </div>
                 {/* Only showing this in read-only or always? User didn't ask to edit this specifically. Keeping as is. */}
-                <div className="nutrient-chart-container" style={{ padding: '0.5rem 0' }}>
+                <div className="nutrient-chart-container" style={{ padding: '0.5rem 0', height: '220px', width: '100%' }}>
                     {(() => {
-                        let mockNutrients = [];
-                        // Fallback logic based on name if category edited
-                        const searchTarget = category || name;
-                        if (searchTarget?.includes('오메가')) {
-                            mockNutrients = [
-                                { label: 'EPA+DHA', current: 1000, max: 1000, unit: 'mg' },
-                                { label: '비타민E', current: 11, max: 11, unit: 'mgTE' }
-                            ];
-                        } else if (searchTarget?.includes('비타민')) {
-                            mockNutrients = [
-                                { label: '비타민D', current: 50, max: 10, unit: 'μg' },
-                                { label: '비타민C', current: 1000, max: 2000, unit: 'mg' }
-                            ];
-                        } else {
-                            mockNutrients = [
-                                { label: '주성분 함량', current: 100, max: 200, unit: 'mg' }
-                            ];
+                        // 1. Parsing Logic
+                        const parseIngredients = (text: string) => {
+                            if (!text) return [];
+                            // Regex: Match "Name NumberUnit" pattern roughly
+                            // e.g. "비타민C 1000mg", "마그네슘 200 mg"
+                            // Group 1: Name, Group 2: Number, Group 3: Unit
+                            const regex = /([가-힣a-zA-Z\s]+?)\s*(\d+(?:\.\d+)?)\s*([a-zA-Zμµg]+)/g;
+                            const matches = [];
+                            let match;
+                            while ((match = regex.exec(text)) !== null) {
+                                matches.push({
+                                    name: match[1].trim(),
+                                    amount: parseFloat(match[2]),
+                                    unit: match[3],
+                                });
+                            }
+                            // If regex fails (simple text), return specific default?
+                            // Or try comma separation
+                            if (matches.length === 0) {
+                                // Fallback: split by comma, try to extract number
+                                const parts = text.split(',');
+                                parts.forEach(part => {
+                                    const subRegex = /([^\d]+)\s*(\d+)/;
+                                    const subMatch = subRegex.exec(part);
+                                    if (subMatch) {
+                                        matches.push({
+                                            name: subMatch[1].trim(),
+                                            amount: parseFloat(subMatch[2]),
+                                            unit: 'mg' // Default assumption if missing
+                                        })
+                                    }
+                                });
+                            }
+                            return matches.slice(0, 5); // Limit to top 5
+                        };
+
+                        const chartData = parseIngredients(item.ingredients || '');
+
+                        if (chartData.length === 0) {
+                            return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%', color: COLORS.mediumGray, fontSize: '0.9rem' }}>분석된 영양 성분 데이터가 없습니다.</div>;
                         }
-                        return mockNutrients.map((n, i) => (
-                            <NutrientProgressBar key={i} label={n.label} current={n.current} max={n.max} unit={n.unit} />
-                        ));
+
+                        return (
+                            <ResponsiveContainer width="100%" height="100%">
+                                <BarChart data={chartData} layout="vertical" margin={{ top: 5, right: 30, left: 40, bottom: 5 }}>
+                                    <CartesianGrid strokeDasharray="3 3" horizontal={false} />
+                                    <XAxis type="number" hide />
+                                    <YAxis
+                                        dataKey="name"
+                                        type="category"
+                                        width={80}
+                                        tick={{ fontSize: 12, fill: CHART_COLORS.text }}
+                                    />
+                                    <Tooltip
+                                        cursor={{ fill: 'transparent' }}
+                                        contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.15)' }}
+                                        formatter={(value, name, props) => [`${value}${props.payload.unit}`, props.payload.name]}
+                                    />
+                                    <Bar dataKey="amount" fill={CHART_COLORS.primary} radius={[0, 4, 4, 0]} barSize={20}>
+                                        {
+                                            chartData.map((entry, index) => (
+                                                <Cell key={`cell-${index}`} fill={index % 2 === 0 ? CHART_COLORS.primary : CHART_COLORS.secondary} />
+                                            ))
+                                        }
+                                    </Bar>
+                                </BarChart>
+                            </ResponsiveContainer>
+                        );
                     })()}
                     <div className="analysis-note" style={{ fontSize: '0.8rem', color: COLORS.mediumGray, backgroundColor: COLORS.lightGray, padding: '12px', borderRadius: '8px', marginTop: '8px' }}>
                         <p>💡 <b>알고 계셨나요?</b></p>
@@ -384,11 +422,11 @@ const SupplementDetailModal: React.FC<SupplementDetailModalProps> = ({
                         </div>
                     </div>
 
-                    {/* Day Selection (Moved Above Time) */}
-                    <div className="setting-group" style={{ marginBottom: '20px' }}>
+                    {/* Day Selection Removed from UI (Default to All Days) */}
+                    {/* <div className="setting-group" style={{ marginBottom: '20px' }}>
                         <label style={{ fontSize: '0.9rem', fontWeight: 600, color: COLORS.black, marginBottom: '8px', display: 'block' }}>반복 요일</label>
                         <DaySelector value={selectedDays} onChange={setSelectedDays} disabled={!isEditing} />
-                    </div>
+                    </div> */}
 
                     {/* Time Picker */}
                     <div className="setting-group" style={{ marginBottom: 0 }}>
