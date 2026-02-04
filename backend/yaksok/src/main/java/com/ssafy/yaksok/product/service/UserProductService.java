@@ -18,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 
@@ -45,28 +46,44 @@ public class UserProductService {
             return List.of();
         }
 
-        // 2. productId 목록 추출
+        // 2. productId 목록 추출 (null 포함)
         List<Long> productIds = userProducts.stream()
                 .map(UserProductResponse::getProductId)
                 .toList();
 
-        // 3. 해당 영양제들의 성분을 한 번에 조회 (N+1 방지)
-        List<ProductIngredientResponse> ingredients =
-                productIngredientService.findIngredientsByProductIds(productIds);
+        // 3. productId가 null이 아닌 것만 성분 조회 대상으로 사용
+        List<Long> validProductIds = productIds.stream()
+                .filter(Objects::nonNull)
+                .distinct()
+                .toList();
 
-        // 4. productId 기준으로 그룹핑
-        Map<Long, List<ProductIngredientResponse>> ingredientMap =
-                ingredients.stream()
-                        .collect(Collectors.groupingBy(
-                                ProductIngredientResponse::getProductId
-                        ));
+        // 4. productId → 성분 맵 구성
+        Map<Long, List<ProductIngredientResponse>> ingredientMap;
 
-        // 5. userProducts에 성분 주입
-        userProducts.forEach(up ->
+        if (!validProductIds.isEmpty()) {
+            List<ProductIngredientResponse> ingredients =
+                    productIngredientService.findIngredientsByProductIds(validProductIds);
+
+            ingredientMap = ingredients.stream()
+                    .collect(Collectors.groupingBy(
+                            ProductIngredientResponse::getProductId
+                    ));
+        } else {
+            ingredientMap = Map.of();
+        }
+
+        // 5. userProducts에 성분 주입 (null은 null로 유지)
+        userProducts.forEach(up -> {
+            if (up.getProductId() == null) {
+                // 셀프 등록 영양제 → product 자체가 없음
+                up.setIngredients(null);
+            } else {
+                // product는 있으나 성분이 없을 수도 있음
                 up.setIngredients(
                         ingredientMap.getOrDefault(up.getProductId(), List.of())
-                )
-        );
+                );
+            }
+        });
 
         log.info("사용자 영양제 조회 완료: userId={}, count={}", userId, userProducts.size());
         return userProducts;
