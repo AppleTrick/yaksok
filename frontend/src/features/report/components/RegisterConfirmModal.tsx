@@ -25,7 +25,7 @@ export default function RegisterConfirmModal({ isOpen, products, onConfirm, onCa
                     <X size={20} />
                 </button>
                 <div className="premium-modal-icon-bg">
-                    <Pill size={32} color="#FF5722" />
+                    <Pill size={32} style={{ color: 'var(--report-primary)' }} />
                 </div>
                 <h3 className="premium-modal-title">영양제 등록</h3>
                 <p className="premium-modal-desc">
