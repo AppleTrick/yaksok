@@ -10,21 +10,23 @@ import java.util.Optional;
 
 public interface UserProductRepository extends JpaRepository<UserProduct, Long> {
     @Query("""
-        select new com.ssafy.yaksok.product.dto.UserProductResponse(
-            up.id,
-            p.id,
-            p.prdlstNm,
-            up.nickname,
-            up.dailyDose,
-            up.doseAmount,
-            up.doseUnit,
-            up.active
-        )
-        from UserProduct up
-        join up.product p
-        where up.user.id = :userId
-    """)
+                select new com.ssafy.yaksok.product.dto.UserProductResponse(
+                    up.id,
+                    p.id,
+                    p.prdlstNm,
+                    up.nickname,
+                    up.dailyDose,
+                    up.doseAmount,
+                    up.doseUnit,
+                    up.active
+                )
+                from UserProduct up
+                join up.product p
+                where up.user.id = :userId
+            """)
     List<UserProductResponse> findUserProducts(Long userId);
 
     Optional<UserProduct> findByUserIdAndNickname(Long userId, String nickname);
+
+    List<UserProduct> findAllByUserId(Long userId);
 }
