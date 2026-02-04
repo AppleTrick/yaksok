@@ -36,7 +36,7 @@ public class LLMServiceFacade {
             Map<String, Object> parameters,
             Class<T> responseType
     ) {
-        return query(template, parameters, responseType, 0.1);
+        return query(template, parameters, responseType, 1);
     }
 
     /**
@@ -103,7 +103,7 @@ public class LLMServiceFacade {
             Class<T> responseType,
             int maxRetries
     ) {
-        return queryWithRetry(template, parameters, responseType, 0.1, maxRetries);
+        return queryWithRetry(template, parameters, responseType, 1, maxRetries);
     }
 
     /**
@@ -151,9 +151,6 @@ public class LLMServiceFacade {
         );
     }
 
-    /**
-     * 안전한 LLM 호출 (예외 발생 시 null 반환)
-     */
     public <T> T querySafe(
             PromptTemplate template,
             Map<String, Object> parameters,
