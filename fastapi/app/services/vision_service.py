@@ -17,8 +17,21 @@ from PIL import Image
 
 from dotenv import load_dotenv
 
-# .env 파일 로드
-load_dotenv()
+# .env 파일 절대 경로 로드
+# 현재 파일(vision_service.py) 위치: fastapi/app/services/vision_service.py
+# .env 위치: fastapi/.env
+SERVICE_DIR = os.path.dirname(os.path.abspath(__file__))
+APP_DIR = os.path.dirname(SERVICE_DIR)
+FASTAPI_ROOT = os.path.dirname(APP_DIR)
+ENV_PATH = os.path.join(FASTAPI_ROOT, ".env")
+
+if os.path.exists(ENV_PATH):
+    load_dotenv(ENV_PATH)
+    print(f"[Vision Service] .env 로드 성공: {ENV_PATH}")
+else:
+    # 기본 CWD 로드 시도
+    load_dotenv()
+    print(f"[Vision Service] ⚠️ .env 파일을 찾을 수 없어 기본 설정을 시도합니다: {ENV_PATH}")
 
 # Google Cloud Vision Credential 설정
 # 1. 환경 변수에서 경로를 가져오거나 기본 파일명 사용
@@ -26,17 +39,19 @@ CREDENTIAL_ENV = os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 if CREDENTIAL_ENV:
-    # 절대 경로가 아니면 BASE_DIR 기준으로 변환
+    # 절대 경로가 아니면 FASTAPI_ROOT 기준으로 변환
     if not os.path.isabs(CREDENTIAL_ENV):
-        CREDENTIAL_PATH = os.path.join(BASE_DIR, CREDENTIAL_ENV)
+        CREDENTIAL_PATH = os.path.normpath(os.path.join(FASTAPI_ROOT, CREDENTIAL_ENV))
     else:
         CREDENTIAL_PATH = CREDENTIAL_ENV
     
     if os.path.exists(CREDENTIAL_PATH):
         os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = CREDENTIAL_PATH
-        print(f"[Vision Service] 설정된 키 파일로 인증 시도: {CREDENTIAL_PATH}")
+        print(f"[Vision Service] ✅ 인증 키 파일 확인됨: {CREDENTIAL_PATH}")
     else:
-        print(f"[Vision Service] ⚠️ 지정된 키 파일을 찾을 수 없습니다: {CREDENTIAL_PATH}")
+        print(f"[Vision Service] ❌ 인증 키 파일을 찾을 수 없습니다: {CREDENTIAL_PATH}")
+else:
+    print("[Vision Service] ⚠️ GOOGLE_APPLICATION_CREDENTIALS 환경 변수가 설정되지 않았습니다.")
 
 # Google Cloud Vision 클라이언트 초기화
 try:
@@ -45,7 +60,10 @@ try:
         print("[Vision Service] ✅ Vision API 클라이언트 초기화 성공")
 except Exception as e:
     vision_client = None
-    print(f"[Vision Service] ❌ Vision API 클라이언트 초기화 실패: {e}")
+    # 에러 메시지 상세 출력 (Traceback 포함하여 출력하기 위해 print 대신 f-string 사용)
+    print(f"[Vision Service] ❌ Vision API 클라이언트 초기화 실패: {type(e).__name__}: {str(e)}")
+    print(f"[Vision Service] 현재 CWD: {os.getcwd()}")
+    print(f"[Vision Service] 인증 환경 변수: {os.getenv('GOOGLE_APPLICATION_CREDENTIALS')}")
 
 
 # 탐지할 영양제 관련 객체 클래스 목록
@@ -193,7 +211,9 @@ def analyze_logic(image_content: bytes) -> List[Dict[str, Any]]:
 
     # 2. Object Localization
     image = vision.Image(content=image_content)
+    print(f"[Vision Service] Object Localization API 호출 중...")
     objects = vision_client.object_localization(image=image).localized_object_annotations
+    print(f"[Vision Service] ✅ 객체 탐지 응답 수신 완료")
     
     print(f"[Vision Service] 탐지된 전체 객체 수: {len(objects)}")
     for obj in objects:

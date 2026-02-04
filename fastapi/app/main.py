@@ -93,11 +93,15 @@ async def analyze_image_endpoint(file: UploadFile = File(...)):
         raise HTTPException(status_code=400, detail="이미지 파일만 업로드 가능합니다")
     
     try:
+        print(f"\n[API] === /analyze 요청 수신 ===")
+        print(f"[API] 파일명: {file.filename}, 컨텐츠 타입: {file.content_type}")
+        
         image_bytes = await file.read()
         
         # CPU 집약적 작업을 스레드풀에서 실행 (비동기 블로킹 방지)
         result = await run_in_threadpool(analyze_supplement, image_bytes)
         
+        print(f"[API] === /analyze 처리 완료 ===")
         return result
         
     except Exception as e:
@@ -126,6 +130,9 @@ async def analyze_image_vision_api(file: UploadFile = File(...)):
         raise HTTPException(status_code=400, detail="이미지 파일만 업로드 가능합니다")
         
     try:
+        print(f"\n[API] === /v1/analyze2 요청 수신 (Vision API) ===")
+        print(f"[API] 파일명: {file.filename}, 컨텐츠 타입: {file.content_type}")
+        
         image_bytes = await file.read()
         
         # 1. Vision API 분석 (객체 탐지 + 크롭 + OCR)
