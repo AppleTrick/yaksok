@@ -28,5 +28,7 @@ public interface UserProductRepository extends JpaRepository<UserProduct, Long> 
 
     Optional<UserProduct> findByUserIdAndNickname(Long userId, String nickname);
 
+    boolean existsByUserIdAndNickname(Long userId, String nickname);
+
     List<UserProduct> findAllByUserId(Long userId);
 }

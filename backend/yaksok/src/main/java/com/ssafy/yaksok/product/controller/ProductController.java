@@ -40,12 +40,12 @@ public class ProductController {
     /**
      * 영양제 상세 조회
      * GET /api/v1/products/{productId}
-     */
-    @GetMapping("/{productId}")
-    public ResponseEntity<ApiResponse<ProductDetailResponse>> getProductDetail(
-            @PathVariable Long productId) {
-        log.info("영양제 상세 조회: productId={}", productId);
-        ProductDetailResponse response = productService.getProductDetail(productId);
+                */
+        @GetMapping("/{productId}")
+        public ResponseEntity<ApiResponse<ProductDetailResponse>> getProductDetail(
+                @PathVariable Long productId) {
+            log.info("영양제 상세 조회: productId={}", productId);
+            ProductDetailResponse response = productService.getProductDetail(productId);
         return ResponseUtil.ok(response);
     }
 
