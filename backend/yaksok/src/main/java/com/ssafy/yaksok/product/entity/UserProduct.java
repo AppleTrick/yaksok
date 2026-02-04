@@ -30,13 +30,11 @@ public class UserProduct {
 
     private String nickname;
 
-    @Column(nullable = false)
     private Integer dailyDose;
 
-    @Column(nullable = false, precision = 10, scale = 2)
+    @Column(precision = 10, scale = 2)
     private BigDecimal doseAmount;
 
-    @Column(nullable = false)
     private String doseUnit;
 
     @Column(nullable = false)
