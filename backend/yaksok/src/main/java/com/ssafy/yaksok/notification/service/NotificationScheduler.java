@@ -14,8 +14,8 @@ public class NotificationScheduler {
     @Scheduled(cron = "0 */1 * * * *")
     @SchedulerLock(
             name = "notification_send_job",
-            lockAtLeastFor = "PT4M", // 최소 4분은 락 유지 (5분 주기보다 살짝 짧게)
-            lockAtMostFor = "PT10M"  // 최대 10분 (예상 최대 처리시간보다 약간 길게)
+            lockAtLeastFor = "PT50S",
+            lockAtMostFor = "PT2M"
     )
     public void sendNotifications() {
         notificationService.processNotifications();
