@@ -36,8 +36,8 @@ messaging.onBackgroundMessage((payload) => {
 
     const notificationOptions = {
         body: notificationBody,
-        icon: '/icons/icon-192x192.png',
-        badge: '/icons/badge-72x72.png',
+        // icon: '/icons/icon-192x192.png',
+        // badge: '/icons/badge-72x72.png',
         vibrate: [200, 100, 200],
         data: {
             ...data,
@@ -53,12 +53,12 @@ messaging.onBackgroundMessage((payload) => {
             {
                 action: 'complete',
                 title: '✅ 복용 완료',
-                icon: '/icons/check-icon.png'
+                // icon: '/icons/check-icon.png'
             },
             {
                 action: 'snooze',
                 title: '⏰ 나중에 알림',
-                icon: '/icons/snooze-icon.png'
+                // icon: '/icons/snooze-icon.png'
             }
         ]
     };
@@ -139,6 +139,16 @@ async function handleMedicationComplete(data) {
         }
 
         console.log('✅ [SW] 복용 완료 처리 성공');
+
+        // 프론트엔드로 성공 신호 전송 (Zero-Refresh Update)
+        const channel = new BroadcastChannel('pill_channel');
+        channel.postMessage({
+            type: 'PILL_TAKEN_COMPLETE',
+            notificationId: data.notificationId,
+            action: 'complete',
+            timestamp: Date.now()
+        });
+        channel.close();
     } catch (error) {
         console.error('❌ [SW] 복용 완료 처리 실패:', error);
         // 필요 시 재시도 로직이나 사용자에게 실패 알림을 띄우는 로직 추가 가능
@@ -169,6 +179,16 @@ async function handleMedicationSnooze(data) {
         }
 
         console.log('✅ [SW] 5분 후 재알림 예약 성공');
+
+        // 프론트엔드로 성공 신호 전송
+        const channel = new BroadcastChannel('pill_channel');
+        channel.postMessage({
+            type: 'PILL_SNOOZE_COMPLETE',
+            notificationId: data.notificationId,
+            action: 'snooze',
+            timestamp: Date.now()
+        });
+        channel.close();
     } catch (error) {
         console.error('❌ [SW] 재알림 요청 실패:', error);
     }
