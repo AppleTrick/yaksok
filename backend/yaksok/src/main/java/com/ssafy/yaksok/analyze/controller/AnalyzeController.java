@@ -41,9 +41,13 @@ public class AnalyzeController {
             @RequestParam("file") MultipartFile file,
             @AuthenticationPrincipal UserPrincipal principal) {
         Long userId = principal.getUserId();
-        log.info("영양제 분석 API 호출됨: User ID={}, File={}", userId, file.getOriginalFilename());
+        log.info("영양제 분석 API 호출 시작: User ID={}, File={}", userId, file.getOriginalFilename());
+        long startTime = System.currentTimeMillis();
 
         SupplementAnalysisResponse response = analyzeService.analyzeSupplement(file, userId);
+
+        long duration = System.currentTimeMillis() - startTime;
+        log.info("영양제 분석 API 호출 완료: User ID={}, 소요 시간={}ms", userId, duration);
 
         return ResponseUtil.ok(response);
     }
