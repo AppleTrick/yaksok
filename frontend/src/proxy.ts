@@ -47,15 +47,18 @@ export function proxy(request: NextRequest) {
     // 2. 페이지 접근 제어 로직
     const accessTokenValue = request.cookies.get('ACCESS_TOKEN')?.value;
 
-    // 2-1. 보호된 경로 접근 제어
-    const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route));
-    if (isProtectedRoute && !accessTokenValue) {
+    // 2-1. 보호된 경로 접근 제어 (메인 페이지 '/' 및 정의된 경로들)
+    const isProtectedRoute = pathname === '/' || protectedRoutes.some(route => pathname.startsWith(route));
+
+    // 인증 관련 경로 체크 (무한 루프 방지용)
+    const isAuthRoute = authRoutes.some(route => pathname.startsWith(route));
+
+    if (isProtectedRoute && !accessTokenValue && !isAuthRoute) {
         const url = new URL('/login', request.url);
         return NextResponse.redirect(url);
     }
 
     // 2-2. 인증된 사용자 인증 경로 접근 제어 (로그인/회원가입 등)
-    const isAuthRoute = authRoutes.some(route => pathname.startsWith(route));
     if (isAuthRoute && accessTokenValue) {
         return NextResponse.redirect(new URL('/', request.url));
     }
