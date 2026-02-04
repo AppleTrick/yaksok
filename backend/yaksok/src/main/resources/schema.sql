@@ -85,7 +85,9 @@ CREATE TABLE IF NOT EXISTS user_product (
                                             created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT fk_up_user FOREIGN KEY (user_id) REFERENCES `user`(id),
-    CONSTRAINT fk_up_product FOREIGN KEY (product_id) REFERENCES product(id)
+    CONSTRAINT fk_up_product FOREIGN KEY (product_id) REFERENCES product(id),
+
+    CONSTRAINT uk_user_product_user_nickname UNIQUE (user_id, nickname)
     ) ENGINE=InnoDB;
 
 -- ========================================
