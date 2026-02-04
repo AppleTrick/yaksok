@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useRef, useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Image as ImageIcon, HelpCircle } from 'lucide-react';
 import '../styles.css';
 import CameraHeader from './common/CameraHeader';
@@ -12,6 +13,7 @@ interface CaptureStepProps {
 }
 
 export default function CaptureStep({ onCapture, onFileUpload }: CaptureStepProps) {
+    const router = useRouter();
     const videoRef = useRef<HTMLVideoElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -134,7 +136,7 @@ export default function CaptureStep({ onCapture, onFileUpload }: CaptureStepProp
             <CameraHeader
                 title="영양제 촬영"
                 stepInfo="Step 1/3"
-                onClose={() => window.history.back()}
+                onClose={() => router.push('/')}
             />
 
             <div className="camera-content-center">
