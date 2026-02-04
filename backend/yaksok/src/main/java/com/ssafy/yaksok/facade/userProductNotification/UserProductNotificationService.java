@@ -12,9 +12,9 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class UserProductNotificationService {
-    private UserService userService;
-    private UserProductService userProductService;
-    private NotificationService notificationService;
+    private final UserService userService;
+    private final UserProductService userProductService;
+    private final NotificationService notificationService;
 
 
     public void registerUserProductSelf(Long userId, RegisterUserProductSelfRequest request) {
