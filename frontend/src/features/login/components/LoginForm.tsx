@@ -12,9 +12,55 @@ interface LoginFormProps {
 export default function LoginForm({ onSubmit, isLoading }: LoginFormProps) {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
+
+    // 이메일 검사 (개발 편의를 위해 완화)
+    const validateEmail = (val: string) => {
+        if (!val) return '이메일을 입력해주세요.';
+        // const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        // if (!emailRegex.test(val)) return '올바른 이메일 형식이 아닙니다. (예: user@example.com)';
+        return '';
+    };
+
+    // 비밀번호 검사 (개발 편의를 위해 최소 1자 이상)
+    const validatePassword = (val: string) => {
+        if (!val) return '비밀번호를 입력해주세요.';
+        if (val.length < 1) return '비밀번호를 입력해주세요.';
+        return '';
+    };
+
+    const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value;
+        setEmail(value);
+        // 입력 중일 때는 에러 메시지를 부드럽게 업데이트하거나 지움
+        if (errors.email) {
+            setErrors(prev => ({ ...prev, email: validateEmail(value) }));
+        }
+    };
+
+    const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value;
+        setPassword(value);
+        if (errors.password) {
+            setErrors(prev => ({ ...prev, password: validatePassword(value) }));
+        }
+    };
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
+
+        const emailError = validateEmail(email);
+        const passwordError = validatePassword(password);
+
+        if (emailError || passwordError) {
+            setErrors({
+                email: emailError,
+                password: passwordError
+            });
+            return;
+        }
+
+        setErrors({});
         onSubmit({ email, password });
     };
 
@@ -25,13 +71,14 @@ export default function LoginForm({ onSubmit, isLoading }: LoginFormProps) {
                 <p className="login-subtitle">건강한 하루를 시작하세요</p>
             </header>
 
-            <form className="login-form" onSubmit={handleSubmit}>
+            <form className="login-form" onSubmit={handleSubmit} noValidate>
                 <InputForm
                     label="이메일"
                     type="email"
-                    placeholder="example@email.com"
+                    placeholder="이메일을 입력하세요"
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    onChange={handleEmailChange}
+                    error={errors.email}
                     required
                 />
                 <InputForm
@@ -39,7 +86,8 @@ export default function LoginForm({ onSubmit, isLoading }: LoginFormProps) {
                     type="password"
                     placeholder="비밀번호를 입력하세요"
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    onChange={handlePasswordChange}
+                    error={errors.password}
                     required
                 />
 

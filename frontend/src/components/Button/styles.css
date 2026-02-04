@@ -2,33 +2,46 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    border-radius: 12px;
-    font-weight: 600;
+    border-radius: 16px;
+    font-weight: 700;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     border: none;
     font-family: inherit;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn:active {
+    transform: scale(0.96);
 }
 
 .btn:disabled {
     opacity: 0.5;
     cursor: not-allowed;
+    transform: none;
 }
 
 /* Variants */
 .btn-primary {
-    background-color: var(--primary-color);
+    background: var(--brand-gradient);
     color: var(--white);
+    box-shadow: 0 4px 12px rgba(255, 87, 34, 0.2);
 }
 
-.btn-primary:active {
-    transform: scale(0.98);
+.btn-primary:hover {
+    box-shadow: 0 6px 20px rgba(255, 87, 34, 0.3);
+    filter: brightness(1.05);
 }
 
 .btn-secondary {
-    background-color: var(--sub-background);
+    background-color: var(--white);
     color: var(--primary-color);
-    border: 1px solid var(--primary-color);
+    border: 1px solid var(--border-color);
+}
+
+.btn-secondary:hover {
+    background-color: var(--light-grey);
 }
 
 .btn-danger {
@@ -48,6 +61,6 @@
 }
 
 .btn-large {
-    padding: 1rem 2rem;
-    font-size: 1.125rem;
+    padding: 1.125rem 2rem;
+    font-size: 1rem;
 }

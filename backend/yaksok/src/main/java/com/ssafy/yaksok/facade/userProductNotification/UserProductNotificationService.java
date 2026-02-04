@@ -24,7 +24,6 @@ public class UserProductNotificationService {
 
     public void registerNotificaion(Long userId, RegisterUserProductSelfRequest request){
         UserProduct userProduct = userProductService.findByUserIdAndNickname(userId, request.getNickname());
-
         notificationService.createNotification(userId, userProduct.getId(), request.getNickname(), request.getTime(), request.getCategory());
     }
 }
