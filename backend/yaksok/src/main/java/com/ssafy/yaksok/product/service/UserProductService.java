@@ -4,6 +4,7 @@ import com.ssafy.yaksok.global.exception.BusinessException;
 import com.ssafy.yaksok.global.exception.ErrorCode;
 import com.ssafy.yaksok.product.dto.ProductIngredientResponse;
 import com.ssafy.yaksok.product.dto.RegisterUserProductRequest;
+import com.ssafy.yaksok.product.dto.RegisterUserProductSelfRequest;
 import com.ssafy.yaksok.product.dto.UserProductResponse;
 import com.ssafy.yaksok.product.entity.Product;
 import com.ssafy.yaksok.product.entity.UserProduct;
@@ -90,14 +91,11 @@ public class UserProductService {
         // 3. UserProduct 생성 (user와 targetMember를 동일하게 설정)
         UserProduct userProduct = UserProduct.create(
                 user,
-                user,  // targetMember = user (본인)
                 product,
                 request.getNickname(),
                 request.getDailyDose(),
                 request.getDoseAmount(),
-                request.getDoseUnit(),
-                request.getStartDate(),
-                request.getEndDate()
+                request.getDoseUnit()
         );
 
         // 4. 저장
@@ -128,6 +126,16 @@ public class UserProductService {
         userProductRepository.delete(userProduct);
 
         log.info("영양제 삭제 완료: userProductId={}", userProductId);
+    }
+
+    public UserProduct findByUserIdAndNickname(long userId, String nickname){
+        return userProductRepository.findByUserIdAndNickname(userId, nickname).orElseThrow(
+                () -> new BusinessException(ErrorCode.USER_PRODUCT_NOT_FOUND)
+        );
+    }
+
+    public void registerUserProductSelf(UserProduct userProduct){
+        userProductRepository.save(userProduct);
     }
 }
 
