@@ -29,7 +29,7 @@ export default function LoginForm({ onSubmit, isLoading }: LoginFormProps) {
                 <InputForm
                     label="이메일"
                     type="email"
-                    placeholder="example@email.com"
+                    placeholder="이메일을 입력하세요"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
