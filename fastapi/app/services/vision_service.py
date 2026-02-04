@@ -211,7 +211,9 @@ def analyze_logic(image_content: bytes) -> List[Dict[str, Any]]:
 
     # 2. Object Localization
     image = vision.Image(content=image_content)
+    print(f"[Vision Service] Object Localization API 호출 중...")
     objects = vision_client.object_localization(image=image).localized_object_annotations
+    print(f"[Vision Service] ✅ 객체 탐지 응답 수신 완료")
     
     print(f"[Vision Service] 탐지된 전체 객체 수: {len(objects)}")
     for obj in objects:
