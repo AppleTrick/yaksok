@@ -13,29 +13,58 @@ import './FCMPermissionRequest.css';
  * - 거부 시: 재고려 유도 메시지
  */
 export default function FCMPermissionRequest() {
+    // 3. 로딩 상태(isLoading) 관리 최적화: 초기값을 true로 설정하여 렌더링 유보
+    const [isLoadingCheck, setIsLoadingCheck] = useState(true);
     const [showBanner, setShowBanner] = useState(false);
     const [showDeniedMessage, setShowDeniedMessage] = useState(false);
     const [isDismissed, setIsDismissed] = useState(false);
 
-    const { requestPermission, isLoading, permission } = useFCM();
+    const { requestPermission } = useFCM();
     const { updateActions } = useNotificationSettings();
 
+    // 1. 초기 진입 시 브라우저 권한 즉시 확인 & 2. 로컬 스토리지 동기화
     useEffect(() => {
-        // 권한이 default일 때만 배너 표시
-        if (
-            permission === 'default' &&
-            !isDismissed
-        ) {
-            setShowBanner(true);
+        if (typeof window === 'undefined' || !('Notification' in window)) {
+            setIsLoadingCheck(false);
+            return;
         }
-    }, [permission, isDismissed]);
+
+        const browserPermission = Notification.permission;
+        const localGranted = localStorage.getItem('fcm_permission_granted') === 'true';
+
+        // 4. 디버깅 로그 추가
+        console.log('[FCM Check] Status:', {
+            browserPermission,
+            localGranted,
+            isDismissed
+        });
+
+        // 이미 허용된 상태(브라우저 OR 로컬스토리지)라면 배너 숨김
+        if (browserPermission === 'granted' || localGranted) {
+            setShowBanner(false);
+        }
+        // 권한이 default이고 사용자가 닫지 않았다면 배너 표시
+        else if (browserPermission === 'default' && !isDismissed) {
+            setShowBanner(true);
+        } else {
+            setShowBanner(false);
+        }
+
+        // 체크 완료 후 로딩 해제
+        setIsLoadingCheck(false);
+    }, [isDismissed]);
 
     const handleAllow = async () => {
         try {
             // FCM 토큰 발급 요청 (브라우저 권한 팝업 표시)
             const isGranted = await requestPermission();
 
+            console.log('[FCM Request] Result:', isGranted);
+
             if (isGranted) {
+                // 성공 시 로컬 스토리지에 플래그 저장
+                localStorage.setItem('fcm_permission_granted', 'true');
+
                 // 알림 설정 자동 ON
                 updateActions.togglePush(true);
                 setShowBanner(false);
@@ -74,6 +103,8 @@ export default function FCMPermissionRequest() {
         setShowBanner(true);
     };
 
+    // 로딩 중이거나, 표시할 배너/메시지가 없으면 렌더링 안 함
+    if (isLoadingCheck) return null;
     if (!showBanner && !showDeniedMessage) return null;
 
     return (
@@ -94,16 +125,14 @@ export default function FCMPermissionRequest() {
                         <button
                             className="fcm-request-btn fcm-request-btn-dismiss"
                             onClick={handleDismiss}
-                            disabled={isLoading}
                         >
                             나중에
                         </button>
                         <button
                             className="fcm-request-btn fcm-request-btn-allow"
                             onClick={handleAllow}
-                            disabled={isLoading}
                         >
-                            {isLoading ? '설정 중...' : '허용'}
+                            허용
                         </button>
                     </div>
                 </div>
