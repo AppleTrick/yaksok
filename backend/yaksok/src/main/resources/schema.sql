@@ -186,7 +186,7 @@ CREATE TABLE IF NOT EXISTS user_fcm_token (
                                                   UNIQUE (user_id, token)
 ) ENGINE=InnoDB;
 
-CREATE TABLE shedlock (
+CREATE TABLE IF NOT EXISTS shedlock (
                           name VARCHAR(64) NOT NULL,
                           lock_until TIMESTAMP(3) NOT NULL,
                           locked_at TIMESTAMP(3) NOT NULL,
