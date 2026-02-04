@@ -36,7 +36,7 @@ export function useNotificationSettings() {
             await saveNotificationSettings(newSettings);
         } catch (error) {
             console.error("Failed to save settings:", error);
-            // Revert or show toast (omitted for now)
+            // Revert logic could be added here
         } finally {
             setIsSaving(false);
         }
@@ -44,26 +44,39 @@ export function useNotificationSettings() {
 
     // Individual updaters
     const togglePush = async (enabled: boolean) => {
+        console.log('🔄 togglePush called with:', enabled);
+
         if (enabled) {
-            // 푸시 알림을 켤 때 FCM 토큰 발급 & 권한 요청
+            // ON 시도: 권한 확인 필요
             try {
+                // 권한 요청
                 const isGranted = await requestPermission();
+
                 if (!isGranted) {
-                    console.warn('❌ 알림 권한이 거부되어 설정을 켤 수 없습니다.');
-                    alert('알림 권한을 허용해야 푸시 알림을 켤 수 있습니다.');
-                    // 권한 거부 시 설정값 변경 안 함 (즉시 리턴)
+                    // 권한 획득 실패 (거부됨)
+                    console.warn('🚫 togglePush: Permission denied');
+                    alert('알림 권한이 차단되어 있습니다.\n브라우저 설정에서 사이트 알림 권한을 "허용"으로 변경해주세요.');
+
+                    // 스위치 상태를 다시 OFF로 되돌림 (낙관적 업데이트가 있었다면)
+                    // (현재는 save를 호출 안했으므로 UI는 그대로 꺼져있어야 함)
                     return;
                 }
-                console.log('✅ FCM 권한 획득 성공 (togglePush)');
-            } catch (error) {
-                console.error('❌ FCM 권한 요청 중 오류:', error);
-                return;
-            }
-        }
 
-        // 권한이 허용되었거나, 끄는 경우(false)에는 설정 저장
-        save({ ...settings, pushEnabled: enabled });
+                // 권한 획득 성공 -> 서버 저장
+                console.log('✅ togglePush: Permission granted. Saving setting...');
+                await save({ ...settings, pushEnabled: true });
+
+            } catch (error) {
+                console.error('❌ togglePush Error:', error);
+                alert('알림 설정을 변경하는 중 오류가 발생했습니다.');
+            }
+        } else {
+            // OFF 시도: 즉시 반영
+            console.log('togglePush: Turning OFF');
+            await save({ ...settings, pushEnabled: false });
+        }
     };
+
     const toggleMissed = (enabled: boolean) => save({ ...settings, missedNotification: enabled });
 
     // DND Updaters

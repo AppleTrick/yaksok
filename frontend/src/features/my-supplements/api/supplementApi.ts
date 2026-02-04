@@ -45,6 +45,21 @@ export const getUserProducts = async () => {
     return response.data;
 };
 
+export interface UserProductCreateRequest {
+    nickname: string;
+    category: 'EMPTY' | 'AFTERMEAL' | 'BEFORESLEEP';
+    time: string;
+}
+
+/**
+ * 사용자 복용 약 추가 (수동 등록)
+ * POST /api/v1/products/user/self
+ */
+export const createUserProduct = async (data: UserProductCreateRequest) => {
+    const response = await axiosInstance.post<ApiResponse<any>>('/api/v1/products/user/self', data);
+    return response.data;
+};
+
 // --- 2. 영양제 스캔 & 분석 ---
 
 export interface IngredientInfo {
@@ -139,26 +154,7 @@ export const searchSupplements = async (keyword: string) => {
 };
 
 // --- 4. 영양제 수동 등록 ---
-
-export interface ManualIngredient {
-    name: string;
-    amount: number;
-    unit: string;
-}
-
-export interface ManualSupplementRequest {
-    productName: string;
-    ingredients: ManualIngredient[];
-}
-
-/**
- * 영양제 수동 등록
- * POST /api/v1/supplements
- */
-export const registerSupplementManually = async (data: ManualSupplementRequest) => {
-    const response = await axiosInstance.post<ApiResponse<null>>(`${SUPPLEMENTS_BASE}`, data);
-    return response.data;
-};
+// registerSupplementManually Removed as requested.
 
 // --- 5. 복용 기록 ---
 
