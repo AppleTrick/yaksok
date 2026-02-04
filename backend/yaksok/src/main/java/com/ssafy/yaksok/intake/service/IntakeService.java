@@ -44,15 +44,24 @@ public class IntakeService {
     }
 
     private IntakeResponse toIntakeResponse(UserProduct up) {
-        return IntakeResponse.builder()
-                .userProductId(up.getId())
-                .productId(up.getProduct().getId())
-                .productName(up.getProduct().getPrdlstNm())
-                .nickname(up.getNickname())
-                .dailyDose(up.getDailyDose())
-                .doseAmount(up.getDoseAmount())
-                .doseUnit(up.getDoseUnit())
-                .isTaken(false) // 섭취 여부는 추후 기능 구현 (우선 false)
-                .build();
+
+        Long productId = null;
+        String productName = null;
+
+        if (up.getProduct() != null) {
+            productId = up.getProduct().getId();
+            productName = up.getProduct().getPrdlstNm();
+        }
+
+        return new IntakeResponse(
+                up.getId(),
+                productId,        // 셀프 등록이면 null
+                productName,      // 셀프 등록이면 null
+                up.getNickname(),
+                up.getDailyDose(),
+                up.getDoseAmount(),
+                up.getDoseUnit(),
+                up.isActive()
+        );
     }
 }
