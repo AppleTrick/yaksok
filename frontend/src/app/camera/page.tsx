@@ -7,6 +7,10 @@ import CaptureStep from "@/features/camera/components/CaptureStep";
 import ReviewStep from "@/features/camera/components/ReviewStep";
 import ResultStep from "@/features/camera/components/ResultStep";
 import { useReportContext } from "@/features/report/contexts/ReportContext";
+import Modal from '@/components/Modal';
+import Button from '@/components/Button';
+
+import { Lock } from 'lucide-react';
 
 type CameraFlowStep = 'capture' | 'review' | 'result';
 
@@ -18,16 +22,20 @@ export default function CameraPage() {
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [analysisResult, setAnalysisResult] = useState<any>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
 
   useEffect(() => {
-    // 간단한 로그인 체크: localStorage에 userName이나 userId가 있는지 확인하거나
-    // 실제로는 API 호출을 통해 세션 유효성을 확인하는 것이 좋습니다.
+    // 간단한 로그인 체크
     const userName = localStorage.getItem("userName");
     if (!userName) {
-      alert("로그인이 필요한 서비스입니다.");
-      router.push("/login");
+      setIsLoginModalOpen(true);
     }
-  }, [router]);
+  }, []);
+
+  const handleLoginRedirect = () => {
+    setIsLoginModalOpen(false);
+    router.push("/login");
+  };
 
   const handleCapture = (imageDataUrl: string) => {
     setCapturedImage(imageDataUrl);
@@ -106,33 +114,93 @@ export default function CameraPage() {
   };
 
   // Render Steps
-  switch (step) {
-    case 'capture':
-      return (
-        <CaptureStep
-          onCapture={handleCapture}
-          onFileUpload={handleCapture}
-        />
-      );
-    case 'review':
-      return capturedImage && (
-        <ReviewStep
-          imageSrc={capturedImage}
-          isAnalyzing={isAnalyzing}
-          onRetake={handleRetake}
-          onConfirm={handleConfirm}
-        />
-      );
-    case 'result':
-      return capturedImage && analysisResult && (
-        <ResultStep
-          imageSrc={capturedImage}
-          result={analysisResult}
-          onRetake={handleRetake}
-          onRegister={handleRegister}
-        />
-      );
-    default:
-      return null;
-  }
+  return (
+    <>
+      {!isLoginModalOpen && (() => {
+        switch (step) {
+          case 'capture':
+            return (
+              <CaptureStep
+                onCapture={handleCapture}
+                onFileUpload={handleCapture}
+              />
+            );
+          case 'review':
+            return capturedImage && (
+              <ReviewStep
+                imageSrc={capturedImage}
+                isAnalyzing={isAnalyzing}
+                onRetake={handleRetake}
+                onConfirm={handleConfirm}
+              />
+            );
+          case 'result':
+            return capturedImage && analysisResult && (
+              <ResultStep
+                imageSrc={capturedImage}
+                result={analysisResult}
+                onRetake={handleRetake}
+                onRegister={handleRegister}
+              />
+            );
+          default:
+            return null;
+        }
+      })()}
+
+      <Modal
+        isOpen={isLoginModalOpen}
+        onClose={handleLoginRedirect}
+        title="인증 확인"
+        hideCloseButton={true}
+      >
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          textAlign: 'center',
+          padding: '1.5rem 0'
+        }}>
+          <div style={{
+            width: '64px',
+            height: '64px',
+            borderRadius: '20px',
+            backgroundColor: 'var(--sub-background)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            marginBottom: '1.5rem',
+            color: 'var(--primary-color)'
+          }}>
+            <Lock size={32} />
+          </div>
+          <h3 style={{
+            fontSize: '1.25rem',
+            fontWeight: 800,
+            marginBottom: '0.75rem',
+            color: 'var(--foreground-color)'
+          }}>
+            로그인이 필요한 서비스입니다
+          </h3>
+          <p style={{
+            fontSize: '0.95rem',
+            color: 'var(--text-muted)',
+            lineHeight: 1.5,
+            marginBottom: '2rem'
+          }}>
+            맞춤형 영양제 정보를 확인하시려면<br />
+            먼저 로그인을 진행해 주세요.
+          </p>
+          <Button
+            variant="primary"
+            size="large"
+            onClick={handleLoginRedirect}
+            style={{ width: '100%' }}
+          >
+            로그인하러 가기
+          </Button>
+        </div>
+      </Modal>
+    </>
+  );
 }
