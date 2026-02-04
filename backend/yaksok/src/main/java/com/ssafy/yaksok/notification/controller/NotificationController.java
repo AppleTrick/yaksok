@@ -4,6 +4,7 @@ import com.google.protobuf.Api;
 import com.ssafy.yaksok.global.dto.ApiResponse;
 import com.ssafy.yaksok.global.util.ResponseUtil;
 import com.ssafy.yaksok.notification.dto.*;
+import com.ssafy.yaksok.notification.enums.NotificationEnums;
 import com.ssafy.yaksok.notification.infrastructure.fcm.token.FcmTokenRequest;
 import com.ssafy.yaksok.notification.infrastructure.fcm.token.FcmTokenService;
 import com.ssafy.yaksok.notification.service.NotificationService;
@@ -111,7 +112,7 @@ public class NotificationController {
     @GetMapping("/test")
     public ResponseEntity<ApiResponse<Void>> testNotification(
             @AuthenticationPrincipal UserPrincipal userPrincipal) {
-        notificationService.sendTestNotification(userPrincipal.getUserId());
+        notificationService.sendTestNotification(userPrincipal.getUserId(), NotificationEnums.Platform.WEB);
         return ResponseEntity.ok().build();
     }
 }

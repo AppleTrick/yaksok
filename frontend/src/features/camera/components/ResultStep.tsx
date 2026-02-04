@@ -5,6 +5,8 @@ import { Check, RotateCcw, ShieldCheck, Info, ScanText } from 'lucide-react';
 import '../styles.css';
 import CameraHeader from './common/CameraHeader';
 import RatioBox from './common/RatioBox';
+import { useTheme } from '@/contexts/ThemeContext';
+
 
 import ActionButton from './common/ActionButton';
 
@@ -30,6 +32,7 @@ interface ResultStepProps {
 }
 
 export default function ResultStep({ imageSrc, result, onRetake, onRegister }: ResultStepProps) {
+    const { theme } = useTheme();
     const imageRef = useRef<HTMLImageElement>(null);
     const [imageSize, setImageSize] = useState({ width: 0, height: 0 });
 
@@ -51,10 +54,10 @@ export default function ResultStep({ imageSrc, result, onRetake, onRegister }: R
     }, []);
 
     return (
-        <div className="camera-container theme-light theme-light-report">
+        <div className={`camera-container ${theme === 'light' ? 'theme-light' : ''}`}>
             <CameraHeader
                 title="영양제 분석 결과"
-                theme="light"
+                theme={theme}
                 onBack={onRetake}
             />
 
@@ -133,7 +136,7 @@ export default function ResultStep({ imageSrc, result, onRetake, onRegister }: R
                 {/* Detected List */}
                 <div className="result-list-section">
                     <div className="section-title-row">
-                        <h3 className="card-item-title" style={{ fontSize: '1.4rem', color: '#1A1A1A' }}>인식된 영양제</h3>
+                        <h3 className="card-item-title" style={{ fontSize: '1.4rem', color: 'var(--cam-black)' }}>인식된 영양제</h3>
                         <span className="count-badge">{(result.displayData?.products || []).length}개 발견</span>
                     </div>
 
@@ -182,7 +185,7 @@ export default function ResultStep({ imageSrc, result, onRetake, onRegister }: R
                 </div>
             </div>
 
-            <footer className="sticky-footer" style={{ borderTop: '1px solid #eee' }}>
+            <footer className="sticky-footer" style={{ borderTop: '1px solid var(--cam-border)' }}>
                 <div className="cam-btn-row" style={{ padding: '16px 20px', width: '100%' }}>
                     <ActionButton onClick={onRetake} variant="outline">
                         <RotateCcw size={20} />

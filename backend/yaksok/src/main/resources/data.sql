@@ -35,13 +35,12 @@ VALUES
 -- user_product
 -- ========================================
 INSERT INTO user_product (
-    user_id, target_member_id, product_id, nickname,
-    daily_dose, dose_amount, dose_unit,
-    start_date, end_date, active
+    user_id, product_id, nickname,
+    daily_dose, dose_amount, dose_unit, active
 ) VALUES
-      (1, 1, 1, '아침 비타민C', 1, 1000, 'mg', '2025-01-01', '2025-12-31', TRUE),
-      (1, 1, 2, '비타민D', 1, 25, 'µg', '2025-01-01', '2025-12-31', TRUE),
-      (2, 2, 3, '마그네슘', 2, 200, 'mg', '2025-01-01', '2025-12-31', TRUE);
+      (1, 1, '아침 비타민C', 1, 1000, 'mg', TRUE),
+      (1,  2, '비타민D', 1, 25, 'µg',  TRUE),
+      (2,  3, '마그네슘', 2, 200, 'mg',  TRUE);
 
 -- ========================================
 -- intake_record
