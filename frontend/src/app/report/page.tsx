@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { RotateCcw, Check } from 'lucide-react';
 
@@ -42,6 +42,17 @@ export default function ReportPage() {
     const router = useRouter();
     const { reportData, clearReportData } = useReportContext();
     const [showRegisterModal, setShowRegisterModal] = useState(false);
+
+    // 직접 접근 방지 로직: 분석 데이터가 없으면 카메라 페이지로 리다이렉트
+    useEffect(() => {
+        if (!reportData.analysisResult) {
+            router.replace('/camera');
+        }
+    }, [reportData.analysisResult, router]);
+
+    if (!reportData.analysisResult) {
+        return null; // 리다이렉트 전 빈 화면 노출
+    }
 
     const handleBack = () => {
         clearReportData();
