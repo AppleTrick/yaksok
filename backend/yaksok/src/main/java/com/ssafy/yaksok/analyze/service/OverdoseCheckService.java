@@ -77,6 +77,7 @@ public class OverdoseCheckService {
                     .ingredientName(summary.getIngredientName())
                     .totalAmount(summary.getTotalAmount())
                     .maxIntakeValue(summary.getMaxIntakeValue())
+                    .minIntakeValue(summary.getMinIntakeValue())
                     .unit(summary.getUnit())
                     .isOverdose(isOverdose)
                     .build();

@@ -24,21 +24,32 @@ public class ProductExtractionResponse {
     @Data
     public static class IngredientInfo {
         private String name;
-        private String amount;  // String으로 받아서 파싱
+        private String amount;
         private String unit;
 
         /**
          * amount를 BigDecimal로 변환
          */
         public BigDecimal getAmountAsBigDecimal() {
+            // 1. 값이 없거나 "정보 없음" 같은 텍스트인 경우 0 반환
+            if (amount == null || amount.trim().isEmpty() ||
+                    amount.contains("정보") || amount.contains("없음") || amount.contains("미상")) {
+                return BigDecimal.ZERO;
+            }
+
             try {
-                // 콤마 제거 후 파싱
-                String cleanAmount = amount.replaceAll(",", "");
+                // 2. 숫자와 소수점(.)을 제외한 모든 문자(한글, 영어, 콤마 등) 제거
+                // 예: "약 1,000mg" -> "1000"
+                String cleanAmount = amount.replaceAll("[^0-9.]", "");
+
+                if (cleanAmount.isEmpty()) {
+                    return BigDecimal.ZERO;
+                }
+
                 return new BigDecimal(cleanAmount);
             } catch (Exception e) {
-                throw new IllegalArgumentException(
-                        "잘못된 수량 형식: " + amount, e
-                );
+                // 3. 그래도 파싱 못하면 에러 내지 말고 그냥 0 반환
+                return BigDecimal.ZERO;
             }
         }
 
@@ -46,9 +57,7 @@ public class ProductExtractionResponse {
          * 유효한 성분인지 확인
          */
         public boolean isValid() {
-            return name != null && !name.trim().isEmpty()
-                    && amount != null && !amount.trim().isEmpty()
-                    && unit != null && !unit.trim().isEmpty();
+            return name != null && !name.trim().isEmpty();
         }
     }
 
@@ -59,12 +68,7 @@ public class ProductExtractionResponse {
         return productName != null && !productName.trim().isEmpty();
     }
 
-    /**
-     * 유효한 성분만 필터링
-     */
     public List<IngredientInfo> getValidIngredients() {
-        return ingredients.stream()
-                .filter(IngredientInfo::isValid)
-                .toList();
+        return ingredients;
     }
 }

@@ -2,8 +2,18 @@ import os
 import httpx
 from dotenv import load_dotenv
 
-# .env 파일 로드
-load_dotenv()
+# .env 파일 절대 경로 로드
+SERVICE_DIR = os.path.dirname(os.path.abspath(__file__))
+APP_DIR = os.path.dirname(SERVICE_DIR)
+FASTAPI_ROOT = os.path.dirname(APP_DIR)
+ENV_PATH = os.path.join(FASTAPI_ROOT, ".env")
+
+if os.path.exists(ENV_PATH):
+    load_dotenv(ENV_PATH)
+    print(f"[LLM Service] .env 로드 성공: {ENV_PATH}")
+else:
+    load_dotenv()
+    print(f"[LLM Service] ⚠️ .env 파일을 찾을 수 없어 기본 설정을 시도합니다: {ENV_PATH}")
 
 # GMS API 설정
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
