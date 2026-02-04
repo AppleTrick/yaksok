@@ -38,9 +38,9 @@ INSERT INTO user_product (
     user_id, product_id, nickname,
     daily_dose, dose_amount, dose_unit, active
 ) VALUES
-      (1, 1, '아침 비타민C', 1, 1000, 'mg', TRUE),
-      (1,  2, '비타민D', 1, 25, 'µg',  TRUE),
-      (2,  3, '마그네슘', 2, 200, 'mg',  TRUE);
+      (1, 1, '아침 비타민C', 1, 1000, 'mg', FALSE),
+      (1,  2, '비타민D', 1, 25, 'µg',  FALSE),
+      (2,  3, '마그네슘', 2, 200, 'mg',  FALSE);
 
 -- ========================================
 -- intake_record

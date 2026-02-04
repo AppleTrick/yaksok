@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 
     @Repository
@@ -19,5 +20,5 @@ import java.util.List;
           AND n.intaken = false
           AND n.nextNotify <= :now
     """)
-        List<Notification> findSendableNotifications(LocalDateTime now);
+        List<Notification> findSendableNotifications(LocalTime now);
     }

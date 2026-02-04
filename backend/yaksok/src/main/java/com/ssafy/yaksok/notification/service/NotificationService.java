@@ -168,28 +168,31 @@ public class NotificationService {
 
     @Async("notificationExecutor")
     public void processNotifications() {
-        LocalDateTime now = LocalDateTime.now();
+        log.info("알람 전송 시작");
+        LocalTime now = LocalTime.now();
 
         List<Notification> notifications =
                 notificationRepository.findSendableNotifications(now);
 
         for (Notification notification : notifications) {
-
-            if (isQuietTime(notification.getUserId(), now.toLocalTime())) {
+            if (isQuietTime(notification.getUserId(), now)) {
                 continue;
             }
 
             List<UserFcmToken> tokens =
                     fcmTokenService.findAllByUserIdAndActiveTrue(notification.getUserId());
 
-            if (tokens.isEmpty()) {
+            if (tokens.isEmpty() && !notification.getIntaken()) {
                 continue;
             }
 
             for (UserFcmToken token : tokens) {
                 sendByPlatform(token, notification);
             }
+            log.info(String.valueOf(notification.getId()));
+            log.info("알람 전송...");
         }
+        log.info("알람 전송 종료");
     }
 
     private boolean isQuietTime(Long userId, LocalTime now) {
@@ -231,7 +234,7 @@ public class NotificationService {
     public NotificationResponse createNotification(long userId, NotificationRequest notificationRequest){
 
         Notification notification = Notification.create(userId, notificationRequest.getUserProductId(), notificationRequest.getNickname(),
-                notificationRequest.getIntakeTime(), notificationRequest.getCategory(),
+                notificationRequest.getIntakeTime(), LocalTime.now(), notificationRequest.getCategory(),
                 true, false);
 
         notification = notificationRepository.save(notification);
@@ -240,8 +243,7 @@ public class NotificationService {
     }
 
     public void createNotification(long userId, long userProductId, String nickName, LocalTime inTakeTime, NotificationEnums.Category category){
-        Notification notification = Notification.create(userId, userProductId, nickName, inTakeTime, category, true, false);
-        notificationRepository.save(notification);
+        Notification notification = Notification.create(userId, userProductId, nickName, inTakeTime, LocalTime.now(), category, true, false);
     }
 
     public void createNotificationSetting(long userId, NotificationSettingRequest request){
