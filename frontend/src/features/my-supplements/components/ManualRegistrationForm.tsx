@@ -53,17 +53,19 @@ export default function ManualRegistrationForm({ onClose, initialData }: ManualR
         setIsSaving(true);
 
         // 1. Prepare Payload for Creation
-        const createPayload = {
-            productName: name.trim(),
-            nickname: name.trim(),
-            mealCategory: mealCategory,
-            time: time,
-            dailyDose: 1,
-            doseAmount: 1,
-            doseUnit: '정',
-            active: true,
-            daysOfWeek: [0, 1, 2, 3, 4, 5, 6]
+        const CATEGORY_MAP: Record<string, 'EMPTY' | 'AFTERMEAL' | 'BEFORESLEEP'> = {
+            'empty_stomach': 'EMPTY',
+            'post_meal': 'AFTERMEAL',
+            'pre_sleep': 'BEFORESLEEP'
         };
+
+        const createPayload = {
+            nickname: name.trim(),
+            category: CATEGORY_MAP[mealCategory],
+            time: time.length === 5 ? `${time}:00` : time // HH:mm:ss format
+        };
+
+        console.log("Final Payload:", createPayload); // Debugging log
 
         console.log("Final Payload:", createPayload); // Debugging log
 

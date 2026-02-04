@@ -46,15 +46,9 @@ export const getUserProducts = async () => {
 };
 
 export interface UserProductCreateRequest {
-    productName: string;
     nickname: string;
-    mealCategory: string; // Added
-    time: string; // Added
-    dailyDose: number;
-    doseAmount: number;
-    doseUnit: string;
-    active: boolean;
-    daysOfWeek: number[];
+    category: 'EMPTY' | 'AFTERMEAL' | 'BEFORESLEEP';
+    time: string;
 }
 
 /**
