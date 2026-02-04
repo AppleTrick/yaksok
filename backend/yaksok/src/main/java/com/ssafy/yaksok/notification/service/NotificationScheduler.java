@@ -11,7 +11,7 @@ public class NotificationScheduler {
 
     private final NotificationService notificationService;
 
-    @Scheduled(cron = "0 */5 * * * *")
+    @Scheduled(cron = "0 */1 * * * *")
     @SchedulerLock(
             name = "notification_send_job",
             lockAtLeastFor = "PT4M", // 최소 4분은 락 유지 (5분 주기보다 살짝 짧게)
