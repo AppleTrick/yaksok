@@ -28,6 +28,7 @@ public enum ErrorCode {
 
     // USER_PRODUCT
     USER_PRODUCT_NOT_FOUND("USER_PRODUCT_404", "사용자 영양제를 찾을 수 없습니다", HttpStatus.NOT_FOUND),
+    USER_PRODUCT_DUPLICATE_NICKNAME("USER_PRODUCT_409", "사용자 영양제를 찾을 수 없습니다", HttpStatus.NOT_FOUND),
     USER_PRODUCT_UNAUTHORIZED("USER_PRODUCT_403", "해당 영양제에 대한 권한이 없습니다", HttpStatus.FORBIDDEN),
 
     //NOTIFICATION

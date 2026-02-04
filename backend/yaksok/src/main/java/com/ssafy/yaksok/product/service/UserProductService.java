@@ -152,6 +152,9 @@ public class UserProductService {
     }
 
     public void registerUserProductSelf(UserProduct userProduct){
+        if(userProductRepository.existsByUserIdAndNickname(userProduct.getUser().getId(), userProduct.getNickname())){
+            throw new BusinessException(ErrorCode.USER_PRODUCT_DUPLICATE_NICKNAME);
+        }
         userProductRepository.save(userProduct);
     }
 }
