@@ -1,20 +1,19 @@
 package com.ssafy.yaksok.analyze.service;
 
 import com.ssafy.yaksok.analyze.dto.*;
-import com.ssafy.yaksok.global.common.dto.ProductExtractionResponse;
+import com.ssafy.yaksok.analyze.repository.OverdoseRepository;
 import com.ssafy.yaksok.global.common.llm.prompt.LLMServiceFacade;
 import com.ssafy.yaksok.global.common.llm.prompt.ProductExtractionPrompt;
 import com.ssafy.yaksok.global.common.unit.ConversionResult;
 import com.ssafy.yaksok.global.common.unit.UnitConverter;
-import com.ssafy.yaksok.product.dto.ProductIngredientResponse;
-import com.ssafy.yaksok.product.entity.Product;
-import com.ssafy.yaksok.product.entity.ProductIngredient;
-import com.ssafy.yaksok.product.repository.ProductRepository;
 import com.ssafy.yaksok.ingredient.entity.Ingredient;
 import com.ssafy.yaksok.ingredient.repository.IngredientRepository;
-
+import com.ssafy.yaksok.product.entity.Product;
+import com.ssafy.yaksok.product.entity.ProductIngredient;
+import com.ssafy.yaksok.product.repository.ProductIngredientRepository;
+import com.ssafy.yaksok.product.repository.ProductRepository;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,415 +21,215 @@ import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
 
-/**
- * OCR 분석 서비스
- *
- * FastAPI로부터 받은 Vision API 분석 결과를 처리하고
- * DB 매칭, 단위 변환, 과복용 분석을 수행합니다.
- */
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class OcrAnalysisService {
 
-    private final LLMServiceFacade llmService;
-    private final UnitConverter unitConverter;
     private final ProductRepository productRepository;
     private final IngredientRepository ingredientRepository;
+    private final ProductIngredientRepository productIngredientRepository;
+    private final OverdoseRepository overdoseRepository;
 
-    private static final String STANDARD_UNIT = "mg"; // 내부 계산용 표준 단위
+    private final UnitConverter unitConverter;
+    private final LLMServiceFacade llmServiceFacade;
+    private final ProductExtractionPrompt productExtractionPrompt;
 
-    public OcrAnalysisService(
-            LLMServiceFacade llmService,
-            @Qualifier("unitConverterChain") UnitConverter unitConverter,
-            ProductRepository productRepository,
-            IngredientRepository ingredientRepository) {
-        this.llmService = llmService;
-        this.unitConverter = unitConverter;
-        this.productRepository = productRepository;
-        this.ingredientRepository = ingredientRepository;
-    }
-
-    /**
-     * FastAPI 분석 결과를 처리하여 통합 응답 생성
-     *
-     * @param userId 사용자 ID
-     * @param aiResult FastAPI Vision API 분석 결과
-     * @return 통합 분석 응답
-     */
-    @Transactional(readOnly = true)
+    @Transactional
     public SupplementAnalysisResponse processAnalysisResult(Long userId, FastApiAnalysisResult aiResult) {
-        log.info("분석 결과 처리 시작: User {}, 감지된 객체 {}개",
-                userId, aiResult.getAnalysisResults().size());
 
-        // 1. 각 분석 결과별로 DB 매칭 수행
-        List<ProductMatchResult> matches = aiResult.getAnalysisResults().stream()
-                .map(this::matchProductFromAnalysisResult)
-                .filter(Objects::nonNull)
-                .collect(Collectors.toList());
+        List<SupplementAnalysisResponse.ProductDisplayInfo> displayInfos = new ArrayList<>();
+        List<SupplementAnalysisResponse.ReportProductInfo> reportInfos = new ArrayList<>();
 
-        log.info("DB 매칭 완료: {}/{}개 성공",
-                matches.size(), aiResult.getAnalysisResults().size());
+        Map<String, BigDecimal> currentIntakeMap = getCurrentUserIntake(userId);
 
-        // 2. 과복용 분석 수행
-        SupplementAnalysisResponse.OverdoseAnalysis overdoseAnalysis =
-                performOverdoseAnalysis(userId, matches);
+        for (FastApiAnalysisResult.RawAnalysisResult raw : aiResult.getAnalysisResults()) {
+            // 1. 매칭
+            Product product = findProductInDb(raw.getProductName());
+            boolean isExactMatch = (product != null && product.getPrdlstNm().equals(raw.getProductName()));
 
-        // 3. 최종 응답 생성
-        return createResponse(matches, overdoseAnalysis);
-    }
+            List<SupplementAnalysisResponse.ProductIngredientInfo> ingredients;
 
-    /**
-     * 단일 분석 결과를 DB 제품과 매칭 (제품명 기반)
-     */
-    private ProductMatchResult matchProductFromAnalysisResult(
-            FastApiAnalysisResult.RawAnalysisResult analysisResult) {
-
-        String productName = analysisResult.getProductName();
-
-        log.debug("제품 매칭 시도: name={}", productName);
-
-        // 제품명 매칭
-        if (productName != null && !productName.isEmpty()) {
-            Optional<Product> nameMatch = findBestProductMatch(productName);
-            if (nameMatch.isPresent()) {
-                log.info("제품명 매칭 성공: {}", productName);
-                return buildMatchResult(
-                        nameMatch.get(),
-                        analysisResult,
-                        true,  // exactMatch
-                        analysisResult.getConfidence()
-                );
-            }
-        }
-
-        log.warn("매칭 실패: {}", productName);
-        return null;
-    }
-
-    /**
-     * 제품명으로 최적 매칭 찾기 (간단한 LIKE 검색)
-     */
-    private Optional<Product> findBestProductMatch(String productName) {
-        // 원본 제품명으로 검색 (공백, 특수문자 포함)
-        List<Product> candidates = productRepository.findByPrdlstNmContaining(productName);
-
-        if (!candidates.isEmpty()) {
-            return Optional.of(candidates.get(0));
-        }
-
-        // 검색 실패 시 정규화해서 재시도
-        String normalized = normalizeProductName(productName);
-        candidates = productRepository.findByPrdlstNmContaining(normalized);
-
-        return candidates.isEmpty() ? Optional.empty() : Optional.of(candidates.get(0));
-    }
-
-    /**
-     * 제품명 정규화 (백업용)
-     */
-    private String normalizeProductName(String name) {
-        return name.replaceAll("\\s+", "")
-                .toLowerCase()
-                .replaceAll("[^가-힣a-z0-9]", "");
-    }
-
-    /**
-     * ProductMatchResult 객체 생성
-     */
-    private ProductMatchResult buildMatchResult(
-            Product product,
-            FastApiAnalysisResult.RawAnalysisResult analysisResult,
-            boolean exactMatch,
-            double confidence) {
-
-        // 제품의 성분 정보 조회
-        List<ProductIngredientResponse> ingredients = product.getProductIngredients()
-                .stream()
-                .map(this::toIngredientResponse)
-                .collect(Collectors.toList());
-
-        return ProductMatchResult.builder()
-                .product(product)
-                .box(analysisResult.getBox())
-                .confidence(confidence)
-                .barcode(null) // 바코드 미사용
-                .exactMatch(exactMatch)
-                .ingredients(ingredients)
-                .build();
-    }
-
-    /**
-     * ProductIngredient -> ProductIngredientResponse 변환
-     */
-    private ProductIngredientResponse toIngredientResponse(ProductIngredient pi) {
-        return ProductIngredientResponse.builder()
-                .productId(pi.getProduct().getId())
-                .ingredientId(pi.getIngredient().getId())
-                .name(pi.getIngredient().getIngredientName())
-                .amount(pi.getIngredientAmount())
-                .unit(pi.getAmountUnit())
-                .dailyPercent(calculateDailyPercent(pi))
-                .build();
-    }
-
-    /**
-     * 일일 권장량 대비 퍼센트 계산
-     * 🔧 수정: getRecommendedAmount()가 Double 반환하도록 수정
-     */
-    private int calculateDailyPercent(ProductIngredient pi) {
-        Ingredient ingredient = pi.getIngredient();
-
-        Double recommendedAmount = ingredient.getRecommendedAmount();
-        if (recommendedAmount == null || recommendedAmount <= 0) {
-            return 0;
-        }
-
-        try {
-            // 단위 변환
-            ConversionResult result = unitConverter.convert(
-                    ingredient.getIngredientName(),
-                    pi.getIngredientAmount(),
-                    pi.getAmountUnit()
-            );
-
-            if (!result.isSuccess()) {
-                return 0;
+            if (product != null) {
+                log.info(">>> [분석] DB에서 제품 발견: {}", product.getPrdlstNm());
+                ingredients = getIngredientsFromDb(product);
+                calculateOverdose(currentIntakeMap, product.getProductIngredients());
+            } else {
+                log.info(">>> [분석] DB에 없음 -> LLM 호출 및 저장 시도: {}", raw.getProductName());
+                ingredients = fetchAndSaveProductFromLlm(raw.getProductName());
             }
 
-            double convertedAmount = result.getAmount().doubleValue();
-            double recommended = recommendedAmount;
+            // 3. Display Data
+            displayInfos.add(SupplementAnalysisResponse.ProductDisplayInfo.builder()
+                    .name(product != null ? product.getPrdlstNm() : raw.getProductName())
+                    .box(raw.getBox())
+                    .confidence(raw.getConfidence())
+                    .isExactMatch(isExactMatch)
+                    .build());
 
-            return (int) ((convertedAmount / recommended) * 100);
-
-        } catch (Exception e) {
-            log.warn("일일 권장량 계산 실패: {}", ingredient.getIngredientName(), e);
-            return 0;
-        }
-    }
-
-    /**
-     * 과복용 분석 수행
-     */
-    private SupplementAnalysisResponse.OverdoseAnalysis performOverdoseAnalysis(
-            Long userId,
-            List<ProductMatchResult> newMatches) {
-
-        // 성분별 합산 (신규 제품만)
-        Map<String, IngredientAmount> ingredientMap = new HashMap<>();
-
-        for (ProductMatchResult match : newMatches) {
-            for (ProductIngredientResponse ingredient : match.getIngredients()) {
-                String name = ingredient.getName();
-
-                try {
-                    // 단위 변환
-                    ConversionResult result = unitConverter.convert(
-                            name,
-                            ingredient.getAmount(),
-                            ingredient.getUnit()
-                    );
-
-                    if (result.isSuccess()) {
-                        ingredientMap.merge(
-                                name,
-                                new IngredientAmount(
-                                        result.getAmount().doubleValue(),
-                                        result.getUnit()
-                                ),
-                                (old, newVal) -> new IngredientAmount(
-                                        old.amount + newVal.amount,
-                                        old.unit
-                                )
-                        );
-                    }
-                } catch (Exception e) {
-                    log.warn("단위 변환 실패: {}", name, e);
-                }
-            }
+            // 4. Report Data
+            reportInfos.add(SupplementAnalysisResponse.ReportProductInfo.builder()
+                    .productId(product != null ? product.getId() : null)
+                    .name(product != null ? product.getPrdlstNm() : raw.getProductName())
+                    .confidence(raw.getConfidence())
+                    .ingredients(ingredients)
+                    .build());
         }
 
-        // 비교 결과 생성
-        List<SupplementAnalysisResponse.ComparisonResult> comparisons =
-                ingredientMap.entrySet().stream()
-                        .map(entry -> createComparisonResult(entry.getKey(), entry.getValue()))
-                        .filter(Objects::nonNull)
-                        .collect(Collectors.toList());
-
-        // 권장사항 생성
-        SupplementAnalysisResponse.Recommendations recommendations =
-                generateRecommendations(comparisons);
-
-        return SupplementAnalysisResponse.OverdoseAnalysis.builder()
-                .comparison(comparisons)
-                .recommendations(recommendations)
-                .build();
-    }
-
-    /**
-     * 성분별 비교 결과 생성
-     */
-    private SupplementAnalysisResponse.ComparisonResult createComparisonResult(
-            String ingredientName,
-            IngredientAmount amount) {
-
-        // TODO: 기존 복용 중인 제품의 해당 성분량 조회 (userId 활용)
-        // 여기서는 간단히 신규 제품만 표시
-
-        String status = determineStatus(ingredientName, amount.amount);
-
-        return SupplementAnalysisResponse.ComparisonResult.builder()
-                .name(ingredientName)
-                .myAmount("0") // TODO: 기존 복용량
-                .newAmount(String.format("%.2f", amount.amount))
-                .totalAmount(String.format("%.2f", amount.amount))
-                .status(status)
-                .build();
-    }
-
-    /**
-     * 성분 상태 판단 (good/warning/new)
-     * 🔧 수정: BigDecimal 비교 시 compareTo() 사용
-     */
-    private String determineStatus(String ingredientName, double totalAmount) {
-        // Ingredient 조회
-        Optional<Ingredient> ingredientOpt = ingredientRepository
-                .findByIngredientNameContaining(ingredientName)
-                .stream()
-                .findFirst();
-
-        if (ingredientOpt.isEmpty()) {
-            return "new";
-        }
-
-        Ingredient ingredient = ingredientOpt.get();
-
-        // 상한 섭취량 체크 (BigDecimal 비교 수정)
-        BigDecimal maxIntakeValue = ingredient.getMaxIntakeValue();
-        if (maxIntakeValue != null) {
-            BigDecimal totalAmountDecimal = BigDecimal.valueOf(totalAmount);
-            // compareTo: this < other -> -1, this == other -> 0, this > other -> 1
-            if (maxIntakeValue.compareTo(totalAmountDecimal) < 0) {
-                return "warning";
-            }
-        }
-
-        return "good";
-    }
-
-    /**
-     * 권장사항 생성
-     */
-    private SupplementAnalysisResponse.Recommendations generateRecommendations(
-            List<SupplementAnalysisResponse.ComparisonResult> comparisons) {
-
-        List<SupplementAnalysisResponse.InteractionInfo> interactions = new ArrayList<>();
-        List<SupplementAnalysisResponse.DosageInfo> dosageInfo = new ArrayList<>();
-
-        // Warning 상태인 성분에 대한 안내
-        comparisons.stream()
-                .filter(c -> "warning".equals(c.getStatus()))
-                .forEach(c -> {
-                    interactions.add(
-                            SupplementAnalysisResponse.InteractionInfo.builder()
-                                    .type("warning")
-                                    .text(c.getName() + "의 섭취량이 권장량을 초과합니다.")
-                                    .build()
-                    );
-                });
-
-        // 기본 안내사항
-        if (interactions.isEmpty()) {
-            interactions.add(
-                    SupplementAnalysisResponse.InteractionInfo.builder()
-                            .type("tip")
-                            .text("현재 섭취량은 적절한 수준입니다.")
-                            .build()
-            );
-        }
-
-        return SupplementAnalysisResponse.Recommendations.builder()
-                .interactions(interactions)
-                .dosageInfo(dosageInfo)
-                .productNotes(Collections.emptyList())
-                .build();
-    }
-
-    /**
-     * 최종 응답 생성
-     */
-    private SupplementAnalysisResponse createResponse(
-            List<ProductMatchResult> matches,
-            SupplementAnalysisResponse.OverdoseAnalysis overdoseAnalysis) {
-
-        // DisplayData 생성
-        List<SupplementAnalysisResponse.ProductDisplayInfo> displayInfos = matches.stream()
-                .map(m -> SupplementAnalysisResponse.ProductDisplayInfo.builder()
-                        .tempId(m.getProduct().getId())
-                        .name(m.getProduct().getPrdlstNm())
-                        .barcode(null) // 바코드 미사용
-                        .confidence(m.getConfidence())
-                        .box(m.getBox())
-                        .isExactMatch(m.isExactMatch())
-                        .build())
-                .collect(Collectors.toList());
-
-        // ReportData 생성
-        List<SupplementAnalysisResponse.ReportProductInfo> reportInfos = matches.stream()
-                .map(m -> {
-                    List<SupplementAnalysisResponse.ProductIngredientInfo> ingredientInfos =
-                            m.getIngredients().stream()
-                                    .map(this::toProductIngredientInfo)
-                                    .collect(Collectors.toList());
-
-                    return SupplementAnalysisResponse.ReportProductInfo.builder()
-                            .productId(m.getProduct().getId())
-                            .name(m.getProduct().getPrdlstNm())
-                            .confidence(m.getConfidence())
-                            .ingredients(ingredientInfos)
-                            .build();
-                })
-                .collect(Collectors.toList());
+        SupplementAnalysisResponse.OverdoseAnalysis overdoseAnalysis = generateOverdoseReport(currentIntakeMap);
 
         return SupplementAnalysisResponse.builder()
-                .displayData(
-                        SupplementAnalysisResponse.DisplayData.builder()
-                                .objectCount(matches.size())
-                                .products(displayInfos)
-                                .build()
-                )
-                .reportData(
-                        SupplementAnalysisResponse.ReportData.builder()
-                                .products(reportInfos)
-                                .overdoseAnalysis(overdoseAnalysis)
-                                .build()
-                )
+                .displayData(SupplementAnalysisResponse.DisplayData.builder()
+                        .objectCount(displayInfos.size())
+                        .products(displayInfos)
+                        .build())
+                .reportData(SupplementAnalysisResponse.ReportData.builder()
+                        .products(reportInfos)
+                        .overdoseAnalysis(overdoseAnalysis)
+                        .build())
                 .build();
     }
 
-    /**
-     * ProductIngredientResponse -> ProductIngredientInfo 변환
-     */
-    private SupplementAnalysisResponse.ProductIngredientInfo toProductIngredientInfo(
-            ProductIngredientResponse ingredient) {
-
-        return SupplementAnalysisResponse.ProductIngredientInfo.builder()
-                .name(ingredient.getName())
-                .amount(ingredient.getAmount().toString())
-                .unit(ingredient.getUnit())
-                .dailyPercent(ingredient.getDailyPercent())
-                .build();
+    private Product findProductInDb(String rawName) {
+        if (rawName == null || rawName.isEmpty()) return null;
+        Optional<Product> exact = productRepository.findByPrdlstNm(rawName);
+        if (exact.isPresent()) return exact.get();
+        List<Product> candidates = productRepository.findByPrdlstNmContaining(rawName);
+        if (candidates.isEmpty()) return null;
+        return candidates.stream()
+                .min(Comparator.comparingInt(p -> Math.abs(p.getPrdlstNm().length() - rawName.length())))
+                .orElse(null);
     }
 
     /**
-     * 성분량 저장용 내부 클래스
+     * LLM 호출 및 DB 저장 로직
      */
-    private static class IngredientAmount {
-        double amount;
-        String unit;
+    private List<SupplementAnalysisResponse.ProductIngredientInfo> fetchAndSaveProductFromLlm(String rawProductName) {
+        log.info(">>> [LLM] 제품 '{}' 성분 정보 추출 요청 시작 (Temperature: Default)", rawProductName);
 
-        IngredientAmount(double amount, String unit) {
-            this.amount = amount;
-            this.unit = unit;
+        Map<String, Object> params = Map.of("productName", rawProductName);
+
+        var extractionResult = llmServiceFacade.querySafe(
+                productExtractionPrompt,
+                params,
+                com.ssafy.yaksok.global.common.dto.ProductExtractionResponse.class
+        );
+
+        if (extractionResult == null) {
+            log.warn("<<< [LLM] 성분 정보 추출 실패 (응답 Null)");
+            return Collections.emptyList();
         }
+
+        log.info("<<< [LLM] 데이터 수신 완료. DB 저장을 시작합니다.");
+
+        // 1. 제품(Product) 저장
+        Product product = Product.builder()
+                .prdlstNm(extractionResult.getProductName())
+                .primaryFnclty(extractionResult.getPrimaryFunction())
+                .ntkMthd(extractionResult.getIntakeMethod())
+                .iftknAtntMatrCn(extractionResult.getPrecautions())
+                .build();
+
+        Product savedProduct = productRepository.save(product);
+        log.info("    [DB 저장] Product 테이블 저장 완료: ID={}, Name={}", savedProduct.getId(), savedProduct.getPrdlstNm());
+
+        List<SupplementAnalysisResponse.ProductIngredientInfo> uiResultList = new ArrayList<>();
+
+        // 2. 성분(Ingredient) 및 연결(ProductIngredient) 저장
+        for (var ingInfo : extractionResult.getIngredients()) {
+            BigDecimal rawAmount = ingInfo.getAmountAsBigDecimal();
+            String rawUnit = ingInfo.getUnit();
+            String ingName = ingInfo.getName().trim();
+
+            if (rawAmount.compareTo(BigDecimal.ZERO) <= 0 ||
+                    rawUnit == null || rawUnit.contains("정보") || rawUnit.contains("없음")) {
+
+                uiResultList.add(SupplementAnalysisResponse.ProductIngredientInfo.builder()
+                        .name(ingName).amount(ingInfo.getAmount()).unit(rawUnit).build());
+                continue;
+            }
+
+            // 단위 변환
+            ConversionResult conv = unitConverter.convert(ingName, rawAmount, rawUnit);
+
+            // [로그 수정] 성분명 포함하여 명확하게 출력
+            if (conv.isSuccess()) {
+                log.info("    -> [단위 변환] [{}] {} {} => {} {}",
+                        ingName, rawAmount, rawUnit, conv.getAmount(), conv.getUnit());
+            } else {
+                log.warn("    -> [변환 실패] [{}] {} {} (유지)", ingName, rawAmount, rawUnit);
+            }
+
+            BigDecimal finalAmount = conv.isSuccess() ? conv.getAmount() : rawAmount;
+            String finalUnit = conv.isSuccess() ? conv.getUnit() : rawUnit;
+
+            // 성분 저장
+            Ingredient ingredient = ingredientRepository.findByIngredientName(ingName)
+                    .orElseGet(() -> {
+                        log.info("    [DB 저장] 새로운 성분 등록: {}", ingName);
+                        return ingredientRepository.save(Ingredient.builder()
+                                .ingredientName(ingName)
+                                .displayUnit(finalUnit)
+                                .minIntakeValue(BigDecimal.ZERO)
+                                .maxIntakeValue(BigDecimal.valueOf(9999))
+                                .build());
+                    });
+
+            // 연결 정보 저장
+            productIngredientRepository.save(ProductIngredient.builder()
+                    .product(savedProduct)
+                    .ingredient(ingredient)
+                    .ingredientAmount(finalAmount)
+                    .amountUnit(finalUnit)
+                    .build());
+
+            uiResultList.add(SupplementAnalysisResponse.ProductIngredientInfo.builder()
+                    .name(ingName)
+                    .amount(finalAmount.toString())
+                    .unit(finalUnit)
+                    .build());
+        }
+
+        log.info(">>> [DB 저장] 모든 데이터 저장 완료. 총 성분 수: {}", uiResultList.size());
+        return uiResultList;
+    }
+
+    private Map<String, BigDecimal> getCurrentUserIntake(Long userId) {
+        List<IngredientSummary> summaries = overdoseRepository.findIngredientSummaryByUserId(userId);
+        return summaries.stream()
+                .collect(Collectors.toMap(
+                        IngredientSummary::getIngredientName,
+                        s -> BigDecimal.valueOf(s.getTotalAmount()),
+                        BigDecimal::add
+                ));
+    }
+
+    private List<SupplementAnalysisResponse.ProductIngredientInfo> getIngredientsFromDb(Product product) {
+        return product.getProductIngredients().stream()
+                .map(pi -> SupplementAnalysisResponse.ProductIngredientInfo.builder()
+                        .name(pi.getIngredient().getIngredientName())
+                        .amount(pi.getIngredientAmount().toString())
+                        .unit(pi.getAmountUnit())
+                        .build())
+                .toList();
+    }
+
+    private void calculateOverdose(Map<String, BigDecimal> intakeMap, List<ProductIngredient> newIngredients) {
+        for (ProductIngredient pi : newIngredients) {
+            String name = pi.getIngredient().getIngredientName();
+            BigDecimal amount = pi.getIngredientAmount();
+            intakeMap.merge(name, amount, BigDecimal::add);
+        }
+    }
+
+    private SupplementAnalysisResponse.OverdoseAnalysis generateOverdoseReport(Map<String, BigDecimal> intakeMap) {
+        return SupplementAnalysisResponse.OverdoseAnalysis.builder()
+                .comparison(new ArrayList<>())
+                .recommendations(SupplementAnalysisResponse.Recommendations.builder()
+                        .productNotes(List.of("분석 완료"))
+                        .interactions(new ArrayList<>())
+                        .dosageInfo(new ArrayList<>())
+                        .build())
+                .build();
     }
 }
