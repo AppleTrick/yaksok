@@ -1,16 +1,13 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
+import React, { useState, useEffect, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import LoginForm from '@/features/login/components/LoginForm';
 import '@/features/login/styles.css';
-
-import { Suspense } from 'react';
 
 function LoginContent() {
     const [isLoading, setIsLoading] = useState(false);
     const searchParams = useSearchParams();
-    const router = useRouter();
 
     useEffect(() => {
         const kakaoCode = searchParams.get('code');
@@ -44,7 +41,7 @@ function LoginContent() {
 
 export default function LoginPage() {
     return (
-        <Suspense fallback={<div>Loading...</div>}>
+        <Suspense fallback={null}>
             <LoginContent />
         </Suspense>
     );
