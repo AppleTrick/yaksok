@@ -13,6 +13,40 @@
     --report-accent: #6366F1;
     --report-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
     --report-radius: 1.25rem;
+    --report-table-header-bg: #F9FAFB;
+    --report-border-color: #f3f4f6;
+
+    --report-rec-warning-bg: #FFFBEB;
+    --report-rec-warning-border: #FEF3C7;
+    --report-rec-tip-bg: #F0FDF4;
+    --report-rec-tip-border: #DCFCE7;
+    --report-rec-text: #374151;
+    --report-btn-secondary-bg: #f3f4f6;
+}
+
+:root[data-theme='dark'] {
+    --report-bg: #121212;
+    --report-surface: #1E1E1E;
+    --report-text-main: #FFFFFF;
+    --report-text-sub: #A1A1AA;
+    --report-primary: #FFAB91;
+    /* desaturated for dark mode */
+    --report-primary-soft: rgba(255, 87, 34, 0.15);
+    --report-success: #34D399;
+    --report-warning: #FBBF24;
+    --report-danger: #F87171;
+    --report-accent: #818CF8;
+    --report-shadow: none;
+    --report-radius: 1.25rem;
+    --report-table-header-bg: #2C2C2E;
+    --report-border-color: #333333;
+
+    --report-rec-warning-bg: rgba(245, 158, 11, 0.15);
+    --report-rec-warning-border: rgba(245, 158, 11, 0.3);
+    --report-rec-tip-bg: rgba(16, 185, 129, 0.15);
+    --report-rec-tip-border: rgba(16, 185, 129, 0.3);
+    --report-rec-text: #E5E7EB;
+    --report-btn-secondary-bg: #333333;
 }
 
 .report-container {
@@ -333,12 +367,12 @@
     display: grid;
     grid-template-columns: 2fr 1fr 1fr 1fr;
     padding: 1rem;
-    background: #F9FAFB;
+    background: var(--report-table-header-bg);
     font-size: 0.7rem;
     font-weight: 700;
     color: var(--report-text-sub);
     text-transform: uppercase;
-    border-bottom: 1px solid #f3f4f6;
+    border-bottom: 1px solid var(--report-border-color);
 }
 
 .comparison-table-body {
@@ -350,7 +384,7 @@
     display: grid;
     grid-template-columns: 2fr 1fr 1fr 1fr;
     padding: 1rem;
-    border-bottom: 1px solid #f9fafb;
+    border-bottom: 1px solid var(--report-border-color);
     font-size: 0.85rem;
     align-items: center;
 }
@@ -435,13 +469,13 @@
 }
 
 .recommendation-card-modern.warning {
-    background: #FFFBEB;
-    border: 1px solid #FEF3C7;
+    background: var(--report-rec-warning-bg);
+    border: 1px solid var(--report-rec-warning-border);
 }
 
 .recommendation-card-modern.tip {
-    background: #F0FDF4;
-    border: 1px solid #DCFCE7;
+    background: var(--report-rec-tip-bg);
+    border: 1px solid var(--report-rec-tip-border);
 }
 
 .rec-icon-wrap {
@@ -452,7 +486,7 @@
 .recommendation-card-modern p {
     font-size: 0.85rem;
     line-height: 1.6;
-    color: #374151;
+    color: var(--report-rec-text);
     margin: 0;
 }
 
@@ -656,7 +690,7 @@
 }
 
 .premium-modal-content {
-    background: #fff;
+    background: var(--report-surface);
     border-radius: 2rem;
     padding: 2rem;
     width: 100%;
@@ -723,7 +757,7 @@
 }
 
 .premium-product-chip {
-    background: #f3f4f6;
+    background: var(--report-bg);
     padding: 6px 14px;
     border-radius: 12px;
     font-size: 0.85rem;
@@ -754,7 +788,7 @@
 }
 
 .premium-modal-btn.secondary {
-    background: #f3f4f6;
+    background: var(--report-btn-secondary-bg);
     color: var(--report-text-main);
 }
 

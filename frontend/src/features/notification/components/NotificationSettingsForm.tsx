@@ -39,13 +39,7 @@ export default function NotificationSettingsForm() {
                             onChange={updateActions.togglePush}
                         />
                     </div>
-                    <div className="setting-row">
-                        <span className="setting-label">미복용 재알림</span>
-                        <ToggleSwitch
-                            checked={settings.missedNotification}
-                            onChange={updateActions.toggleMissed}
-                        />
-                    </div>
+
                 </section>
 
                 {/* 2. DND Mode */}
