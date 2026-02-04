@@ -6,6 +6,6 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public class NotificationResponse {
-    long notificationSettingId;
+    long notificationId;
     boolean enable;
 }

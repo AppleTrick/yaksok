@@ -125,9 +125,8 @@ class UserControllerIntegrationTest {
 
         // 사용자 영양제 등록
         UserProduct up = UserProduct.create(
-                testUser, testUser, product, "내약", 2,
-                new BigDecimal("1.0"), "캡슐",
-                LocalDate.now(), LocalDate.now().plusMonths(1));
+                testUser, product, "내약", 2,
+                new BigDecimal("1.0"), "캡슐");
         userProductRepository.save(up);
 
         // when & then
