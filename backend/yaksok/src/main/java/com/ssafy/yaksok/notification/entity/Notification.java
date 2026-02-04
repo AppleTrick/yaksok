@@ -32,7 +32,7 @@ public class Notification {
     private LocalTime intakeTime;
 
     @Column(name = "next_notify")
-    private LocalDateTime nextNotify;
+    private LocalTime nextNotify;
 
     @Column(nullable = false)
     private Boolean enabled;
@@ -52,6 +52,7 @@ public class Notification {
             long userProductId,
             String nickname,
             LocalTime intakeTime,
+            LocalTime nextNotify,
             NotificationEnums.Category category,
             boolean enabled,
             boolean isTaken
@@ -61,6 +62,7 @@ public class Notification {
         n.userProductId = userProductId;
         n.nickname = nickname;
         n.intakeTime = intakeTime;
+        n.nextNotify = nextNotify;
         n.category = category;
         n.enabled = enabled;
         n.intaken = isTaken;
@@ -88,7 +90,7 @@ public class Notification {
 
     public void setCategory(NotificationEnums.Category category) { this.category = category; }
 
-    public void snoozeTime(){ this.nextNotify = LocalDateTime.now().plusMinutes((long) 5);}
+    public void snoozeTime(){ this.nextNotify = LocalTime.now().plusMinutes((long) 5);}
 
     public void clearSnooze(){ this.nextNotify = null; }
 
