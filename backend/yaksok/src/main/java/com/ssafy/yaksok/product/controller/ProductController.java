@@ -1,11 +1,9 @@
 package com.ssafy.yaksok.product.controller;
 
+import com.ssafy.yaksok.facade.userProductNotification.UserProductNotificationService;
 import com.ssafy.yaksok.global.dto.ApiResponse;
 import com.ssafy.yaksok.global.util.ResponseUtil;
-import com.ssafy.yaksok.product.dto.ProductDetailResponse;
-import com.ssafy.yaksok.product.dto.ProductSearchResponse;
-import com.ssafy.yaksok.product.dto.RegisterUserProductRequest;
-import com.ssafy.yaksok.product.dto.UserProductResponse;
+import com.ssafy.yaksok.product.dto.*;
 import com.ssafy.yaksok.product.service.ProductService;
 import com.ssafy.yaksok.product.service.UserProductService;
 import com.ssafy.yaksok.security.principal.UserPrincipal;
@@ -25,6 +23,7 @@ public class ProductController {
 
     private final ProductService productService;
     private final UserProductService userProductService;
+    private final UserProductNotificationService userProductNotificationService;
 
     /**
      * 영양제 검색
@@ -77,6 +76,18 @@ public class ProductController {
                 principal.getUserId(), request.getProductId());
 
         userProductService.registerUserProduct(principal.getUserId(), request);
+
+        return ResponseUtil.ok();
+    }
+
+    @PostMapping("/user/self")
+    public ResponseEntity<ApiResponse<Void>> registerUserProductSelf(
+            @AuthenticationPrincipal UserPrincipal principal,
+            @RequestBody RegisterUserProductSelfRequest request) {
+        log.info("영양제 등록 요청: userId={}, nickname={}",
+                principal.getUserId(), request.getNickname());
+        userProductNotificationService.registerUserProductSelf(principal.getUserId(), request);
+        userProductNotificationService.registerNotificaion(principal.getUserId(), request);
 
         return ResponseUtil.ok();
     }
