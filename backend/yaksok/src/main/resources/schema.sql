@@ -1,19 +1,19 @@
 -- ========================================
 -- DROP TABLES (Reset)
 -- ========================================
-DROP TABLE IF EXISTS notification_log;
-DROP TABLE IF EXISTS notification;
-DROP TABLE IF EXISTS notification_setting;
-DROP TABLE IF EXISTS intake_record;
-DROP TABLE IF EXISTS user_product;
-DROP TABLE IF EXISTS product_ingredient;
-DROP TABLE IF EXISTS product;
-DROP TABLE IF EXISTS ingredient;
-DROP TABLE IF EXISTS user_disease;
-DROP TABLE IF EXISTS disease;
-DROP TABLE IF EXISTS user_fcm_token;
-DROP TABLE IF EXISTS `user`;
-DROP TABLE IF EXISTS shedlock;
+-- DROP TABLE IF EXISTS notification_log;
+-- DROP TABLE IF EXISTS notification;
+-- DROP TABLE IF EXISTS notification_setting;
+-- DROP TABLE IF EXISTS intake_record;
+-- DROP TABLE IF EXISTS user_product;
+-- DROP TABLE IF EXISTS product_ingredient;
+-- DROP TABLE IF EXISTS product;
+-- DROP TABLE IF EXISTS ingredient;
+-- DROP TABLE IF EXISTS user_disease;
+-- DROP TABLE IF EXISTS disease;
+-- DROP TABLE IF EXISTS user_fcm_token;
+-- DROP TABLE IF EXISTS `user`;
+-- DROP TABLE IF EXISTS shedlock;
 
 -- ========================================
 -- ingredient
