@@ -50,7 +50,7 @@ openai:
   model: ${OPENAI_MODEL:gpt-5-nano}
 
 fastapi:
-  url: ${FASTAPI_URL:http://localhost:8000/v1/analyze2}
+  url: ${FASTAPI_URL:http://localhost:8000/ai/v1/analyze2}
 
 
 firebase:
