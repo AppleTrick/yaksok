@@ -1,12 +1,57 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import { useFCM } from '@/features/notification/hooks/useFCM';
 import { saveFCMToken } from '@/features/notification/api/fcmApi';
 
 export default function NotificationTestPage() {
     const { fcmToken, permission, isLoading, requestPermission } = useFCM();
     const [statusLog, setStatusLog] = useState<string[]>([]);
+    const [pillList, setPillList] = useState<any[]>([]);
+
+    useEffect(() => {
+        // 1. 영양제 목록 가져오기
+        fetchPillList();
+
+        // 2. BroadcastChannel 구독 (서비스 워커로부터 성공 신호 수신)
+        const channel = new BroadcastChannel('pill_channel');
+        channel.onmessage = (event) => {
+            const { type, notificationId, action } = event.data;
+            if (type === 'PILL_TAKEN_COMPLETE') {
+                addLog(`🔔 [Broadcast] 복용 완료 신호 수신! ID: ${notificationId}`);
+                // 상태 즉시 업데이트 (새로고침 X)
+                setPillList(prev => prev.map(pill =>
+                    // notificationId와 매핑되는 pillId를 찾아야 하는데, 
+                    // 여기서는 간단히 하기 위해 notificationId가 pillId라고 가정하거나, 
+                    // 실제로는 알림 ID와 Pill ID가 다를 수 있으므로 재조회 로직이 안전할 수 있음.
+                    // 하지만 요청사항은 "상태 즉시 업데이트"이므로, 
+                    // 백엔드에서 notificationId가 무엇인지에 따라 로직이 달라짐.
+                    // 여기서는 알림 전송 시 notificationId를 무엇으로 보냈느냐가 중요함.
+                    // handleLocalPush에서 pillList[0].id를 notificationId로 쓴다고 했으므로,
+                    // 여기서도 그대로 매칭하면 됨.
+                    String(pill.productId) === String(notificationId)
+                        ? { ...pill, isTaken: true }
+                        : pill
+                ));
+            }
+        };
+
+        return () => channel.close();
+    }, []);
+
+    const fetchPillList = async () => {
+        try {
+            const response = await axios.get('/api/v1/products/user');
+            if (response.data.success) {
+                setPillList(response.data.data);
+                addLog(`✅ 영양제 목록 로드 완료 (${response.data.data.length}개)`);
+            }
+        } catch (error) {
+            console.error(error);
+            addLog('❌ 영양제 목록 로드 실패');
+        }
+    };
 
     const addLog = (msg: string) => {
         setStatusLog(prev => [`[${new Date().toLocaleTimeString()}] ${msg}`, ...prev]);
@@ -96,15 +141,16 @@ export default function NotificationTestPage() {
             const registration = await navigator.serviceWorker.ready;
 
             addLog('🔔 로컬 알림 표시 요청...');
+            console.log('Local Push Requested'); // Debug log
 
-            await registration.showNotification('테스트 알림', {
-                body: '알림 버튼 동작을 확인해보세요!',
-                icon: '/icons/icon-192x192.png',
-                badge: '/icons/badge-72x72.png',
+            await registration.showNotification('영양제 섭취 알림', {
+                body: '비타민 C 섭취 시간입니다! (테스트)',
+                // icon: '/icons/icon-192x192.png',
+                // badge: '/icons/badge-72x72.png',
                 vibrate: [200, 100, 200],
                 tag: 'test-notification-' + Date.now(),
                 data: {
-                    notificationId: 9999,
+                    notificationId: pillList.length > 0 ? pillList[0].productId : 9999, // 실제 데이터 ID 사용 (없으면 9999)
                     url: '/test/notification',
                     timestamp: Date.now()
                 },
@@ -112,12 +158,12 @@ export default function NotificationTestPage() {
                     {
                         action: 'complete',
                         title: '✅ 복용 완료',
-                        icon: '/icons/check-icon.png'
+                        // icon: '/icons/check-icon.png'
                     },
                     {
                         action: 'snooze',
                         title: '⏰ 나중에 알림',
-                        icon: '/icons/snooze-icon.png'
+                        // icon: '/icons/snooze-icon.png'
                     }
                 ]
             } as any);
@@ -211,6 +257,28 @@ export default function NotificationTestPage() {
                             {log}
                         </div>
                     ))
+                )}
+            </div>
+            {/* 영양제 목록 표시 */}
+            <div style={{ marginTop: '20px', border: '1px solid #ddd', padding: '15px', borderRadius: '8px' }}>
+                <h3>💊 내 영양제 목록 (실시간 동기화 테스트)</h3>
+                {pillList.length === 0 ? <p>데이터가 없습니다.</p> : (
+                    <ul>
+                        {pillList.map(pill => (
+                            <li key={pill.productId} style={{
+                                padding: '10px',
+                                borderBottom: '1px solid #eee',
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                backgroundColor: pill.isTaken ? '#d1fae5' : 'transparent' // 복용 완료 시 초록색 배경
+                            }}>
+                                <span>{pill.productName} (ID: {pill.productId})</span>
+                                <span style={{ fontWeight: 'bold', color: pill.isTaken ? 'green' : 'red' }}>
+                                    {pill.isTaken ? '✅ 복용 완료' : '⏳ 미복용'}
+                                </span>
+                            </li>
+                        ))}
+                    </ul>
                 )}
             </div>
         </div>
