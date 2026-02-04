@@ -414,7 +414,7 @@ async def read_test_page():
                 formData.append('file', file);
                 
                 try {
-                    const response = await fetch('/analyze', { method: 'POST', body: formData });
+                    const response = await fetch('/ai/v1/analyze', { method: 'POST', body: formData });
                     const data = await response.json();
                     
                     renderResults(data);
@@ -851,8 +851,8 @@ async def read_test_page_v2():
                 formData.append('file', file);
                 
                 try {
-                    // Update URL to /v1/analyze2
-                    const response = await fetch('/v1/analyze2', {
+                    // Update URL to /ai/v1/analyze2
+                    const response = await fetch('/ai/v1/analyze2', {
                         method: 'POST',
                         body: formData
                     });
@@ -924,8 +924,8 @@ async def read_test_page_v2():
 # 라우터 등록 및 서버 실행
 # ============================================================
 
-# 기존 API 라우터 등록 (하위 호환성)
-app.include_router(api_router, prefix="/v1")
+# /ai/v1 접두사로 API 라우터 일괄 등록
+app.include_router(api_router, prefix="/ai/v1")
 
 if __name__ == "__main__":
     import uvicorn
