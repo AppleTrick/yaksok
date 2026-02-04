@@ -76,7 +76,7 @@ CREATE TABLE IF NOT EXISTS `user` (
 CREATE TABLE IF NOT EXISTS user_product (
                                             id BIGINT AUTO_INCREMENT PRIMARY KEY,
                                             user_id BIGINT NOT NULL,
-                                            product_id BIGINT NOT NULL,
+                                            product_id BIGINT,
                                             nickname VARCHAR(255),
                                             daily_dose INT,
                                             dose_amount DECIMAL,
