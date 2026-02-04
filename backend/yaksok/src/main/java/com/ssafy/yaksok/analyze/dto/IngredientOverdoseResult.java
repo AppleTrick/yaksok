@@ -17,6 +17,7 @@ public class IngredientOverdoseResult {
     private String ingredientName; // 성분명
     private Double totalAmount; // 총 섭취량
     private Double maxIntakeValue; // 최대 섭취 기준
+    private Double minIntakeValue; // 권장 섭취량
     private String unit; // 단위
     private boolean isOverdose; // 과복용 여부
 }
