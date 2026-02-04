@@ -1,19 +1,19 @@
 -- ========================================
 -- DROP TABLES (Reset)
 -- ========================================
-DROP TABLE IF EXISTS notification_log;
-DROP TABLE IF EXISTS notification;
-DROP TABLE IF EXISTS notification_setting;
-DROP TABLE IF EXISTS intake_record;
-DROP TABLE IF EXISTS user_product;
-DROP TABLE IF EXISTS product_ingredient;
-DROP TABLE IF EXISTS product;
-DROP TABLE IF EXISTS ingredient;
-DROP TABLE IF EXISTS user_disease;
-DROP TABLE IF EXISTS disease;
-DROP TABLE IF EXISTS user_fcm_token;
-DROP TABLE IF EXISTS `user`;
-DROP TABLE IF EXISTS shedlock;
+-- DROP TABLE IF EXISTS notification_log;
+-- DROP TABLE IF EXISTS notification;
+-- DROP TABLE IF EXISTS notification_setting;
+-- DROP TABLE IF EXISTS intake_record;
+-- DROP TABLE IF EXISTS user_product;
+-- DROP TABLE IF EXISTS product_ingredient;
+-- DROP TABLE IF EXISTS product;
+-- DROP TABLE IF EXISTS ingredient;
+-- DROP TABLE IF EXISTS user_disease;
+-- DROP TABLE IF EXISTS disease;
+-- DROP TABLE IF EXISTS user_fcm_token;
+-- DROP TABLE IF EXISTS `user`;
+-- DROP TABLE IF EXISTS shedlock;
 
 -- ========================================
 -- ingredient
@@ -85,7 +85,9 @@ CREATE TABLE IF NOT EXISTS user_product (
                                             created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT fk_up_user FOREIGN KEY (user_id) REFERENCES `user`(id),
-    CONSTRAINT fk_up_product FOREIGN KEY (product_id) REFERENCES product(id)
+    CONSTRAINT fk_up_product FOREIGN KEY (product_id) REFERENCES product(id),
+
+    CONSTRAINT uk_user_product_user_nickname UNIQUE (user_id, nickname)
     ) ENGINE=InnoDB;
 
 -- ========================================
@@ -184,7 +186,7 @@ CREATE TABLE IF NOT EXISTS user_fcm_token (
                                                   UNIQUE (user_id, token)
 ) ENGINE=InnoDB;
 
-CREATE TABLE shedlock (
+CREATE TABLE IF NOT EXISTS shedlock (
                           name VARCHAR(64) NOT NULL,
                           lock_until TIMESTAMP(3) NOT NULL,
                           locked_at TIMESTAMP(3) NOT NULL,
