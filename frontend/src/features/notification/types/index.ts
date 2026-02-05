@@ -17,6 +17,8 @@ export interface MedicationItem {
     cycle: Cycle;
     // Extended fields for "My Supplements"
     imageUrl?: string;
+    productName?: string; // OCR/API raw product name
+    nickname?: string;    // User defined nickname
     efficacy?: string; // e.g., "혈압 조절", "눈 건강"
     cautions?: string; // e.g., "공복 섭취 금지"
     category?: string; // e.g., "비타민", "유산균"
