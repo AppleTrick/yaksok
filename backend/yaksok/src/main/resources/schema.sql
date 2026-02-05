@@ -183,7 +183,7 @@ CREATE TABLE IF NOT EXISTS user_fcm_token (
                                                   FOREIGN KEY (user_id) REFERENCES `user`(id),
 
                                               CONSTRAINT uk_user_fcm_token
-                                                  UNIQUE (user_id, token)
+                                                  UNIQUE (user_id, platform)
 ) ENGINE=InnoDB;
 
 CREATE TABLE IF NOT EXISTS shedlock (
