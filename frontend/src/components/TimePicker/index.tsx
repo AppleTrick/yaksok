@@ -1,4 +1,5 @@
-import React, { useEffect, useRef, useState, useCallback } from 'react';
+import React, { useEffect, useLayoutEffect, useRef, useState, useCallback, useMemo } from 'react';
+import { motion } from 'framer-motion';
 import './styles.css';
 
 interface TimePickerProps {
@@ -10,29 +11,24 @@ interface TimePickerProps {
 
 type AmPm = '오전' | '오후';
 
-// ✅ Move constants outside component
 const AM_PM_OPTIONS: AmPm[] = ['오전', '오후'];
 const HOUR_OPTIONS = Array.from({ length: 12 }, (_, i) => i + 1);
-const MINUTE_OPTIONS = Array.from({ length: 60 }, (_, i) => i);
-const ITEM_HEIGHT = 40;
+const MINUTE_OPTIONS = Array.from({ length: 12 }, (_, i) => i * 5);
+const ITEM_HEIGHT = 52; // Matching the new CSS
 
-// ✅ Memoized Item Component
 const PickerItem = React.memo(({
     label,
-    value,
     isActive,
     onClick
 }: {
     label: string | number;
-    value: any;
     isActive: boolean;
-    onClick: (val: any) => void;
+    onClick: () => void;
 }) => {
     return (
         <div
             className={`picker-item ${isActive ? 'selected' : ''}`}
-            data-value={value}
-            onClick={() => onClick(value)}
+            onClick={onClick}
         >
             {label}
         </div>
@@ -41,199 +37,118 @@ const PickerItem = React.memo(({
 PickerItem.displayName = "PickerItem";
 
 const TimePicker: React.FC<TimePickerProps> = ({
-    value,
+    value = "09:00",
     onChange,
     label,
     disabled = false
 }) => {
-    // 1. Parsing initial value
-    const parseTime = (timeStr: string) => {
-        const [h, m] = timeStr.split(':').map(Number);
+    // 1. Parsing and Derived State
+    const parsed = useMemo(() => {
+        const [h, m] = value.split(':').map(Number);
         const ampm: AmPm = h < 12 ? '오전' : '오후';
         let hour = h % 12;
         if (hour === 0) hour = 12;
-        return { ampm, hour, minute: m };
-    };
 
-    const initialParsed = parseTime(value || "09:00");
+        // Round to nearest 5 minutes
+        const roundedMinute = Math.round(m / 5) * 5;
+        const minute = roundedMinute >= 60 ? 55 : roundedMinute;
 
-    // NOTE: 'parsedTime' state is actually not strictly needed if we derive everything from 'value' prop
-    // only if we wanted to control internal state separate from prop, but we want controlled component behavior.
+        return { ampm, hour, minute };
+    }, [value]);
 
-    // We hold local "active" state to allow smooth scrolling without waiting for prop updates
-    const [activeAmpm, setActiveAmpm] = useState<AmPm>(initialParsed.ampm);
-    const [activeHour, setActiveHour] = useState<number>(initialParsed.hour);
-    const [activeMinute, setActiveMinute] = useState<number>(initialParsed.minute);
+    const [activeState, setActiveState] = useState(parsed);
+    const isProgrammaticScroll = useRef(false);
+    const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-    const [isDragging, setIsDragging] = useState(false);
-
-    // Editing State (Temporarily Disabled as requested)
-    // const [editingColumn, setEditingColumn] = useState<'hour' | 'minute' | null>(null);
-    // const [inputValue, setInputValue] = useState("");
-
-    // Column Refs
     const ampmRef = useRef<HTMLDivElement>(null);
     const hourRef = useRef<HTMLDivElement>(null);
     const minuteRef = useRef<HTMLDivElement>(null);
 
-    // State Refs (Source of Truth for High Frequency Events)
-    const activeStateRef = useRef({ ampm: initialParsed.ampm, hour: initialParsed.hour, minute: initialParsed.minute });
-
-    // Interaction Refs
-    const isProgrammaticScroll = useRef(false);
-    const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-    const rafRef = useRef<number | null>(null);
-
-    // Sync state with prop value (only if not scrolling)
+    // 2. Sync State with Props (only when not interacting)
     useEffect(() => {
-        const parsed = parseTime(value || "09:00");
-
-        if (!isProgrammaticScroll.current && !isDragging) {
-            setActiveAmpm(parsed.ampm);
-            setActiveHour(parsed.hour);
-            setActiveMinute(parsed.minute);
-            activeStateRef.current = { ampm: parsed.ampm, hour: parsed.hour, minute: parsed.minute };
+        if (!isProgrammaticScroll.current) {
+            setActiveState(parsed);
         }
-    }, [value, isDragging]);
+    }, [parsed]);
 
+    // 3. Initial & Prop-based Scroll Positioning
+    const scrollToTarget = useCallback((
+        ref: React.RefObject<HTMLDivElement | null>,
+        index: number,
+        smooth = true
+    ) => {
+        if (!ref.current) return;
+        isProgrammaticScroll.current = true;
 
-    // --- DATA SYNC LOGIC ---
-    // This debounced effect listens to changes in active* state and pushes them to parent.
-    // This separates high-frequency scroll updates (State) from expensive prop updates (Logic).
-    useEffect(() => {
-        // Prevent updates if we are in the middle of a programmatic scroll
-        // However, we MUST allow updates if the user is just scrolling manually (isDragging) logic?
-        // Actually, we should debounce but eventually fire.
+        ref.current.scrollTo({
+            top: index * ITEM_HEIGHT,
+            behavior: smooth ? 'smooth' : 'auto'
+        });
 
-        const timer = setTimeout(() => {
-            // Ensure we are using the LATEST value from ref to be safe? 
-            // Or just trust the state dependencies.
-            // Using state is safer for effect dependencies.
+        if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
+        scrollTimeoutRef.current = setTimeout(() => {
+            isProgrammaticScroll.current = false;
+        }, 500);
+    }, []);
 
-            // Reconstruct 24h time
-            let h = activeHour;
-            if (activeAmpm === '오후' && h < 12) h += 12;
-            if (activeAmpm === '오전' && h === 12) h = 0;
+    useLayoutEffect(() => {
+        // Initial positioning without animation for better UX
+        scrollToTarget(ampmRef, AM_PM_OPTIONS.indexOf(parsed.ampm), false);
+        scrollToTarget(hourRef, HOUR_OPTIONS.indexOf(parsed.hour), false);
+        scrollToTarget(minuteRef, MINUTE_OPTIONS.indexOf(parsed.minute), false);
+    }, []); // Only once on mount
 
-            const mStr = activeMinute.toString().padStart(2, '0');
-            const hStr = h.toString().padStart(2, '0');
-            const newTimeStr = `${hStr}:${mStr}`;
+    // 4. Handle Interaction Updates
+    const pushChanges = useCallback((newState: typeof parsed) => {
+        let h = newState.hour;
+        if (newState.ampm === '오후' && h < 12) h += 12;
+        if (newState.ampm === '오전' && h === 12) h = 0;
 
-            if (value !== newTimeStr) {
-                onChange(newTimeStr);
-            }
-        }, 150); // Small delay to coalesce rapid scroll events
+        const hStr = h.toString().padStart(2, '0');
+        const mStr = newState.minute.toString().padStart(2, '0');
+        onChange(`${hStr}:${mStr}`);
+    }, [onChange]);
 
-        return () => clearTimeout(timer);
-    }, [activeAmpm, activeHour, activeMinute, onChange, value]);
-
-
-    // --- SCROLL HANDLER ---
-    const handleScroll = useCallback((
+    const handleScroll = (
         e: React.UIEvent<HTMLDivElement>,
         list: any[],
-        type: 'ampm' | 'hour' | 'minute'
+        type: keyof typeof parsed
     ) => {
-        // If we are auto-scrolling (e.g. click), ignore scroll events to avoid "fight" / flutter
         if (isProgrammaticScroll.current) return;
 
         const scrollTop = e.currentTarget.scrollTop;
         const index = Math.round(scrollTop / ITEM_HEIGHT);
 
-        if (index < 0 || index >= list.length) return;
-
-        const newValue = list[index];
-
-        // Only update if changed
-        if (activeStateRef.current[type] !== newValue) {
-            // High-perf visual update via RAF
-            if (rafRef.current) cancelAnimationFrame(rafRef.current);
-
-            rafRef.current = requestAnimationFrame(() => {
-                // Update Ref
-                const current = { ...activeStateRef.current };
-                if (type === 'ampm') current.ampm = newValue;
-                if (type === 'hour') current.hour = newValue;
-                if (type === 'minute') current.minute = newValue;
-                activeStateRef.current = current;
-
-                // Update React State (Component Re-render)
-                if (type === 'ampm') setActiveAmpm(newValue);
-                if (type === 'hour') setActiveHour(newValue);
-                if (type === 'minute') setActiveMinute(newValue);
-            });
+        if (index >= 0 && index < list.length) {
+            const newValue = list[index];
+            if (activeState[type] !== newValue) {
+                const nextState = { ...activeState, [type]: newValue };
+                setActiveState(nextState);
+                pushChanges(nextState);
+            }
         }
-    }, []);
+    };
 
-
-    // --- CLICK HANDLER ---
-    const handleItemClick = useCallback((
+    const handleItemClick = (
         ref: React.RefObject<HTMLDivElement | null>,
-        value: any,
         list: any[],
-        type: 'ampm' | 'hour' | 'minute'
+        type: keyof typeof parsed,
+        val: any
     ) => {
-        if (disabled || !ref.current) return;
+        if (disabled) return;
+        const idx = list.indexOf(val);
+        scrollToTarget(ref, idx, true);
 
-        const idx = list.indexOf(value);
-        if (idx === -1) return;
-
-        const element = ref.current;
-        if (!element) return;
-
-        // Interaction Lock
-        isProgrammaticScroll.current = true;
-        setIsDragging(false); // Force dragging off
-
-        // 1. Update State Immediately (Visual Feedback)
-        const current = { ...activeStateRef.current };
-        if (type === 'ampm') current.ampm = value;
-        if (type === 'hour') current.hour = value;
-        if (type === 'minute') current.minute = value;
-
-        activeStateRef.current = current;
-        if (type === 'ampm') setActiveAmpm(value);
-        if (type === 'hour') setActiveHour(value);
-        if (type === 'minute') setActiveMinute(value);
-
-        // 2. Clear any pending scroll debounce from the effect ?? 
-        // No, let the effect fire naturally, or force update?
-        // Since we updated state, the effect will fire in 150ms. That is acceptable.
-
-        // 3. Scroll Animation
-        element.style.scrollSnapType = 'none'; // Unlock snap
-
-        // Using RAF for smoother start
-        requestAnimationFrame(() => {
-            element.scrollTo({
-                top: idx * ITEM_HEIGHT,
-                behavior: 'smooth'
-            });
-
-            // Re-enable snap after animation
-            if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
-            scrollTimeoutRef.current = setTimeout(() => {
-                if (element) {
-                    element.style.scrollSnapType = 'y mandatory';
-                    isProgrammaticScroll.current = false;
-
-                    // Force alignment just in case? No, smooth scroll is precise enough usually.
-                }
-            }, 600);
-        });
-    }, [disabled]);
-
-    // Stable Handlers
-    const onAmPmClick = useCallback((val: any) => handleItemClick(ampmRef, val, AM_PM_OPTIONS, 'ampm'), [handleItemClick]);
-    const onHourClick = useCallback((val: any) => handleItemClick(hourRef, val, HOUR_OPTIONS, 'hour'), [handleItemClick]);
-    const onMinuteClick = useCallback((val: any) => handleItemClick(minuteRef, val, MINUTE_OPTIONS, 'minute'), [handleItemClick]);
-
+        const nextState = { ...activeState, [type]: val };
+        setActiveState(nextState);
+        pushChanges(nextState);
+    };
 
     return (
         <div className={`time-picker-wrapper ${disabled ? 'disabled' : ''}`}>
             {label && <div className="time-picker-label">{label}</div>}
 
-            <div className={`picker-columns ${isDragging ? 'dragging' : ''}`}>
+            <div className="picker-columns">
                 <div className="picker-highlight"></div>
 
                 {/* AM/PM */}
@@ -241,21 +156,14 @@ const TimePicker: React.FC<TimePickerProps> = ({
                     className="picker-column"
                     ref={ampmRef}
                     onScroll={(e) => handleScroll(e, AM_PM_OPTIONS, 'ampm')}
-                    onTouchStart={() => {
-                        isProgrammaticScroll.current = false;
-                        setIsDragging(true);
-                    }}
-                    onTouchEnd={() => setIsDragging(false)}
-                    style={{ scrollSnapType: isDragging ? 'none' : 'y mandatory' }}
                 >
                     <div className="picker-spacer"></div>
                     {AM_PM_OPTIONS.map((opt) => (
                         <PickerItem
                             key={opt}
-                            value={opt}
                             label={opt}
-                            isActive={activeAmpm === opt}
-                            onClick={onAmPmClick}
+                            isActive={activeState.ampm === opt}
+                            onClick={() => handleItemClick(ampmRef, AM_PM_OPTIONS, 'ampm', opt)}
                         />
                     ))}
                     <div className="picker-spacer"></div>
@@ -266,29 +174,14 @@ const TimePicker: React.FC<TimePickerProps> = ({
                     className="picker-column"
                     ref={hourRef}
                     onScroll={(e) => handleScroll(e, HOUR_OPTIONS, 'hour')}
-                    onMouseDown={() => {
-                        // Mouse support for PC
-                        isProgrammaticScroll.current = false;
-                        setIsDragging(true);
-                    }}
-                    onMouseUp={() => setIsDragging(false)}
-                    onMouseLeave={() => setIsDragging(false)}
-                    onTouchStart={() => {
-                        isProgrammaticScroll.current = false;
-                        setIsDragging(true);
-                    }}
-                    onTouchEnd={() => setIsDragging(false)}
-                    style={{ scrollSnapType: isDragging ? 'none' : 'y mandatory' }}
-                // onClick={} REMOVE column click for direct input -> Input Mode Disabled
                 >
                     <div className="picker-spacer"></div>
                     {HOUR_OPTIONS.map((h) => (
                         <PickerItem
                             key={h}
-                            value={h}
                             label={h.toString().padStart(2, '0')}
-                            isActive={activeHour === h}
-                            onClick={onHourClick}
+                            isActive={activeState.hour === h}
+                            onClick={() => handleItemClick(hourRef, HOUR_OPTIONS, 'hour', h)}
                         />
                     ))}
                     <div className="picker-spacer"></div>
@@ -301,28 +194,14 @@ const TimePicker: React.FC<TimePickerProps> = ({
                     className="picker-column"
                     ref={minuteRef}
                     onScroll={(e) => handleScroll(e, MINUTE_OPTIONS, 'minute')}
-                    onMouseDown={() => {
-                        isProgrammaticScroll.current = false;
-                        setIsDragging(true);
-                    }}
-                    onMouseUp={() => setIsDragging(false)}
-                    onMouseLeave={() => setIsDragging(false)}
-                    onTouchStart={() => {
-                        isProgrammaticScroll.current = false;
-                        setIsDragging(true);
-                    }}
-                    onTouchEnd={() => setIsDragging(false)}
-                    style={{ scrollSnapType: isDragging ? 'none' : 'y mandatory' }}
-                // onClick={} REMOVE input mode
                 >
                     <div className="picker-spacer"></div>
                     {MINUTE_OPTIONS.map((m) => (
                         <PickerItem
                             key={m}
-                            value={m}
                             label={m.toString().padStart(2, '0')}
-                            isActive={activeMinute === m}
-                            onClick={onMinuteClick}
+                            isActive={activeState.minute === m}
+                            onClick={() => handleItemClick(minuteRef, MINUTE_OPTIONS, 'minute', m)}
                         />
                     ))}
                     <div className="picker-spacer"></div>

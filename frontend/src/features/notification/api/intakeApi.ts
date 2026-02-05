@@ -1,4 +1,4 @@
-import axiosInstance from '@/lib/axios';
+import axiosInstance from 'axios';
 
 const API_BASE = '/api/v1/intakes';
 

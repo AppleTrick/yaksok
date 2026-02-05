@@ -2,6 +2,7 @@ import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { MedicationItem } from '@/features/notification/types';
 import MySupplementCard from './MySupplementCard';
 import { Plus } from 'lucide-react';
+import { motion } from 'framer-motion';
 import '../styles.css';
 
 interface SupplementListProps {
@@ -87,16 +88,43 @@ export default function SupplementList({ items, onItemClick, onAddClick }: Suppl
                         />
                     ))
                 ) : (
-                    <div className="empty-state-animated">
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="empty-state-animated"
+                    >
                         <div className="floating-icon-wrapper">
                             <span className="floating-icon">💊</span>
                         </div>
-                        <p className="empty-text">
-                            {activeTab === 'taking'
-                                ? '아직 등록된 영양제가 없어요'
-                                : '중단한 영양제가 없어요'}
-                        </p>
-                    </div>
+                        <div className="empty-content-wrapper">
+                            <div className="empty-text-group">
+                                <h3 className="empty-main-text">
+                                    {activeTab === 'taking'
+                                        ? '어떤 영양제를 드시고 계신가요?'
+                                        : '아직 중단한 영양제가 없네요'}
+                                </h3>
+                                <p className="empty-sub-text">
+                                    {activeTab === 'taking'
+                                        ? '매일 챙겨 먹는 영양제를 기록해 보세요.'
+                                        : '꾸준히 잘 챙겨 드시고 계신가 봐요!'}
+                                </p>
+                            </div>
+
+                            {activeTab === 'taking' ? (
+                                <button className="empty-cta-btn primary" onClick={onAddClick}>
+                                    <Plus size={18} />
+                                    <span>영양제 등록하기</span>
+                                </button>
+                            ) : (
+                                <button
+                                    className="empty-cta-link"
+                                    onClick={() => setActiveTab('taking')}
+                                >
+                                    현재 복용 중인 영양제 보러 가기
+                                </button>
+                            )}
+                        </div>
+                    </motion.div>
                 )}
 
                 {/* Loader Target */}

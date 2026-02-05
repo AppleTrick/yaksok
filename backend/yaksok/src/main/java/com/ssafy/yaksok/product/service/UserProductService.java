@@ -2,6 +2,8 @@ package com.ssafy.yaksok.product.service;
 
 import com.ssafy.yaksok.global.exception.BusinessException;
 import com.ssafy.yaksok.global.exception.ErrorCode;
+import com.ssafy.yaksok.notification.repository.NotificationLogRepository;
+import com.ssafy.yaksok.notification.repository.NotificationRepository;
 import com.ssafy.yaksok.product.dto.ProductIngredientResponse;
 import com.ssafy.yaksok.product.dto.RegisterUserProductRequest;
 import com.ssafy.yaksok.product.dto.RegisterUserProductSelfRequest;
@@ -21,7 +23,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -30,6 +31,8 @@ public class UserProductService {
     private final UserRepository userRepository;
     private final ProductService productService;
     private final ProductIngredientService productIngredientService;
+    private final NotificationRepository notificationRepository;
+    private final NotificationLogRepository notificationLogRepository;
 
     /**
      * 사용자 영양제 목록 조회
@@ -39,8 +42,7 @@ public class UserProductService {
         log.debug("사용자 영양제 목록 조회: userId={}", userId);
 
         // 1. 사용자 영양제 기본 정보 조회
-        List<UserProductResponse> userProducts =
-                userProductRepository.findUserProducts(userId);
+        List<UserProductResponse> userProducts = userProductRepository.findUserProducts(userId);
 
         if (userProducts.isEmpty()) {
             return List.of();
@@ -61,13 +63,12 @@ public class UserProductService {
         Map<Long, List<ProductIngredientResponse>> ingredientMap;
 
         if (!validProductIds.isEmpty()) {
-            List<ProductIngredientResponse> ingredients =
-                    productIngredientService.findIngredientsByProductIds(validProductIds);
+            List<ProductIngredientResponse> ingredients = productIngredientService
+                    .findIngredientsByProductIds(validProductIds);
 
             ingredientMap = ingredients.stream()
                     .collect(Collectors.groupingBy(
-                            ProductIngredientResponse::getProductId
-                    ));
+                            ProductIngredientResponse::getProductId));
         } else {
             ingredientMap = Map.of();
         }
@@ -80,8 +81,7 @@ public class UserProductService {
             } else {
                 // product는 있으나 성분이 없을 수도 있음
                 up.setIngredients(
-                        ingredientMap.getOrDefault(up.getProductId(), List.of())
-                );
+                        ingredientMap.getOrDefault(up.getProductId(), List.of()));
             }
         });
 
@@ -112,8 +112,7 @@ public class UserProductService {
                 request.getNickname(),
                 request.getDailyDose(),
                 request.getDoseAmount(),
-                request.getDoseUnit()
-        );
+                request.getDoseUnit());
 
         // 4. 저장
         userProductRepository.save(userProduct);
@@ -139,30 +138,25 @@ public class UserProductService {
             throw new BusinessException(ErrorCode.USER_PRODUCT_UNAUTHORIZED);
         }
 
-        // 3. 삭제
+        // 3. 연관된 알림 및 로그 삭제 (FK 제약 조건 해결)
+        notificationRepository.deleteAllByUserProductId(userProductId);
+        notificationLogRepository.deleteAllByUserProductId(userProductId);
+
+        // 4. 삭제
         userProductRepository.delete(userProduct);
 
         log.info("영양제 삭제 완료: userProductId={}", userProductId);
     }
 
-    public UserProduct findByUserIdAndNickname(long userId, String nickname){
+    public UserProduct findByUserIdAndNickname(long userId, String nickname) {
         return userProductRepository.findByUserIdAndNickname(userId, nickname).orElseThrow(
-                () -> new BusinessException(ErrorCode.USER_PRODUCT_NOT_FOUND)
-        );
+                () -> new BusinessException(ErrorCode.USER_PRODUCT_NOT_FOUND));
     }
 
-    public void registerUserProductSelf(UserProduct userProduct){
-        if(userProductRepository.existsByUserIdAndNickname(userProduct.getUser().getId(), userProduct.getNickname())){
+    public void registerUserProductSelf(UserProduct userProduct) {
+        if (userProductRepository.existsByUserIdAndNickname(userProduct.getUser().getId(), userProduct.getNickname())) {
             throw new BusinessException(ErrorCode.USER_PRODUCT_DUPLICATE_NICKNAME);
         }
         userProductRepository.save(userProduct);
     }
 }
-
-
-
-
-
-
-
-
