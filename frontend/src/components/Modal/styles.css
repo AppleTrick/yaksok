@@ -18,10 +18,20 @@
 
 .cm-modal-content {
     background: var(--surface-1);
-    width: 100%;
-    max-width: 440px;
+    width: 90vw;
+    max-width: clamp(340px, 90vw, 600px);
     border-radius: var(--radius-2xl);
     max-height: 85vh;
+
+    @media (min-width: 768px) {
+        width: 100%;
+        max-width: 500px;
+    }
+
+    @media (min-width: 1024px) {
+        max-width: 600px;
+    }
+
     overflow: hidden;
     position: relative;
     display: flex;
