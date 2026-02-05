@@ -191,3 +191,12 @@ export const getTodayIntakes = async () => {
     const response = await axiosInstance.get<ApiResponse<TodayIntakeResponse>>(`${INTAKES_BASE}/today`);
     return response.data;
 };
+
+/**
+ * 사용자 복용 약 삭제
+ * DELETE /api/v1/products/user/{userProductId}
+ */
+export const deleteUserProduct = async (userProductId: number): Promise<void> => {
+    await axiosInstance.delete<ApiResponse<null>>(`/api/v1/products/user/${userProductId}`);
+};
+
