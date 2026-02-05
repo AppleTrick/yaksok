@@ -3,10 +3,10 @@
 import { useState, useEffect } from "react";
 import HomeHeader from "@/features/home/components/HomeHeader";
 import DailyProgressCard from "@/features/home/components/DailyProgressCard";
-import HomeActionCard from "@/features/home/components/HomeActionCard";
 import TimelineSection from "@/features/home/components/TimelineSection";
 import { useScheduleContext, isItemDue } from "@/features/notification/contexts/ScheduleContext";
 import '@/features/home/styles.css';
+import '@/features/home/components/timeline_v2.css';
 
 // 시간대별 인사말 유틸리티 함수
 const getGreeting = (date: Date): string => {
@@ -71,18 +71,16 @@ export default function Home() {
         isLoading={isLoading}
       />
 
-      <div className="dashboard-content">
-        <div className="left-column">
-          <DailyProgressCard total={totalMeds} taken={takenMeds} />
-          <HomeActionCard />
-        </div>
-        <div className="right-column">
-          <TimelineSection
-            today={today}
-            schedules={schedules}
-            onToggleItem={toggleItemTaken}
-          />
-        </div>
+      <div className="dashboard-content-v2">
+        {/* Hero Section */}
+        <DailyProgressCard total={totalMeds} taken={takenMeds} />
+
+        {/* Timeline Section */}
+        <TimelineSection
+          today={today}
+          schedules={schedules}
+          onToggleItem={toggleItemTaken}
+        />
       </div>
 
       {/* Spacing for Bottom Tab Bar */}
