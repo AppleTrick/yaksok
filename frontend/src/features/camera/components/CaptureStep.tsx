@@ -65,67 +65,29 @@ export default function CaptureStep({ onCapture, onFileUpload }: CaptureStepProp
     };
 
     const handleCapture = () => {
-        if (!videoRef.current || !canvasRef.current || !guideBoxRef.current || !isStreaming) return;
+        if (!videoRef.current || !canvasRef.current || !isStreaming) return;
 
         const video = videoRef.current;
         const canvas = canvasRef.current;
-        const guideBox = guideBoxRef.current;
 
-        // 1. Get dimensions of the displayed video element (container)
-        const videoRect = video.getBoundingClientRect();
-        const guideRect = guideBox.getBoundingClientRect();
-
-        // 2. Get actual video stream dimensions
-        const videoWidth = video.videoWidth;
-        const videoHeight = video.videoHeight;
-
-        // 3. Calculate Scale Factors (object-fit: cover logic)
-        // 'cover' scales the video to fill the container, maintaining aspect ratio.
-        const scaleX = videoRect.width / videoWidth;
-        const scaleY = videoRect.height / videoHeight;
-        const scale = Math.max(scaleX, scaleY); // The actual scale used by 'cover'
-
-        // 4. Calculate the rendered dimensions of the video content
-        const renderedWidth = videoWidth * scale;
-        const renderedHeight = videoHeight * scale;
-
-        // 5. Calculate offsets (centering logic of object-fit)
-        // (rendered - visible) / 2 is the amount hidden on each side
-        const offsetX = (renderedWidth - videoRect.width) / 2;
-        const offsetY = (renderedHeight - videoRect.height) / 2;
-
-        // 6. Map Guide Box Screen Coordinates -> Video Stream Coordinates
-        // Formula: (GuidePos + Offset) / Scale
-        // GuidePos: Position relative to the *video element top-left*
-        const guideNativeX = (guideRect.left - videoRect.left + offsetX) / scale;
-        const guideNativeY = (guideRect.top - videoRect.top + offsetY) / scale;
-        const guideNativeW = guideRect.width / scale;
-        const guideNativeH = guideRect.height / scale;
-
-        // 7. Configure Canvas
-        canvas.width = guideNativeW;
-        canvas.height = guideNativeH;
+        // Capture Full Screen (Original Resolution)
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
 
         const ctx = canvas.getContext("2d");
         if (ctx) {
-            ctx.drawImage(
-                video,
-                guideNativeX, guideNativeY, guideNativeW, guideNativeH, // Source Crop
-                0, 0, guideNativeW, guideNativeH                        // Destination
-            );
+            ctx.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
             const dataUrl = canvas.toDataURL("image/jpeg", 0.95);
             onCapture(dataUrl);
         }
     };
 
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
+    const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
         if (file) {
             const reader = new FileReader();
-            reader.onload = (event) => {
-                if (event.target?.result) {
-                    onFileUpload(event.target.result as string);
-                }
+            reader.onloadend = () => {
+                onFileUpload(reader.result as string);
             };
             reader.readAsDataURL(file);
         }
@@ -146,17 +108,18 @@ export default function CaptureStep({ onCapture, onFileUpload }: CaptureStepProp
                         autoPlay
                         playsInline
                         className="camera-video"
-                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                        style={{ width: '100%', height: '100%', objectFit: 'contain', backgroundColor: '#000' }}
                     />
                     <canvas ref={canvasRef} style={{ display: 'none' }} />
 
                     <div ref={guideBoxRef} className="guide-box">
-                        <p className="guide-text">
-                            영양제가 잘 보이도록<br />
-                            <span>카메라에 비춰주세요</span>
-                        </p>
+                        {/* Guide Corners handled by CSS or separate divs if needed, currently box border? */}
                     </div>
                 </RatioBox>
+                <p className="guide-text">
+                    영양제가 잘 보이도록<br />
+                    <span>카메라에 비춰주세요</span>
+                </p>
             </div>
 
             <footer className="pwa-controls">
