@@ -19,6 +19,23 @@ const messaging = firebase.messaging();
 messaging.onBackgroundMessage((payload) => {
     console.log('[firebase-messaging-sw.js] 백그라운드 메시지 수신:', payload);
 
+    // ✅ 추가: data 필드 상세 로그
+    console.log('📦 [SW] payload.data 확인:', payload.data);
+    console.log('📦 [SW] data 타입:', typeof payload.data);
+    console.log('📦 [SW] data가 비어있나요?',
+        payload.data === undefined || payload.data === null || Object.keys(payload.data || {}).length === 0
+    );
+
+    if (payload.data) {
+        console.log('✅ [SW] notificationId:', payload.data.notificationId);
+        console.log('✅ [SW] userProductId:', payload.data.userProductId);
+        console.log('✅ [SW] productName:', payload.data.productName);
+        console.log('✅ [SW] title:', payload.data.title);
+        console.log('✅ [SW] body:', payload.data.body);
+    } else {
+        console.warn('⚠️ [SW] payload.data가 없습니다! 백엔드 확인 필요');
+    }
+
     // 알림 데이터 파싱 (Data-Only 메시지 대응)
     // 백엔드에서 notification 필드 없이 data 필드만 보내야 함
     const data = payload.data || {};
