@@ -117,9 +117,10 @@ async function openApp(url) {
 }
 
 // 1. 복용 완료 API 호출
+// 1. 복용 완료 API 호출
 async function handleMedicationComplete(data) {
     const endpoint = `${self.location.origin}/api/v1/notification/taken`;
-    console.log(`[SW] 복용 완료 요청: POST ${endpoint}`, data);
+    console.log(`[SW] 복용 완료 요청: PUT ${endpoint}`, data);
 
     try {
         const response = await fetch(endpoint, {
@@ -127,20 +128,43 @@ async function handleMedicationComplete(data) {
             headers: {
                 'Content-Type': 'application/json',
             },
-            credentials: 'include', // 쿠키 전송을 위해 필수
+            credentials: 'include',
             body: JSON.stringify({
                 notificationId: Number(data.notificationId),
             }),
         });
 
+        // ✅ 개선: 응답 상세 로깅
+        console.log('[SW] 응답 상태:', response.status);
+        console.log('[SW] 응답 헤더:', [...response.headers.entries()]);
+
         if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(`서버 응답 에러 (${response.status}): ${errorText}`);
+            // ✅ 개선: JSON과 Text 모두 시도하여 정확한 에러 확인
+            let errorDetails;
+            const contentType = response.headers.get('content-type');
+
+            try {
+                if (contentType && contentType.includes('application/json')) {
+                    errorDetails = await response.json();
+                    console.error('[SW] JSON 에러 응답:', errorDetails);
+                } else {
+                    errorDetails = await response.text();
+                    console.error('[SW] Text 에러 응답:', errorDetails);
+                }
+            } catch (parseError) {
+                console.error('[SW] 에러 응답 파싱 실패:', parseError);
+                errorDetails = '응답 파싱 불가';
+            }
+
+            throw new Error(
+                `서버 응답 에러 (${response.status}): ${JSON.stringify(errorDetails)}`
+            );
         }
 
-        console.log('✅ [SW] 복용 완료 처리 성공');
+        // ✅ 성공 응답도 로깅
+        const result = await response.json();
+        console.log('✅ [SW] 복용 완료 처리 성공:', result);
 
-        // 프론트엔드로 성공 신호 전송 (Zero-Refresh Update)
         const channel = new BroadcastChannel('pill_channel');
         channel.postMessage({
             type: 'PILL_TAKEN_COMPLETE',
@@ -149,13 +173,32 @@ async function handleMedicationComplete(data) {
             timestamp: Date.now()
         });
         channel.close();
+
+        // ✅ 추가: 성공 피드백 알림
+        self.registration.showNotification('복용 완료', {
+            body: '오늘의 복용이 기록되었습니다.',
+            icon: '/icons/icon-192x192.png',
+            badge: '/icons/badge-72x72.png',
+            tag: 'intake-success',
+            requireInteraction: false,
+        });
+
     } catch (error) {
         console.error('❌ [SW] 복용 완료 처리 실패:', error);
-        // 필요 시 재시도 로직이나 사용자에게 실패 알림을 띄우는 로직 추가 가능
-        // self.registration.showNotification('처리 실패', { body: '잠시 후 다시 시도해주세요.' });
+        console.error('[SW] 에러 스택:', error.stack);
+
+        // ✅ 추가: 실패 피드백 알림
+        self.registration.showNotification('복용 기록 실패', {
+            body: '잠시 후 다시 시도해주세요.',
+            icon: '/icons/icon-192x192.png',
+            badge: '/icons/badge-72x72.png',
+            tag: 'intake-error',
+            requireInteraction: false,
+        });
     }
 }
 
+// 2. 나중에 알림 (Snooze) API 호출
 // 2. 나중에 알림 (Snooze) API 호출
 async function handleMedicationSnooze(data) {
     const endpoint = `${self.location.origin}/api/v1/notification/snooze`;
@@ -167,20 +210,43 @@ async function handleMedicationSnooze(data) {
             headers: {
                 'Content-Type': 'application/json',
             },
-            credentials: 'include', // 쿠키 전송을 위해 필수
+            credentials: 'include',
             body: JSON.stringify({
                 notificationId: Number(data.notificationId),
             }),
         });
 
+        // ✅ 개선: 응답 상세 로깅
+        console.log('[SW] 응답 상태:', response.status);
+        console.log('[SW] 응답 헤더:', [...response.headers.entries()]);
+
         if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(`서버 응답 에러 (${response.status}): ${errorText}`);
+            // ✅ 개선: JSON과 Text 모두 시도하여 정확한 에러 확인
+            let errorDetails;
+            const contentType = response.headers.get('content-type');
+
+            try {
+                if (contentType && contentType.includes('application/json')) {
+                    errorDetails = await response.json();
+                    console.error('[SW] JSON 에러 응답:', errorDetails);
+                } else {
+                    errorDetails = await response.text();
+                    console.error('[SW] Text 에러 응답:', errorDetails);
+                }
+            } catch (parseError) {
+                console.error('[SW] 에러 응답 파싱 실패:', parseError);
+                errorDetails = '응답 파싱 불가';
+            }
+
+            throw new Error(
+                `서버 응답 에러 (${response.status}): ${JSON.stringify(errorDetails)}`
+            );
         }
 
-        console.log('✅ [SW] 5분 후 재알림 예약 성공');
+        // ✅ 성공 응답도 로깅
+        const result = await response.json();
+        console.log('✅ [SW] 재알림 예약 성공:', result);
 
-        // 프론트엔드로 성공 신호 전송
         const channel = new BroadcastChannel('pill_channel');
         channel.postMessage({
             type: 'PILL_SNOOZE_COMPLETE',
@@ -189,8 +255,28 @@ async function handleMedicationSnooze(data) {
             timestamp: Date.now()
         });
         channel.close();
+
+        // ✅ 추가: 성공 피드백 알림
+        self.registration.showNotification('알림 미루기', {
+            body: '잠시 후 다시 알림드리겠습니다.',
+            icon: '/icons/icon-192x192.png',
+            badge: '/icons/badge-72x72.png',
+            tag: 'snooze-success',
+            requireInteraction: false,
+        });
+
     } catch (error) {
         console.error('❌ [SW] 재알림 요청 실패:', error);
+        console.error('[SW] 에러 스택:', error.stack);
+
+        // ✅ 추가: 실패 피드백 알림
+        self.registration.showNotification('알림 미루기 실패', {
+            body: '잠시 후 다시 시도해주세요.',
+            icon: '/icons/icon-192x192.png',
+            badge: '/icons/badge-72x72.png',
+            tag: 'snooze-error',
+            requireInteraction: false,
+        });
     }
 }
 
