@@ -24,18 +24,23 @@ public class FcmTokenService {
     }
 
     //CRUD
-    @Transactional
     public void createOrUpdateFcmToken(long userId, FcmTokenRequest request) {
         fcmTokenRepository.findByUserIdAndPlatform(userId, request.getDeviceType())
                 .ifPresentOrElse(
-                        token -> token.updateToken(request.getFcmToken()),
-                        () -> fcmTokenRepository.save(
-                                UserFcmToken.createToken(
-                                        userId,
-                                        request.getFcmToken(),
-                                        request.getDeviceType()
-                                )
-                        )
+                        existing -> {
+                            // 같은 platform이면 토큰만 업데이트
+                            existing.updateToken(request.getFcmToken());
+                        },
+                        () -> {
+                            // 새로운 platform이면 새로 저장
+                            fcmTokenRepository.save(
+                                    UserFcmToken.createToken(
+                                            userId,
+                                            request.getFcmToken(),
+                                            request.getDeviceType()
+                                    )
+                            );
+                        }
                 );
     }
 
