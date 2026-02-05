@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Check, RotateCcw, ShieldCheck, Info, ScanText, SearchX, ArrowRight } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useAnimation, PanInfo } from 'framer-motion';
 import '../styles.css';
 import CameraHeader from './common/CameraHeader';
 import RatioBox from './common/RatioBox';
@@ -34,6 +34,8 @@ export default function ResultStep({ imageSrc, result, onRetake, onRegister }: R
     const [imageSize, setImageSize] = useState({ width: 0, height: 0 });
     const products = result.displayData?.products || [];
     const hasResults = products.length > 0;
+    const controls = useAnimation();
+    const [isExpanded, setIsExpanded] = useState(false);
 
     const handleImageLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
         const { width, height } = e.currentTarget.getBoundingClientRect();
@@ -66,24 +68,48 @@ export default function ResultStep({ imageSrc, result, onRetake, onRegister }: R
         visible: { opacity: 1, y: 0 }
     };
 
+    const onDragEnd = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+        const threshold = 100;
+        if (info.offset.y < -threshold) {
+            // Dragged Up -> Expand
+            setIsExpanded(true);
+            controls.start({ y: -300 }); // Move up significantly to cover image
+        } else if (info.offset.y > threshold) {
+            // Dragged Down -> Collapse
+            setIsExpanded(false);
+            controls.start({ y: 0 }); // Return to initial state
+        } else {
+            // Snap back to nearest state
+            if (isExpanded) {
+                controls.start({ y: -300 });
+            } else {
+                controls.start({ y: 0 });
+            }
+        }
+    };
+
     return (
-        <div className={`camera-container ${theme === 'light' ? 'theme-light' : ''}`}>
+        // Force Dark Theme for Camera Flow consistency
+        <div className="camera-container theme-dark">
             <CameraHeader
                 title="분석 결과"
-                theme={theme}
+                theme="dark"
+                stepInfo="Step 3/3"
                 onBack={onRetake}
             />
 
-            <div className="result-scroll">
-                <div className="camera-content-center" style={{ padding: '0 20px 20px' }}>
+            <div className="result-scroll" style={{ overflow: 'hidden', position: 'relative' }}>
+                {/* Disabled native scroll to allow drag */}
+                <div className="camera-content-center" style={{ padding: '0 20px', height: '60dvh' }}>
                     <RatioBox>
                         <img
                             ref={imageRef}
                             src={imageSrc}
                             alt="Analyzed"
                             onLoad={handleImageLoad}
-                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                            style={{ width: '100%', height: '100%', objectFit: 'contain', backgroundColor: '#000' }}
                         />
+                        {/* ... Scan Indicator & Bounding Boxes ... */}
                         <motion.div
                             className="scan-indicator"
                             initial={{ scale: 0.8, opacity: 0 }}
@@ -117,6 +143,7 @@ export default function ResultStep({ imageSrc, result, onRetake, onRegister }: R
 
                             return (
                                 <React.Fragment key={idx}>
+                                    {/* Bounding Box Render Logic (unchanged) */}
                                     <motion.div
                                         initial={{ opacity: 0, scale: 0.9 }}
                                         animate={{ opacity: 1, scale: 1 }}
@@ -166,10 +193,28 @@ export default function ResultStep({ imageSrc, result, onRetake, onRegister }: R
                     </RatioBox>
                 </div>
 
-                <div className="result-list-section">
+                <motion.div
+                    className="result-list-section bottom-sheet"
+                    drag="y"
+                    dragConstraints={{ top: -400, bottom: 0 }}
+                    dragElastic={0.2}
+                    onDragEnd={onDragEnd}
+                    animate={controls}
+                    initial={{ y: 0 }}
+                    style={{
+                        touchAction: 'none', // Prevent browser scroll interference
+                        marginTop: '-20px', // Slight overlap
+                        minHeight: '80vh' // Tall enough to cover screen
+                    }}
+                >
+                    {/* Drag Handle */}
+                    <div className="sheet-handle-bar-area" style={{ width: '100%', height: '24px', display: 'flex', justifyContent: 'center', alignItems: 'center', cursor: 'grab' }}>
+                        <div className="sheet-handle" style={{ width: '40px', height: '5px', borderRadius: '3px', background: 'rgba(255,255,255,0.2)' }}></div>
+                    </div>
+
                     <div className="section-title-row">
-                        <h3 className="card-item-title" style={{ fontSize: '1.4rem', color: 'var(--cam-black)' }}>인식된 영양제</h3>
-                        <span className="count-badge">{products.length}개 발견</span>
+                        <h3 className="card-item-title" style={{ fontSize: '1.4rem', color: '#fff' }}>인식된 영양제</h3>
+                        <span className="count-badge">{products.length}개의 영양제 발견</span>
                     </div>
 
                     <AnimatePresence>
@@ -178,6 +223,7 @@ export default function ResultStep({ imageSrc, result, onRetake, onRegister }: R
                                 variants={containerVariants}
                                 initial="hidden"
                                 animate="visible"
+                                style={{ paddingBottom: '140px' }} // Space for footer
                             >
                                 {products.map((obj, idx) => (
                                     <motion.div
@@ -249,33 +295,42 @@ export default function ResultStep({ imageSrc, result, onRetake, onRegister }: R
                                 }}>
                                     <SearchX size={40} color="var(--cam-gray)" />
                                 </div>
-                                <h4 style={{ fontSize: '1.2rem', fontWeight: 700, marginBottom: '8px', color: 'var(--cam-black)' }}>
+                                <h4 style={{ fontSize: '1.2rem', fontWeight: 700, marginBottom: '8px', color: '#fff' }}>
                                     인식된 영양제가 없습니다
                                 </h4>
-                                <p style={{ fontSize: '0.9rem', color: 'var(--cam-gray)', lineHeight: 1.5 }}>
+                                <p style={{ fontSize: '0.9rem', color: '#9CA3AF', lineHeight: 1.5 }}>
                                     촬영 각도를 조절하거나<br />
                                     밝은 곳에서 다시 촬영해 보세요.
                                 </p>
                             </motion.div>
                         )}
                     </AnimatePresence>
-                </div>
+                </motion.div>
             </div>
 
             <footer className="sticky-footer" style={{ borderTop: '1px solid var(--cam-border)' }}>
                 <div className="cam-btn-row" style={{ padding: '16px 20px', width: '100%' }}>
-                    <ActionButton onClick={onRetake} variant="outline">
+                    <ActionButton onClick={onRetake} variant="secondary">
                         <RotateCcw size={20} />
                         <span>다시 촬영</span>
                     </ActionButton>
                     <ActionButton
                         onClick={onRegister}
-                        variant="primary"
+                        variant={hasResults ? "primary" : "secondary"}
                         disabled={!hasResults}
                         className={!hasResults ? 'btn-disabled' : ''}
                     >
-                        <span>리포트 보기</span>
-                        <ArrowRight size={20} strokeWidth={3} />
+                        {hasResults ? (
+                            <>
+                                <span>리포트 보기</span>
+                                <ArrowRight size={20} strokeWidth={3} />
+                            </>
+                        ) : (
+                            <>
+                                <SearchX size={20} />
+                                <span>인식된 정보 없음</span>
+                            </>
+                        )}
                     </ActionButton>
                 </div>
             </footer>
