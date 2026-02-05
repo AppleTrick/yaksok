@@ -9,16 +9,20 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 
-    @Repository
-    public interface NotificationRepository extends JpaRepository<Notification, Long> {
+@Repository
+public interface NotificationRepository extends JpaRepository<Notification, Long> {
 
-        List<Notification> findAllByUserId(long userId);
-        Notification findByUserIdAndUserProductId(Long userId, Long userProductId);
-        @Query("""
-        SELECT n FROM Notification n
-        WHERE n.enabled = true
-          AND n.intaken = false
-          AND n.nextNotify <= :now
-    """)
-        List<Notification> findSendableNotifications(LocalTime now);
-    }
+    List<Notification> findAllByUserId(long userId);
+
+    Notification findByUserIdAndUserProductId(Long userId, Long userProductId);
+
+    void deleteAllByUserProductId(Long userProductId);
+
+    @Query("""
+                SELECT n FROM Notification n
+                WHERE n.enabled = true
+                  AND n.intaken = false
+                  AND n.nextNotify <= :now
+            """)
+    List<Notification> findSendableNotifications(LocalTime now);
+}
