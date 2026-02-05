@@ -22,5 +22,6 @@ public class IntakeResponse {
     private BigDecimal doseAmount;// 1회 섭취량
     private String doseUnit;      // 단위
 
-    private boolean isTaken;      // 섭취 완료 여부
+    private boolean active;
+    private boolean taken;      // 섭취 완료 여부
 }
