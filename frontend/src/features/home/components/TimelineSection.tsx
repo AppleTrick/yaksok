@@ -72,8 +72,10 @@ export default function TimelineSection({ today, schedules, onToggleItem }: Time
     return (
         <section className="timeline-section">
             {hasAnyContent ? renderedSchedules : (
-                <div className="empty-slot" style={{ textAlign: 'center', padding: '2rem' }}>
-                    <p>오늘 예정된 일정이 없습니다.</p>
+                <div className="timeline-empty-state">
+                    <Sun size={48} color="var(--text-muted)" style={{ opacity: 0.5, marginBottom: '1rem' }} />
+                    <p className="empty-text-main">오늘 예정된 일정이 없어요</p>
+                    <p className="empty-text-sub">편안한 하루 보내세요</p>
                 </div>
             )}
         </section>
