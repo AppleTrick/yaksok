@@ -26,53 +26,54 @@ public class LLMServiceFacade {
     /**
      * 프롬프트 템플릿을 사용한 LLM 호출 (기본 temperature)
      *
-     * @param template 프롬프트 템플릿
-     * @param parameters 파라미터
+     * @param template     프롬프트 템플릿
+     * @param parameters   파라미터
      * @param responseType 응답 타입
      * @return 파싱된 응답 객체
      */
     public <T> T query(
             PromptTemplate template,
             Map<String, Object> parameters,
-            Class<T> responseType
-    ) {
+            Class<T> responseType) {
         return query(template, parameters, responseType, 1);
     }
 
     /**
      * 프롬프트 템플릿을 사용한 LLM 호출 (커스텀 temperature)
      *
-     * @param template 프롬프트 템플릿
-     * @param parameters 파라미터
+     * @param template     프롬프트 템플릿
+     * @param parameters   파라미터
      * @param responseType 응답 타입
-     * @param temperature 창의성 조절 (0.0 ~ 2.0)
+     * @param temperature  창의성 조절 (0.0 ~ 2.0)
      * @return 파싱된 응답 객체
      */
     public <T> T query(
             PromptTemplate template,
             Map<String, Object> parameters,
             Class<T> responseType,
-            double temperature
-    ) {
+            double temperature) {
         log.info("LLM 호출 시작: template={}, type={}, temp={}",
                 template.getName(), responseType.getSimpleName(), temperature);
 
         // 1. 프롬프트 생성
         String prompt = template.build(parameters);
-        log.debug("생성된 프롬프트:\n{}", prompt);
+        log.info(">>> [LLM] 프롬프트 생성 완료, 길이: {} chars", prompt.length());
 
         // 2. LLM 호출
         String rawResponse;
         try {
             rawResponse = llmService.query(prompt, temperature);
-            log.debug("LLM 응답 수신: {} bytes", rawResponse.length());
+            // 원시 응답 미리보기 (처음 500자)
+            String preview = rawResponse.length() > 500
+                    ? rawResponse.substring(0, 500) + "..."
+                    : rawResponse;
+            log.info("<<< [LLM] 원시 응답 수신 ({} bytes): {}", rawResponse.length(), preview);
         } catch (Exception e) {
             log.error("LLM 호출 실패: {}", e.getMessage());
             throw new com.ssafy.yaksok.global.common.llm.LLMServiceException(
                     "LLM 호출 실패: " + e.getMessage(),
                     template.getName(),
-                    e
-            );
+                    e);
         }
 
         // 3. 응답 파싱
@@ -85,8 +86,7 @@ public class LLMServiceFacade {
             throw new com.ssafy.yaksok.global.common.llm.LLMServiceException(
                     "응답 파싱 실패: " + e.getMessage(),
                     template.getName(),
-                    e
-            );
+                    e);
         }
 
         return result;
@@ -101,8 +101,7 @@ public class LLMServiceFacade {
             PromptTemplate template,
             Map<String, Object> parameters,
             Class<T> responseType,
-            int maxRetries
-    ) {
+            int maxRetries) {
         return queryWithRetry(template, parameters, responseType, 1, maxRetries);
     }
 
@@ -114,8 +113,7 @@ public class LLMServiceFacade {
             Map<String, Object> parameters,
             Class<T> responseType,
             double temperature,
-            int maxRetries
-    ) {
+            int maxRetries) {
         int attempts = 0;
         Exception lastException = null;
 
@@ -147,15 +145,13 @@ public class LLMServiceFacade {
         throw new LLMServiceException(
                 "LLM 호출 최종 실패 (" + attempts + "회 시도)",
                 template.getName(),
-                lastException
-        );
+                lastException);
     }
 
     public <T> T querySafe(
             PromptTemplate template,
             Map<String, Object> parameters,
-            Class<T> responseType
-    ) {
+            Class<T> responseType) {
         try {
             return query(template, parameters, responseType);
         } catch (Exception e) {
