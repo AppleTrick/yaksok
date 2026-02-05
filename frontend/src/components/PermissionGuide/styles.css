@@ -54,11 +54,24 @@
 
 .permission-guide-footer {
     display: flex;
-    gap: 0.75rem;
-    padding: 1rem 1.5rem;
-    border-top: 1px solid #E5E7EB;
+    gap: 1rem;
+    padding: 1.25rem 1.5rem;
+    border-top: none;
+    /* Removed partition line for cleaner look */
+    justify-content: space-between;
+    align-items: center;
 }
 
-.permission-guide-footer button {
+.btn-text-only {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 0.5rem 1rem;
+}
+
+.btn-flex-grow {
     flex: 1;
 }

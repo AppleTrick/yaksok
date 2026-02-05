@@ -87,11 +87,14 @@ export default function SupplementList({ items, onItemClick, onAddClick }: Suppl
                         />
                     ))
                 ) : (
-                    <div className="empty-state">
-                        <p>
+                    <div className="empty-state-animated">
+                        <div className="floating-icon-wrapper">
+                            <span className="floating-icon">💊</span>
+                        </div>
+                        <p className="empty-text">
                             {activeTab === 'taking'
-                                ? '현재 복용 중인 영양제가 없습니다.'
-                                : '중단한 영양제가 없습니다.'}
+                                ? '아직 등록된 영양제가 없어요'
+                                : '중단한 영양제가 없어요'}
                         </p>
                     </div>
                 )}

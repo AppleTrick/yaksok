@@ -67,7 +67,8 @@ export default function PermissionGuide({ isOpen, onClose, onRetry }: Permission
         <Modal isOpen={isOpen} onClose={onClose} title="알림 권한 안내">
             <div className="permission-guide-content">
                 <p className="permission-guide-desc">
-                    약 복용 알림을 받으려면 브라우저 알림 권한이 필요합니다.
+                    약 먹을 시간, 놓치지 않게<br />
+                    제가 챙겨드릴까요?
                 </p>
 
                 {error && (
@@ -87,11 +88,11 @@ export default function PermissionGuide({ isOpen, onClose, onRetry }: Permission
             </div>
 
             <div className="permission-guide-footer">
-                <Button variant="secondary" onClick={onClose}>
+                <button className="btn-text-only" onClick={onClose}>
                     나중에
-                </Button>
-                <Button variant="primary" onClick={handleRetry} disabled={isLoading}>
-                    {isLoading ? '설정 중...' : '다시 시도'}
+                </button>
+                <Button variant="primary" onClick={handleRetry} disabled={isLoading} className="btn-flex-grow">
+                    {isLoading ? '설정 중...' : '네, 알림 받을래요'}
                 </Button>
             </div>
         </Modal>
