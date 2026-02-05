@@ -46,18 +46,20 @@
 .greeting-sub {
     font-size: 1.25rem;
     font-weight: 600;
-    color: var(--foreground-color);
+    color: var(--text-muted);
+    /* Soften the sub-greeting */
 }
 
 .greeting-main {
     font-size: 1.75rem;
     font-weight: 800;
-    color: var(--primary-color);
+    color: var(--text-main);
+    /* Off-White instead of Orange */
     margin: 0.25rem 0 0.5rem 0;
 }
 
 .greeting-desc {
-    font-size: 0.9rem;
+    font-size: 0.95rem;
     color: var(--text-muted);
 }
 
