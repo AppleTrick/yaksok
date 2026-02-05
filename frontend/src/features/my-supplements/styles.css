@@ -175,21 +175,21 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    margin: 0.5rem 0 2rem 0;
+    margin: clamp(0.5rem, 2vh, 1.5rem) 0 clamp(1.5rem, 4vh, 2.5rem) 0;
     position: relative;
-    padding-bottom: 2rem;
+    padding-bottom: clamp(1.5rem, 3vh, 2.5rem);
     border-bottom: 1px solid var(--border-color);
 }
 
 .modal-icon-wrapper {
-    width: 110px;
-    height: 110px;
+    width: clamp(90px, 20vw, 130px);
+    height: clamp(90px, 20vw, 130px);
     background: linear-gradient(135deg, var(--bg-base) 0%, var(--sub-background) 100%);
-    border-radius: 36px;
+    border-radius: clamp(28px, 6vw, 42px);
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-bottom: 1.25rem;
+    margin-bottom: clamp(1rem, 2vh, 1.5rem);
     box-shadow: var(--shadow-sm);
     border: 1px solid var(--border-color);
     position: relative;
@@ -204,7 +204,7 @@
 }
 
 .modal-title {
-    font-size: 1.6rem;
+    font-size: clamp(1.3rem, 3vw, 1.8rem);
     font-weight: 800;
     color: var(--text-main);
     letter-spacing: -0.03em;
@@ -370,10 +370,10 @@
 
 .action-btn {
     flex: 1;
-    padding: 1rem 0.5rem;
-    border-radius: 18px;
+    padding: clamp(0.75rem, 2vh, 1.25rem) 0.5rem;
+    border-radius: clamp(14px, 3vw, 20px);
     font-weight: 700;
-    font-size: 0.95rem;
+    font-size: clamp(0.85rem, 2vw, 1rem);
     border: none;
     cursor: pointer;
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
