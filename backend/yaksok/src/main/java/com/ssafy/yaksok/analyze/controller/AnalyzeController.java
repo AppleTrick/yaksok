@@ -5,10 +5,7 @@ import com.ssafy.yaksok.global.util.ResponseUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import com.ssafy.yaksok.analyze.service.AnalyzeService;
 import com.ssafy.yaksok.analyze.dto.SupplementAnalysisResponse;
@@ -50,5 +47,10 @@ public class AnalyzeController {
         log.info("영양제 분석 API 호출 완료: User ID={}, 소요 시간={}ms", userId, duration);
 
         return ResponseUtil.ok(response);
+    }
+
+    @GetMapping("/test")
+    public ResponseEntity<ApiResponse<Void>> analyzeTest(){
+        return ResponseUtil.ok();
     }
 }
