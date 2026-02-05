@@ -78,6 +78,8 @@ public class Notification {
         this.enabled = true;
     }
 
+    public boolean isTaken() { return this.intaken; }
+
     public void disable() {
         this.enabled = false;
     }
