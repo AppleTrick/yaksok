@@ -9,14 +9,15 @@ interface SupplementListProps {
     items: MedicationItem[];
     onItemClick: (item: MedicationItem) => void;
     onAddClick: () => void;
+    activeTab: TabType;
+    onTabChange: (tab: TabType) => void;
 }
 
 type TabType = 'taking' | 'stopped';
 
 const ITEMS_PER_PAGE = 10;
 
-export default function SupplementList({ items, onItemClick, onAddClick }: SupplementListProps) {
-    const [activeTab, setActiveTab] = useState<TabType>('taking');
+export default function SupplementList({ items, onItemClick, onAddClick, activeTab, onTabChange }: SupplementListProps) {
     const [displayLimit, setDisplayLimit] = useState(ITEMS_PER_PAGE);
 
     // 1. Filter items based on active tab
@@ -65,13 +66,13 @@ export default function SupplementList({ items, onItemClick, onAddClick }: Suppl
             <div className="status-tabs">
                 <button
                     className={`status-tab ${activeTab === 'taking' ? 'active' : ''}`}
-                    onClick={() => setActiveTab('taking')}
+                    onClick={() => onTabChange('taking')}
                 >
                     복용 중
                 </button>
                 <button
                     className={`status-tab ${activeTab === 'stopped' ? 'active' : ''}`}
-                    onClick={() => setActiveTab('stopped')}
+                    onClick={() => onTabChange('stopped')}
                 >
                     복용 중단
                 </button>
@@ -118,7 +119,7 @@ export default function SupplementList({ items, onItemClick, onAddClick }: Suppl
                             ) : (
                                 <button
                                     className="empty-cta-link"
-                                    onClick={() => setActiveTab('taking')}
+                                    onClick={() => onTabChange('taking')}
                                 >
                                     현재 복용 중인 영양제 보러 가기
                                 </button>
