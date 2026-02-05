@@ -8,11 +8,12 @@ import org.springframework.stereotype.Component;
 @Component
 public class FcmSender {
 
-    public void sendWeb(String token, String title, String body) {
+    public void sendWeb(String token, String title, String body, Long noId) {
         Message message = Message.builder()
                 .setToken(token)
                 .putData("title", title)
                 .putData("body", body)
+                .putData("id", String.valueOf(noId))
                 .putData("timestamp", String.valueOf(System.currentTimeMillis()))
                 .build();
 
