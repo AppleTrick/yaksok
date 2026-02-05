@@ -215,14 +215,7 @@ public class NotificationService {
 
     private void sendByPlatform(UserFcmToken token, Notification notification) {
         String body = notification.getNickname() + "을 복용할 시간입니다.";
-
-        if(token.getPlatform() == NotificationEnums.Platform.WEB){
-            fcmSender.sendWeb(token.getToken(), "복약 알림", body);
-        }else if(token.getPlatform() == NotificationEnums.Platform.ANDROID){
-            fcmSender.sendAndroid(token.getToken(), "복약 알림", body);
-        }else{
-            fcmSender.sendIos(token.getToken(), "복약 알림", body);
-        }
+        fcmSender.sendWeb(token.getToken(), "복약 알림", body);
     }
 
     public Optional<UserFcmToken> findByUserIdAndPlatform(long userId, NotificationEnums.Platform platform){
