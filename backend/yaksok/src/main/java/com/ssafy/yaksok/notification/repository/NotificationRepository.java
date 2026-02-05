@@ -19,7 +19,7 @@ import java.util.List;
         SELECT n FROM Notification n
         WHERE n.enabled = true
           AND n.intaken = false
-          AND n.intakeTime = :now
+          AND n.intakeTime <= :now
           AND n.nextNotify <= :now
     """)
         List<Notification> findSendableNotifications(LocalTime now);
