@@ -6,23 +6,29 @@ import axiosInstance from '@/lib/axios';
  * @param deviceType - 디바이스 타입 ('web' | 'android' | 'ios')
  */
 export async function saveFCMToken(token: string, deviceType: 'web' | 'android' | 'ios' = 'web') {
+    const DEVICE_TYPE_MAP = {
+        'web': 'WEB',
+        'android': 'ANDROID',
+        'ios': 'IOS'
+    };
+
+    const payload = {
+        fcmToken: token,
+        deviceType: DEVICE_TYPE_MAP[deviceType]
+    };
+
     try {
-        const DEVICE_TYPE_MAP = {
-            'web': 'WEB',
-            'android': 'ANDROID',
-            'ios': 'IOS'
-        };
-
-        const payload = {
-            fcmToken: token,
-            deviceType: DEVICE_TYPE_MAP[deviceType]
-        };
-
         console.log('📤 FCM 토큰 전송 Payload:', payload);
         const response = await axiosInstance.post('/api/v1/notification/token', payload);
         console.log('FCM 토큰 저장 완료:', token);
         return response.data;
     } catch (error: any) {
+        // [임시 조치] 백엔드 수정 전까지 중복 키 에러(500) 또는 Conflict(409) 무시
+        if (error.response && (error.response.status === 500 || error.response.status === 409)) {
+            console.warn('⚠️ FCM 토큰이 이미 존재합니다. (백엔드 중복 에러 임시 무시)');
+            return null; // 에러를 던지지 않고 정상 종료 처리
+        }
+
         if (error.response) {
             console.error('❌ FCM 토큰 저장 서버 에러:', error.response.status, error.response.data);
         } else {

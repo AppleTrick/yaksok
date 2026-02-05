@@ -25,11 +25,9 @@ const MySupplementCard: React.FC<MySupplementCardProps> = ({ item, onClick }) =>
                 )}
             </div>
 
+            {/* 효능 입력 필드 및 배지 제거 */}
             <div className="card-content">
                 <h3 className="supplement-name">{item.name}</h3>
-                <p className="supplement-efficacy">
-                    {item.efficacy || " 정보 없음"}
-                </p>
             </div>
 
             <div className="card-action">
