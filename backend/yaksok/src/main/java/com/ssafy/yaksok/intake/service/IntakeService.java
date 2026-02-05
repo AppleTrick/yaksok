@@ -1,5 +1,7 @@
 package com.ssafy.yaksok.intake.service;
 
+import com.ssafy.yaksok.global.exception.BusinessException;
+import com.ssafy.yaksok.global.exception.ErrorCode;
 import com.ssafy.yaksok.intake.dto.IntakeResponse;
 import com.ssafy.yaksok.product.entity.UserProduct;
 import com.ssafy.yaksok.product.repository.UserProductRepository;
@@ -61,7 +63,30 @@ public class IntakeService {
                 up.getDailyDose(),
                 up.getDoseAmount(),
                 up.getDoseUnit(),
-                up.isActive()
-        );
+                up.isActive());
+    }
+
+    /**
+     * 복용 체크 - active를 true로 변경
+     */
+    @Transactional
+    public void checkIntake(Long userId, Long userProductId) {
+        log.info("복용 체크 시도: userId={}, userProductId={}", userId, userProductId);
+
+        // 1. UserProduct 조회
+        UserProduct userProduct = userProductRepository.findById(userProductId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_PRODUCT_NOT_FOUND));
+
+        // 2. 권한 검증 (본인 것만 체크 가능)
+        if (!userProduct.getUser().getId().equals(userId)) {
+            log.warn("권한 없는 복용 체크 시도: userId={}, ownerId={}",
+                    userId, userProduct.getUser().getId());
+            throw new BusinessException(ErrorCode.USER_PRODUCT_UNAUTHORIZED);
+        }
+
+        // 3. active 활성화
+        userProduct.activate();
+
+        log.info("복용 체크 완료: userProductId={}, active={}", userProductId, userProduct.isActive());
     }
 }
