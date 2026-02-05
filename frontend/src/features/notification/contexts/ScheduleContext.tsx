@@ -96,8 +96,12 @@ export const ScheduleProvider = ({ children }: { children: ReactNode }) => {
             // we create a single "Today's Intake" group.
 
             const convertedItems: MedicationItem[] = todayIntakes.map(ti => ({
-                id: String(ti.supplementId),
-                name: ti.productName,
+                id: String(ti.userProductId),
+                name: ti.nickname || ti.productName || '제품명 없음', // For list display
+                productName: ti.productName || undefined,
+                nickname: ti.nickname || undefined,
+                ingredients: ti.ingredients || undefined,
+                cautions: ti.cautions || undefined,
                 isTaken: ti.taken,
                 cycle: { type: 'daily' },
                 efficacy: '',
