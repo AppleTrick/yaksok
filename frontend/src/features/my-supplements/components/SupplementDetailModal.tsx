@@ -80,7 +80,7 @@ const SupplementDetailModal: React.FC<SupplementDetailModalProps> = ({
 
             // Init details
             // Init details
-            setName(item.nickname || item.productName || '');
+            setName(item.productName || item.nickname || '');
             setEfficacy(item.efficacy || '');
             setCategory(item.category || '');
             setIngredients(item.ingredients || '');
@@ -222,7 +222,7 @@ const SupplementDetailModal: React.FC<SupplementDetailModalProps> = ({
                         style={{ ...inputStyle, fontSize: '1.2rem', fontWeight: 700, textAlign: 'center', marginBottom: '8px' }}
                     />
                 ) : (
-                    <h2 className="modal-title">{item.nickname || item.productName || '이름 없음'}</h2>
+                    <h2 className="modal-title">{item.productName || item.nickname || '이름 없음'}</h2>
                 )}
 
                 {/* Badges Removed */}

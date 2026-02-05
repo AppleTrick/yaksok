@@ -97,9 +97,12 @@ export const ScheduleProvider = ({ children }: { children: ReactNode }) => {
 
             const convertedItems: MedicationItem[] = todayIntakes.map(ti => ({
                 id: String(ti.userProductId),
-                name: ti.nickname || ti.productName || '제품명 없음', // For list display
+                name: ti.productName || ti.nickname || '제품명 없음', // For list display
                 productName: ti.productName || undefined,
                 nickname: ti.nickname || undefined,
+                detail: (ti.doseAmount && ti.doseUnit)
+                    ? `${ti.doseAmount}${ti.doseUnit}`
+                    : (ti.doseAmount ? `${ti.doseAmount}정` : undefined), // Fallback logic if unit is missing
                 ingredients: ti.ingredients || undefined,
                 cautions: ti.cautions || undefined,
                 isTaken: ti.taken,
