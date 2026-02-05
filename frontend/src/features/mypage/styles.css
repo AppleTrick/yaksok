@@ -144,8 +144,9 @@
 }
 
 .disease-tag {
-    background-color: var(--sub-background);
-    color: var(--success-color);
+    background-color: rgba(255, 107, 61, 0.15);
+    /* Brand Opacity 15% */
+    color: var(--color-brand);
     padding: 0.5rem 1rem;
     border-radius: 1rem;
     font-size: 0.85rem;
