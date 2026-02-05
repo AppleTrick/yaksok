@@ -88,7 +88,7 @@
 .my-supplements-container {
     padding: 1.5rem;
     padding-bottom: 100px;
-    background-color: var(--background-color);
+    background-color: white;
     min-height: 100vh;
 }
 
@@ -110,12 +110,12 @@
 }
 
 .count-badge {
-    background-color: var(--sub-background);
-    color: var(--primary-color);
-    padding: 0.25rem 0.75rem;
+    background-color: rgba(255, 107, 61, 0.1);
+    color: #FF6B3D;
+    padding: 0.4rem 1rem;
     border-radius: 12px;
     font-size: 0.9rem;
-    font-weight: 700;
+    font-weight: 800;
 }
 
 .search-bar {
@@ -126,19 +126,23 @@
 .search-input {
     width: 100%;
     padding: 1rem 1rem 1rem 3rem;
-    border-radius: 16px;
-    border: 1px solid var(--light-grey);
-    background-color: var(--light-grey);
+    border-radius: 12px;
+    border: 1px solid #E5E8EB;
+    background-color: #F2F4F6;
     font-size: 1rem;
     color: var(--foreground-color);
     outline: none;
     transition: all 0.2s;
 }
 
+.search-input::placeholder {
+    color: #8B95A1;
+}
+
 .search-input:focus {
     background-color: white;
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px rgba(255, 87, 34, 0.1);
+    border-color: #FF6B3D;
+    box-shadow: 0 0 0 3px rgba(255, 107, 61, 0.1);
 }
 
 .search-icon {
@@ -146,7 +150,7 @@
     left: 1rem;
     top: 50%;
     transform: translateY(-50%);
-    color: var(--text-muted);
+    color: #8B95A1;
 }
 
 /* Modal Internal Content Styles */
@@ -448,26 +452,61 @@
 
 
 .empty-state-animated {
-    padding: 4rem 1rem;
+    padding: 6rem 1rem;
     text-align: center;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 1.5rem;
+    gap: 2rem;
+}
+
+.floating-icon-wrapper {
+    width: 120px;
+    height: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #F8F9FA;
+    border-radius: 40px;
+    margin-bottom: 0.5rem;
+}
+
+.floating-icon {
+    font-size: 80px;
+    filter: grayscale(1) opacity(0.2);
 }
 
 .empty-content-wrapper {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 1.25rem;
+    gap: 1.5rem;
 }
 
-.empty-register-btn {
+.empty-text-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.empty-main-text {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #333D4B;
+    margin: 0;
+}
+
+.empty-sub-text {
+    font-size: 0.95rem;
+    color: #8B95A1;
+    margin: 0;
+}
+
+.empty-cta-btn.primary {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    padding: 0.85rem 1.5rem;
+    padding: 0.9rem 1.75rem;
     background: var(--brand-gradient);
     color: white;
     border: none;
@@ -479,9 +518,15 @@
     transition: all 0.3s ease;
 }
 
-.empty-register-btn:active {
-    transform: scale(0.96);
-    box-shadow: 0 2px 6px rgba(255, 107, 61, 0.2);
+.empty-cta-link {
+    background: none;
+    border: none;
+    color: #8B95A1;
+    font-size: 0.95rem;
+    font-weight: 600;
+    text-decoration: underline;
+    cursor: pointer;
+    padding: 0.5rem;
 }
 
 .loading-trigger {
@@ -493,16 +538,16 @@
 
 .fab-button {
     position: fixed;
-    bottom: 100px;
-    /* Above bottom tab bar */
+    bottom: calc(85px + 20px);
+    /* 85px is approx bottom nav height + 20px margin */
     right: 20px;
-    width: 56px;
-    height: 56px;
+    width: 60px;
+    height: 60px;
     border-radius: 50%;
     background: var(--brand-gradient);
     color: white;
     border: none;
-    box-shadow: 0 4px 16px rgba(255, 87, 34, 0.4);
+    box-shadow: 0 4px 16px rgba(255, 107, 61, 0.3);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -512,8 +557,8 @@
 }
 
 .fab-button:active {
-    transform: scale(0.95);
-    box-shadow: 0 2px 6px rgba(255, 87, 34, 0.3);
+    transform: scale(0.92);
+    box-shadow: 0 2px 8px rgba(255, 107, 61, 0.2);
 }
 
 /* Removed outdated tablet centering logic */
