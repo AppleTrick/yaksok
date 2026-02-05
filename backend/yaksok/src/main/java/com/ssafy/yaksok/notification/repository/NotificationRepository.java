@@ -8,8 +8,9 @@ import org.springframework.stereotype.Repository;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.Optional;
 
-    @Repository
+@Repository
     public interface NotificationRepository extends JpaRepository<Notification, Long> {
 
         List<Notification> findAllByUserId(long userId);
@@ -23,4 +24,7 @@ import java.util.List;
           AND n.nextNotify <= :now
     """)
         List<Notification> findSendableNotifications(LocalTime now);
+
+    Notification findByUserIdAndNickname(Long userId, String nickname);
+        
 }
