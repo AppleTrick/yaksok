@@ -1,0 +1,29 @@
+/* Timeline Empty State */
+.timeline-empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 1rem;
+    text-align: center;
+}
+
+.empty-text-main {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    margin-bottom: 0.5rem;
+}
+
+.empty-text-sub {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    opacity: 0.8;
+}
+
+/* Dashboard V2 */
+.dashboard-content-v2 {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
