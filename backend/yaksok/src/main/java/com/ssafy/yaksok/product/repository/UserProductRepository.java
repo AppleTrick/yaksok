@@ -21,7 +21,7 @@ public interface UserProductRepository extends JpaRepository<UserProduct, Long> 
                     up.active
                 )
                 from UserProduct up
-                join up.product p
+                left join up.product p
                 where up.user.id = :userId
             """)
     List<UserProductResponse> findUserProducts(Long userId);
