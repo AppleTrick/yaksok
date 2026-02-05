@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const axiosInstance = axios.create({
-    baseURL: '', // API 프록시를 사용하기 위해 빈 문자열로 고정 (환경변수 무시)
+    baseURL: process.env.NEXT_PUBLIC_API_URL || '', // 환경변수에서 API URL 읽기
     headers: {
         'Content-Type': 'application/json',
     },
