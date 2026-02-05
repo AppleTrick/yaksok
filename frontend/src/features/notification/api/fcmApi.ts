@@ -1,4 +1,4 @@
-import axiosInstance from '@/lib/axios';
+import axiosInstance from 'axios';
 
 /**
  * FCM 토큰을 백엔드에 저장합니다.
