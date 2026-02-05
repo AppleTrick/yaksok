@@ -2,6 +2,7 @@ import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { MedicationItem } from '@/features/notification/types';
 import MySupplementCard from './MySupplementCard';
 import { Plus } from 'lucide-react';
+import { motion } from 'framer-motion';
 import '../styles.css';
 
 interface SupplementListProps {
@@ -87,16 +88,28 @@ export default function SupplementList({ items, onItemClick, onAddClick }: Suppl
                         />
                     ))
                 ) : (
-                    <div className="empty-state-animated">
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="empty-state-animated"
+                    >
                         <div className="floating-icon-wrapper">
                             <span className="floating-icon">💊</span>
                         </div>
-                        <p className="empty-text">
-                            {activeTab === 'taking'
-                                ? '아직 등록된 영양제가 없어요'
-                                : '중단한 영양제가 없어요'}
-                        </p>
-                    </div>
+                        <div className="empty-content-wrapper">
+                            <p className="empty-text">
+                                {activeTab === 'taking'
+                                    ? '어떤 영양제를 드시고 계신가요?'
+                                    : '중단한 영양제가 없어요'}
+                            </p>
+                            {activeTab === 'taking' && (
+                                <button className="empty-register-btn" onClick={onAddClick}>
+                                    <Plus size={18} />
+                                    <span>영양제 등록하기</span>
+                                </button>
+                            )}
+                        </div>
+                    </motion.div>
                 )}
 
                 {/* Loader Target */}
