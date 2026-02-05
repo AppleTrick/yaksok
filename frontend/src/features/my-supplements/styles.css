@@ -402,71 +402,219 @@
 
 /* Removed outdated tablet centering logic */
 
-/* ManualRegistrationForm Styles */
-.manual-form {
+/* ManualRegistrationForm v2 - Modern & Responsive */
+.manual-registration-v2 {
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
+    gap: clamp(1rem, 3vh, 2rem);
+    padding: clamp(0.5rem, 2vw, 1rem);
+    max-width: 100%;
 }
 
-.form-title {
-    font-size: 1.25rem;
-    font-weight: 700;
-    margin-bottom: 0.5rem;
-    color: var(--foreground-color);
-}
-
-.form-group {
+.form-group-v2 {
     display: flex;
     flex-direction: column;
+    gap: 0.75rem;
+}
+
+.label-with-icon {
+    display: flex;
+    align-items: center;
     gap: 0.5rem;
+    color: var(--text-muted);
 }
 
-.form-group label {
-    font-size: 0.95rem;
+.label-with-icon label {
+    font-size: clamp(0.85rem, 1.5vw, 1rem);
+    font-weight: 700;
+    letter-spacing: -0.01em;
+}
+
+.label-icon {
+    opacity: 0.7;
+}
+
+.modern-input {
+    width: 100%;
+    padding: 1.25rem;
+    background-color: var(--bg-base);
+    border: 2px solid transparent;
+    border-radius: 20px;
+    font-size: clamp(0.95rem, 1.8vw, 1.1rem);
+    font-weight: 500;
+    color: var(--text-main);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.modern-input:focus {
+    background-color: var(--bg-card);
+    border-color: var(--color-brand);
+    box-shadow: 0 8px 24px rgba(255, 107, 61, 0.12);
+    outline: none;
+}
+
+/* Segmented Control */
+.segmented-control-v2 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    background-color: var(--bg-base);
+    padding: 6px;
+    border-radius: 22px;
+    position: relative;
+    gap: 4px;
+}
+
+.segment-btn {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: clamp(10px, 2vw, 16px) 8px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    z-index: 1;
+    border-radius: 16px;
+    transition: color 0.3s ease;
+}
+
+.segment-btn .btn-icon,
+.segment-btn .btn-text {
+    position: relative;
+    z-index: 2;
+}
+
+.segment-btn .btn-icon {
+    transition: transform 0.3s ease;
+}
+
+.segment-btn.active .btn-icon {
+    transform: scale(1.1);
+    color: var(--color-brand);
+}
+
+.segment-btn.active .btn-text {
+    color: var(--color-brand);
+    font-weight: 700;
+}
+
+.segment-btn .btn-text {
+    font-size: clamp(0.75rem, 1.3vw, 0.9rem);
     font-weight: 600;
     color: var(--text-muted);
 }
 
-.form-input {
-    padding: 1rem;
-    border: 1px solid var(--border-color);
-    border-radius: 12px;
-    font-size: 1rem;
-    outline: none;
-    transition: border-color 0.2s;
-}
-
-.form-input:focus {
-    border-color: var(--primary-color);
-}
-
-.time-picker-wrapper {
-    background-color: var(--sub-background);
-    padding: 1rem;
+.segment-active-bg {
+    position: absolute;
+    inset: 0;
+    background: var(--bg-card);
     border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    z-index: 1;
+}
+
+/* Time Picker Card */
+.modern-time-picker-card {
+    background-color: var(--bg-base);
+    border-radius: 24px;
+    padding: 1.5rem;
     display: flex;
     justify-content: center;
+    transition: background-color 0.3s ease;
 }
 
-.form-actions {
-    display: flex;
+.modern-time-picker-card:focus-within {
+    background-color: var(--bg-card);
+    box-shadow: inset 0 0 0 2px var(--color-brand);
+}
+
+/* Actions */
+.form-actions-v2 {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
     gap: 1rem;
     margin-top: 1rem;
 }
 
-.cancel-btn {
-    flex: 1;
-    padding: 1rem;
-    border-radius: 16px;
-    background-color: var(--light-grey);
-    color: var(--text-muted);
-    font-weight: 700;
-    border: none;
+.modern-btn-primary,
+.modern-btn-secondary {
+    padding: 1.25rem;
+    border-radius: 20px;
+    font-weight: 800;
+    font-size: clamp(0.95rem, 1.8vw, 1.1rem);
     cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
 }
 
-/* Supplements Detail Modal Accordion */
+.modern-btn-primary {
+    background: var(--brand-gradient);
+    color: white;
+    box-shadow: 0 8px 20px rgba(255, 107, 61, 0.25);
+}
+
+.modern-btn-primary:active {
+    transform: scale(0.97);
+}
+
+.modern-btn-primary:disabled {
+    opacity: 0.5;
+    filter: grayscale(0.8);
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.modern-btn-secondary {
+    background-color: var(--bg-base);
+    color: var(--text-muted);
+}
+
+.modern-btn-secondary:active {
+    background-color: var(--sub-background);
+}
+
+/* Responsive Adjustments */
+@media (max-width: 480px) {
+    .manual-registration-v2 {
+        gap: 1.25rem;
+    }
+
+    .modern-input,
+    .modern-btn-primary,
+    .modern-btn-secondary {
+        padding: 1rem;
+    }
+
+    .modern-time-picker-card {
+        padding: 1rem;
+    }
+}
+
+@media (min-width: 768px) {
+    .manual-registration-v2 {
+        padding: 1rem 2rem;
+    }
+
+    .form-actions-v2 {
+        margin-top: 2rem;
+    }
+}
+
+@media (min-width: 1024px) {
+    .manual-registration-v2 {
+        max-width: 500px;
+        margin: 0 auto;
+    }
+}
+
+/* Supplements Detail Modal Accordion & Misc */
 .cm-accordion {
     width: 100%;
 }
@@ -477,10 +625,8 @@
     justify-content: space-between;
     cursor: pointer;
     list-style: none;
-    /* Hide default triangle */
 }
 
-/* Hide default marker for webkit */
 .cm-accordion-header::-webkit-details-marker {
     display: none;
 }
@@ -503,29 +649,20 @@
     line-height: 1.5;
     color: var(--foreground-color);
     white-space: pre-wrap;
-    /* Allow line breaks */
 }
 
-.submit-btn {
-    flex: 2;
-    padding: 1rem;
-    border-radius: 16px;
-    background-color: var(--primary-color);
-    color: white;
-    font-weight: 700;
-    border: none;
-    cursor: pointer;
-}
-
-/* Dosage Counter Styles */
 .dosage-counter-container {
     background-color: #FEF3C7;
-    /* Beige/Yellowish bg similar to image */
     padding: 1rem 1.5rem;
     border-radius: 20px;
     display: flex;
     justify-content: space-between;
     align-items: center;
+}
+
+[data-theme='dark'] .dosage-counter-container {
+    background-color: rgba(254, 243, 199, 0.1);
+    border: 1px solid rgba(252, 211, 77, 0.3);
 }
 
 .counter-btn {
@@ -544,75 +681,12 @@
     transition: transform 0.1s, background-color 0.2s;
 }
 
-.counter-btn:active {
-    transform: scale(0.95);
-}
-
-.counter-btn:disabled {
-    background-color: var(--text-muted);
-    cursor: not-allowed;
-    box-shadow: none;
-}
-
 .dosage-value {
     font-size: 1.25rem;
     font-weight: 700;
     color: var(--foreground-color);
 }
 
-.meal-cat-btn {
-    padding: 10px;
-    border-radius: 8px;
-    border: 1px solid var(--border-color);
-    background-color: var(--white);
-    color: var(--text-muted);
-    font-size: 0.9rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.meal-cat-btn.active {
-    border-color: var(--primary-color);
-    background-color: #FFF7ED;
-    /* Light Orange */
-    color: var(--primary-color);
-}
-
-/* Dark Mode Overrides for Forms & Modal Elements */
-[data-theme='dark'] .dosage-counter-container {
-    background-color: rgba(254, 243, 199, 0.1);
-    border: 1px solid rgba(252, 211, 77, 0.3);
-}
-
 [data-theme='dark'] .dosage-value {
     color: #FDE68A;
-}
-
-[data-theme='dark'] .form-input,
-[data-theme='dark'] .search-input {
-    background-color: var(--surface-1);
-    border-color: var(--border-color);
-    color: var(--foreground-color);
-}
-
-[data-theme='dark'] .form-input:focus {
-    border-color: var(--primary-color);
-}
-
-[data-theme='dark'] .meal-cat-btn {
-    background-color: var(--surface-1);
-    border-color: var(--border-color);
-    color: var(--text-muted);
-}
-
-[data-theme='dark'] .meal-cat-btn.active {
-    background-color: rgba(255, 171, 145, 0.15);
-    border-color: var(--primary-color);
-    color: var(--primary-color);
-}
-
-[data-theme='dark'] .time-picker-wrapper {
-    background-color: var(--surface-1);
-    border: 1px solid var(--border-color);
 }
