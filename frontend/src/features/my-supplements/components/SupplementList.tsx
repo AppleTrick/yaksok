@@ -97,15 +97,30 @@ export default function SupplementList({ items, onItemClick, onAddClick }: Suppl
                             <span className="floating-icon">💊</span>
                         </div>
                         <div className="empty-content-wrapper">
-                            <p className="empty-text">
-                                {activeTab === 'taking'
-                                    ? '어떤 영양제를 드시고 계신가요?'
-                                    : '중단한 영양제가 없어요'}
-                            </p>
-                            {activeTab === 'taking' && (
-                                <button className="empty-register-btn" onClick={onAddClick}>
+                            <div className="empty-text-group">
+                                <h3 className="empty-main-text">
+                                    {activeTab === 'taking'
+                                        ? '어떤 영양제를 드시고 계신가요?'
+                                        : '아직 중단한 영양제가 없네요'}
+                                </h3>
+                                <p className="empty-sub-text">
+                                    {activeTab === 'taking'
+                                        ? '매일 챙겨 먹는 영양제를 기록해 보세요.'
+                                        : '꾸준히 잘 챙겨 드시고 계신가 봐요!'}
+                                </p>
+                            </div>
+
+                            {activeTab === 'taking' ? (
+                                <button className="empty-cta-btn primary" onClick={onAddClick}>
                                     <Plus size={18} />
                                     <span>영양제 등록하기</span>
+                                </button>
+                            ) : (
+                                <button
+                                    className="empty-cta-link"
+                                    onClick={() => setActiveTab('taking')}
+                                >
+                                    현재 복용 중인 영양제 보러 가기
                                 </button>
                             )}
                         </div>
