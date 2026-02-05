@@ -43,15 +43,13 @@ public class UserProduct {
     @Column(updatable = false)
     private LocalDateTime createdAt;
 
-
     public static UserProduct create(
             User user,
             Product product,
             String nickname,
             Integer dailyDose,
             BigDecimal doseAmount,
-            String doseUnit
-    ) {
+            String doseUnit) {
         UserProduct up = new UserProduct();
         up.user = user;
         up.product = product;
@@ -64,7 +62,7 @@ public class UserProduct {
         return up;
     }
 
-    public static UserProduct create(User user, String nickname){
+    public static UserProduct create(User user, String nickname) {
         UserProduct up = new UserProduct();
         up.user = user;
         up.product = null;
@@ -76,5 +74,18 @@ public class UserProduct {
         up.createdAt = LocalDateTime.now();
         return up;
     }
-}
 
+    /**
+     * 복용 체크 - active를 true로 변경
+     */
+    public void activate() {
+        this.active = true;
+    }
+
+    /**
+     * 복용 해제 - active를 false로 변경 (필요시 사용)
+     */
+    public void deactivate() {
+        this.active = false;
+    }
+}
