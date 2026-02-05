@@ -142,7 +142,7 @@ export default function MySupplementsPage() {
             <Modal
                 isOpen={isRegisterModalOpen}
                 onClose={() => setIsRegisterModalOpen(false)}
-                title={itemToEdit ? "영양제 수정" : "영양제 등록"}
+                title={itemToEdit ? "수정" : "등록"}
             >
                 <ManualRegistrationForm
                     onClose={() => setIsRegisterModalOpen(false)}
