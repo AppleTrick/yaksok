@@ -97,7 +97,11 @@ export const ScheduleProvider = ({ children }: { children: ReactNode }) => {
 
             const convertedItems: MedicationItem[] = todayIntakes.map(ti => ({
                 id: String(ti.userProductId),
-                name: ti.productName || ti.nickname, // productName이 null이면 nickname 사용
+                name: ti.nickname || ti.productName || '제품명 없음', // For list display
+                productName: ti.productName || undefined,
+                nickname: ti.nickname || undefined,
+                ingredients: ti.ingredients || undefined,
+                cautions: ti.cautions || undefined,
                 isTaken: ti.taken,
                 cycle: { type: 'daily' },
                 efficacy: '',

@@ -1,115 +1,100 @@
-.daily-progress-card {
-    background-color: var(--white);
-    border-radius: 1.5rem;
+/* Hero Card (Daily Progress) */
+.hero-card {
+    background-color: var(--bg-card);
+    border-radius: var(--radius-xl);
     padding: 1.5rem;
-    box-shadow: var(--shadow-sm);
-    margin-bottom: 1.5rem;
-}
-
-.progress-header {
+    box-shadow: var(--shadow-premium);
+    margin: 0 0 2rem 0;
+    /* Margin will be handled by container or grid */
+    color: var(--text-main);
     display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 0.5rem;
-}
-
-.progress-header h2 {
-    font-size: 1.25rem;
-    font-weight: 800;
-    color: var(--foreground-color);
-}
-
-.badge {
-    background-color: #E6F4F1;
-    /* Light mint/teal */
-    color: var(--primary-color);
-    padding: 0.5rem 1rem;
-    border-radius: 1rem;
-    border-bottom-left-radius: 0;
-    font-size: 0.85rem;
-    font-weight: 600;
-}
-
-.progress-desc {
-    color: var(--text-muted);
-    font-size: 0.95rem;
-    margin-bottom: 1.5rem;
-}
-
-.progress-content {
-    display: flex;
-    align-items: center;
+    flex-direction: column;
     gap: 1.5rem;
 }
 
-/* Donut Chart */
-.donut-chart-wrapper {
-    position: relative;
-    width: 100px;
-    height: 100px;
-}
-
-.donut-chart {
-    width: 100%;
-    height: 100%;
-    border-radius: 50%;
+.progress-info-section {
     display: flex;
+    justify-content: space-between;
     align-items: center;
-    justify-content: center;
-    /* Background set inline for dynamic percentage */
 }
 
-.donut-inner {
-    width: 80%;
-    height: 80%;
-    background-color: var(--white);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+.hero-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    margin-bottom: 0.5rem;
 }
 
-.percentage-text {
-    font-size: 1.25rem;
-    font-weight: 800;
-    color: var(--primary-color);
-}
-
-/* Info Side */
-.progress-info {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-}
-
-.progress-info p {
-    font-size: 1rem;
-    color: var(--foreground-color);
+.hero-desc {
+    font-size: 1.1rem;
+    color: var(--text-main);
     line-height: 1.4;
 }
 
+.highlight-val {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--color-brand);
+}
+
 .highlight-text {
-    color: var(--primary-color);
     font-weight: 700;
+    color: var(--text-main);
 }
 
-.view-record-btn {
-    margin-top: 0.75rem;
-    display: inline-flex;
+/* Gauge Animation */
+.gauge-wrapper {
+    position: relative;
+    width: 120px;
+    height: 120px;
+    display: flex;
+    justify-content: center;
     align-items: center;
-    gap: 0.25rem;
-    background-color: var(--background-color);
-    color: var(--primary-color);
-    padding: 0.5rem 1rem;
-    border-radius: 0.75rem;
-    font-size: 0.9rem;
-    font-weight: 600;
-    text-decoration: none;
-    align-self: flex-start;
-    transition: background-color 0.2s;
 }
 
-.view-record-btn:active {
-    background-color: var(--light-grey);
+.progress-ring {
+    transform: rotate(-90deg);
+    /* Start from top */
+    transform-origin: 50% 50%;
+}
+
+.progress-ring__circle--track {
+    opacity: 0.1;
+    stroke: var(--text-main);
+}
+
+.progress-ring__circle--indicator {
+    transition: stroke-dashoffset 1s ease-out;
+}
+
+.gauge-center-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+}
+
+.percentage-val {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--text-main);
+}
+
+/* Actions */
+.hero-actions {
+    width: 100%;
+}
+
+.full-width-btn {
+    width: 100%;
+    justify-content: space-between;
+    padding: 1rem 1.5rem;
+    font-size: 1.1rem;
+    background: var(--brand-gradient);
+    box-shadow: 0 4px 15px rgba(255, 107, 61, 0.3);
+}
+
+.full-width-btn:active {
+    transform: scale(0.98);
 }
