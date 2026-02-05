@@ -21,14 +21,16 @@ const nextConfig: NextConfig = {
     proxyTimeout: 180000, // 180초 (3분)
   },
   async rewrites() {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
+
     return [
       {
         source: '/api/v1/:path*',
-        destination: 'http://localhost:8080/api/v1/:path*',
+        destination: `${apiUrl}/api/v1/:path*`,
       },
       {
         source: '/ai/v1/:path*',
-        destination: 'http://localhost:8000/v1/:path*',
+        destination: `${apiUrl}/ai/v1/:path*`, // 백엔드와 AI 서버 주소가 동일함
       },
     ];
   },

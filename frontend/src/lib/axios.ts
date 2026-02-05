@@ -1,12 +1,13 @@
 import axios from 'axios';
 
 const axiosInstance = axios.create({
-    baseURL: process.env.NEXT_PUBLIC_API_URL || '', // 환경변수에서 API URL 읽기
+    // baseURL이 없으면 상대 경로를 사용하여 Next.js Rewrite/Middleware를 통하도록 함
+    baseURL: process.env.NEXT_PUBLIC_API_URL || '',
     headers: {
         'Content-Type': 'application/json',
     },
-    withCredentials: true, // 쿠키 포함 요청 설정
-    timeout: 5000,
+    withCredentials: true,
+    timeout: 10000, // 분석 등 긴 요청을 위해 10초로 연장
 });
 
 // 에러 처리를 위한 응답 인터셉터
