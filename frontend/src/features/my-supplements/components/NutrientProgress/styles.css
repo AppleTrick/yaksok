@@ -1,0 +1,100 @@
+.nutrient-progress-group {
+    margin-bottom: 24px;
+    padding: 16px;
+    background: var(--bg-card);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border-color);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.nutrient-progress-group:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-premium);
+}
+
+.nutrient-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 12px;
+}
+
+.nutrient-info-left {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.nutrient-label {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-main);
+}
+
+.nutrient-amount {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+.nutrient-current-value {
+    font-size: 1.1rem;
+    font-weight: 800;
+}
+
+.nutrient-bar-container {
+    height: 12px;
+    background-color: var(--sub-background);
+    border-radius: 999px;
+    overflow: hidden;
+    position: relative;
+    margin-bottom: 8px;
+}
+
+.nutrient-bar-fill {
+    height: 100%;
+    border-radius: 999px;
+    position: relative;
+}
+
+/* Gradients based on status */
+.bar-status-normal {
+    background: linear-gradient(90deg, #3B82F6 0%, #60A5FA 100%);
+}
+
+.bar-status-sufficient {
+    background: linear-gradient(90deg, #10B981 0%, #34D399 100%);
+}
+
+.bar-status-excessive {
+    background: linear-gradient(90deg, #EF4444 0%, #F87171 100%);
+}
+
+.nutrient-footer {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.nutrient-status-badge {
+    padding: 4px 10px;
+    border-radius: 8px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    backdrop-filter: blur(4px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.badge-status-normal {
+    background: rgba(59, 130, 246, 0.1);
+    color: #3B82F6;
+}
+
+.badge-status-sufficient {
+    background: rgba(16, 185, 129, 0.1);
+    color: #10B981;
+}
+
+.badge-status-excessive {
+    background: rgba(239, 68, 68, 0.1);
+    color: #EF4444;
+}
