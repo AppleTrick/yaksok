@@ -40,6 +40,7 @@ const SupplementDetailModal: React.FC<SupplementDetailModalProps> = ({
     const [ingredients, setIngredients] = useState('');
     const [cautions, setCautions] = useState('');
     const [targetScheduleId, setTargetScheduleId] = useState<string | null>(null);
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
     useEffect(() => {
         if (isOpen && item) {
@@ -54,6 +55,7 @@ const SupplementDetailModal: React.FC<SupplementDetailModalProps> = ({
             setCautions(item.cautions || '');
             setIsEditing(false);
             setIsExpandedTime(false);
+            setShowDeleteConfirm(false);
         }
     }, [isOpen, item, schedules]);
 
@@ -109,7 +111,7 @@ const SupplementDetailModal: React.FC<SupplementDetailModalProps> = ({
                     </button>
                 </>
             )}
-            <button className="action-btn delete" onClick={() => confirm("영양제를 삭제하시겠습니까?") && onDelete()}>삭제</button>
+            <button className="action-btn delete" onClick={() => setShowDeleteConfirm(true)}>삭제</button>
         </div>
     );
 
@@ -247,6 +249,27 @@ const SupplementDetailModal: React.FC<SupplementDetailModalProps> = ({
                     )}
                 </div> */}
             </motion.div>
+
+            {/* 삭제 확인 커스텀 모달 */}
+            <Modal
+                isOpen={showDeleteConfirm}
+                onClose={() => setShowDeleteConfirm(false)}
+                type="confirm"
+                title="영양제 삭제"
+                confirmText="삭제하기"
+                cancelText="취소"
+                onConfirm={onDelete}
+                onCancel={() => setShowDeleteConfirm(false)}
+            >
+                <div style={{ textAlign: 'center', padding: '1rem 0' }}>
+                    <p style={{ fontSize: '1.1rem', fontWeight: 600, color: 'var(--text-main)', marginBottom: '0.5rem' }}>
+                        정말 이 영양제를 삭제하시겠습니까?
+                    </p>
+                    <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>
+                        삭제된 정보는 복구할 수 없습니다.
+                    </p>
+                </div>
+            </Modal>
         </Modal>
     );
 };
