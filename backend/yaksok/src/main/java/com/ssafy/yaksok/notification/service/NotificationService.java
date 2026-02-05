@@ -161,7 +161,8 @@ public class NotificationService {
         fcmSender.sendWeb(
                 tokenEntity.getToken(),
                 "테스트 알림",
-                "버튼 눌러서 온 알림입니다"
+                "버튼 눌러서 온 알림입니다",
+                1L
         );
     }
 
@@ -215,14 +216,7 @@ public class NotificationService {
 
     private void sendByPlatform(UserFcmToken token, Notification notification) {
         String body = notification.getNickname() + "을 복용할 시간입니다.";
-
-        if(token.getPlatform() == NotificationEnums.Platform.WEB){
-            fcmSender.sendWeb(token.getToken(), "복약 알림", body);
-        }else if(token.getPlatform() == NotificationEnums.Platform.ANDROID){
-            fcmSender.sendAndroid(token.getToken(), "복약 알림", body);
-        }else{
-            fcmSender.sendIos(token.getToken(), "복약 알림", body);
-        }
+        fcmSender.sendWeb(token.getToken(), "복약 알림", body, notification.getId());
     }
 
     public Optional<UserFcmToken> findByUserIdAndPlatform(long userId, NotificationEnums.Platform platform){
