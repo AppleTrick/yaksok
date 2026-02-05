@@ -8,10 +8,11 @@ import SupplementDetailModal from '@/features/my-supplements/components/Suppleme
 import SupplementList from '@/features/my-supplements/components/SupplementList';
 import ManualRegistrationForm from '@/features/my-supplements/components/ManualRegistrationForm';
 import Modal from '@/components/Modal';
+import { deleteUserProduct } from '@/features/my-supplements/api/supplementApi';
 import '@/features/my-supplements/styles.css';
 
 export default function MySupplementsPage() {
-    const { schedules, updateSchedule, toggleMedicationStatus } = useScheduleContext();
+    const { schedules, refreshSchedules, toggleMedicationStatus } = useScheduleContext();
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedItem, setSelectedItem] = useState<MedicationItem | null>(null);
     const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
@@ -57,18 +58,17 @@ export default function MySupplementsPage() {
     }, [selectedItem, schedules]);
 
     // 4. Handle Delete (Remove from ALL schedules)
-    const handleDelete = () => {
+    const handleDelete = async () => {
         if (!selectedItem) return;
 
-        schedules.forEach(schedule => {
-            if (schedule.items.some(i => i.name === selectedItem.name)) {
-                const newItems = schedule.items.filter(i => i.name !== selectedItem.name);
-                // Note: updateSchedule expects rawTime as 2nd arg
-                updateSchedule(schedule.id, schedule.items.length === newItems.length ? schedule.rawTime : schedule.rawTime, schedule.mealCategory || 'post_meal', newItems);
-            }
-        });
-
-        setSelectedItem(null);
+        try {
+            await deleteUserProduct(Number(selectedItem.id));
+            await refreshSchedules();
+            setSelectedItem(null);
+        } catch (error) {
+            console.error("Failed to delete supplement:", error);
+            alert("삭제에 실패했습니다. 다시 시도해 주세요.");
+        }
     };
 
     // 5. Handle Edit
