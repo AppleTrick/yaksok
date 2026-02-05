@@ -1,4 +1,4 @@
-import axiosInstance from '@/lib/axios';
+import axiosInstance from 'axios';
 
 // --- Base URLs ---
 const USER_PRODUCTS_BASE = '/api/v1/users/me/products';
