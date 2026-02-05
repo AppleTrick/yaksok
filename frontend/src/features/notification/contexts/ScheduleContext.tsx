@@ -31,7 +31,7 @@ interface ScheduleContextType {
     toggleScheduleActive: (scheduleId: string) => void;
     isItemDue: (item: MedicationItem, date: Date) => boolean;
     addMedication: (item: MedicationItem, targetRawTime: string, mealCategory: MealCategory) => void;
-    toggleMedicationStatus: (medicationName: string, newStatus: 'taking' | 'stopped') => void;
+    toggleMedicationStatus: (medicationName: string, newStatus: 'taking' | 'stopped') => Promise<void>;
 }
 
 // Helper: Check if item is due on specific date
@@ -194,8 +194,21 @@ export const ScheduleProvider = ({ children }: { children: ReactNode }) => {
         ));
     };
 
-    const toggleMedicationStatus = (medicationName: string, newStatus: 'taking' | 'stopped') => {
-        // Placeholder
+    const toggleMedicationStatus = async (medicationName: string, newStatus: 'taking' | 'stopped') => {
+        // Optimistic UI Update: Update status in all schedules containing this medication
+        setSchedules(prev => prev.map(schedule => ({
+            ...schedule,
+            items: schedule.items.map(item =>
+                item.name === medicationName
+                    ? { ...item, status: newStatus }
+                    : item
+            )
+        })));
+
+        // Backend sync would go here if there's an API endpoint
+        // For now, the status change is local only
+        // TODO: Call backend API to update active status when available
+        console.log(`Updated ${medicationName} status to ${newStatus}`);
     };
 
     return (
