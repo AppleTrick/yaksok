@@ -25,7 +25,8 @@ export default function ReviewStep({ imageSrc, isAnalyzing, onRetake, onConfirm 
                     <img
                         src={imageSrc}
                         alt="Captured"
-                        style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                        className="review-image"
+                        style={{ width: '100%', height: '100%', objectFit: 'contain', backgroundColor: '#000' }}
                     />
 
                     <LoadingOverlay
