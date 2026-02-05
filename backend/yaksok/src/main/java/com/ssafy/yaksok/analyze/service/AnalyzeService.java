@@ -44,13 +44,16 @@ public class AnalyzeService {
                     .filename(file.getOriginalFilename())
                     .contentType(MediaType.IMAGE_JPEG);
 
-            return webClient.post()
+            FastApiAnalysisResult aiResult = webClient.post()
                     .uri(fastApiUrl)
                     .contentType(MediaType.MULTIPART_FORM_DATA)
                     .body(BodyInserters.fromMultipartData(builder.build()))
                     .retrieve()
                     .bodyToMono(FastApiAnalysisResult.class)
                     .block();
+
+            log.info("FastAPI 분석 결과 수신: {}", aiResult);
+            return aiResult;
         } catch (IOException e) {
             log.error("파일 에러", e);
             throw new RuntimeException("이미지 파일 처리 중 오류가 발생했습니다.");
