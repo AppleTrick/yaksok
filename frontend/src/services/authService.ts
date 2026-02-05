@@ -1,4 +1,4 @@
-import axios from '@/lib/axios';
+import axios from 'axios';
 
 interface LoginResponse {
     success: boolean;
