@@ -1,4 +1,4 @@
-import axios from '@/lib/axios';
+import axios from 'axios';
 
 export interface Disease {
     id: number;
