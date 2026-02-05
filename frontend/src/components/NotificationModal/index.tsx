@@ -29,8 +29,8 @@ export default function NotificationModal({
         // 모든 약에 대해 복용 체크
         for (const item of schedule.items) {
             if (!item.isTaken) {
-                // supplementId가 없으면 임시로 0 사용 (실제로는 MedicationItem에 supplementId 필드 추가 필요)
-                await onConfirm(schedule.id, item.id, (item as any).supplementId || 0);
+                // item.id가 이미 supplementId를 저장하고 있음 (ScheduleContext에서 변환)
+                await onConfirm(schedule.id, item.id, Number(item.id));
             }
         }
 
