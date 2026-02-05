@@ -3,8 +3,13 @@ import axiosInstance from '@/lib/axios';
 const API_BASE = '/api/v1/intakes';
 
 export interface TodayIntake {
-    supplementId: number;
-    productName: string;
+    userProductId: number;
+    productId: number | null;
+    productName: string | null;
+    nickname: string;
+    dailyDose: number | null;
+    doseAmount: number | null;
+    doseUnit: string | null;
     taken: boolean;
 }
 
