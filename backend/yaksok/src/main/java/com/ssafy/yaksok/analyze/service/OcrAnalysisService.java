@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -26,210 +27,415 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class OcrAnalysisService {
 
-    private final ProductRepository productRepository;
-    private final IngredientRepository ingredientRepository;
-    private final ProductIngredientRepository productIngredientRepository;
-    private final OverdoseRepository overdoseRepository;
+        private final ProductRepository productRepository;
+        private final IngredientRepository ingredientRepository;
+        private final ProductIngredientRepository productIngredientRepository;
+        private final OverdoseRepository overdoseRepository;
 
-    private final UnitConverter unitConverter;
-    private final LLMServiceFacade llmServiceFacade;
-    private final ProductExtractionPrompt productExtractionPrompt;
+        private final UnitConverter unitConverter;
+        private final LLMServiceFacade llmServiceFacade;
+        private final ProductExtractionPrompt productExtractionPrompt;
 
-    @Transactional
-    public SupplementAnalysisResponse processAnalysisResult(Long userId, FastApiAnalysisResult aiResult) {
+        /**
+         * FastAPI 분석 결과를 정제하여 최종 응답 생성
+         * 
+         * 1단계: product_name으로 DB 검색
+         * 2단계: DB에 있으면 product_ingredient에서 성분 조회
+         * 3단계: DB에 없으면 GMS(LLM) 호출하여 제품/성분 정보 추출 및 저장
+         * 4단계: product_ingredient에 성분 없으면 GMS로 성분 추출/저장
+         * 5단계: userId 기반 현재 섭취량 계산 후 과다섭취 판정
+         */
+        @Transactional
+        public SupplementAnalysisResponse processAnalysisResult(Long userId, FastApiAnalysisResult aiResult) {
+                log.info(">>> [분석 시작] User ID: {}, 감지된 제품 수: {}", userId,
+                                aiResult.getAnalysisResults() != null ? aiResult.getAnalysisResults().size() : 0);
 
-        List<SupplementAnalysisResponse.ProductDisplayInfo> displayInfos = new ArrayList<>();
-        List<SupplementAnalysisResponse.ReportProductInfo> reportInfos = new ArrayList<>();
+                // 사용자의 현재 성분별 섭취량 조회
+                Map<String, IngredientIntakeInfo> currentIntakeMap = getCurrentUserIntake(userId);
+                log.info(">>> [1단계] 유저 현재 섭취량 조회 완료: {} 종류의 성분", currentIntakeMap.size());
 
-        Map<String, BigDecimal> currentIntakeMap = getCurrentUserIntake(userId);
+                List<SupplementAnalysisResponse.ReportProductInfo> reportProducts = new ArrayList<>();
 
-        for (FastApiAnalysisResult.RawAnalysisResult raw : aiResult.getAnalysisResults()) {
-            // 1. 매칭
-            Product product = findProductInDb(raw.getProductName());
-            boolean isExactMatch = (product != null && product.getPrdlstNm().equals(raw.getProductName()));
+                if (aiResult.getAnalysisResults() == null || aiResult.getAnalysisResults().isEmpty()) {
+                        log.warn(">>> [분석 종료] FastAPI 결과가 비어있습니다.");
+                        return SupplementAnalysisResponse.builder()
+                                        .reportData(SupplementAnalysisResponse.ReportData.builder()
+                                                        .products(reportProducts)
+                                                        .build())
+                                        .build();
+                }
 
-            List<SupplementAnalysisResponse.ProductIngredientInfo> ingredients;
+                for (FastApiAnalysisResult.RawAnalysisResult raw : aiResult.getAnalysisResults()) {
+                        log.info(">>> [제품 처리] product_name: {}", raw.getProductName());
 
-            if (product != null) {
-                log.info(">>> [분석] DB에서 제품 발견: {}", product.getPrdlstNm());
-                ingredients = getIngredientsFromDb(product);
-                calculateOverdose(currentIntakeMap, product.getProductIngredients());
-            } else {
-                log.info(">>> [분석] DB에 없음 -> LLM 호출 및 저장 시도: {}", raw.getProductName());
-                ingredients = fetchAndSaveProductFromLlm(raw.getProductName());
-            }
+                        // 1단계: DB에서 제품 검색
+                        Product product = findProductInDb(raw.getProductName());
 
-            // 3. Display Data
-            displayInfos.add(SupplementAnalysisResponse.ProductDisplayInfo.builder()
-                    .name(product != null ? product.getPrdlstNm() : raw.getProductName())
-                    .box(raw.getBox())
-                    .confidence(raw.getConfidence())
-                    .isExactMatch(isExactMatch)
-                    .build());
+                        List<SupplementAnalysisResponse.ProductIngredientInfo> ingredients;
 
-            // 4. Report Data
-            reportInfos.add(SupplementAnalysisResponse.ReportProductInfo.builder()
-                    .productId(product != null ? product.getId() : null)
-                    .name(product != null ? product.getPrdlstNm() : raw.getProductName())
-                    .confidence(raw.getConfidence())
-                    .ingredients(ingredients)
-                    .build());
+                        if (product != null) {
+                                log.info("    [2단계] DB에서 제품 발견: ID={}, Name={}", product.getId(),
+                                                product.getPrdlstNm());
+
+                                // 2단계: product_ingredient에서 성분 조회
+                                List<ProductIngredient> productIngredients = product.getProductIngredients();
+
+                                if (productIngredients == null || productIngredients.isEmpty()) {
+                                        // 4단계: 성분 없으면 GMS 호출하여 성분 추출/저장
+                                        log.info("    [4단계] DB에 성분 정보 없음 -> GMS 호출");
+                                        ingredients = fetchAndSaveIngredientsFromLlm(product, raw.getProductName(),
+                                                        currentIntakeMap);
+                                } else {
+                                        // 성분 있으면 바로 사용
+                                        ingredients = buildIngredientInfoList(productIngredients, currentIntakeMap);
+                                }
+                        } else {
+                                // 3단계: DB에 없으면 GMS 호출하여 제품/성분 정보 추출 및 저장
+                                log.info("    [3단계] DB에 제품 없음 -> GMS 호출하여 제품 및 성분 저장");
+                                ProductWithIngredients result = fetchAndSaveProductFromLlm(raw.getProductName(),
+                                                currentIntakeMap);
+                                product = result.product;
+                                ingredients = result.ingredients;
+                        }
+
+                        // ReportProductInfo 생성
+                        reportProducts.add(SupplementAnalysisResponse.ReportProductInfo.builder()
+                                        .productId(product != null ? product.getId() : null)
+                                        .name(product != null ? product.getPrdlstNm() : raw.getProductName())
+                                        .box(raw.getBox())
+                                        .ingredients(ingredients)
+                                        .build());
+                }
+
+                log.info(">>> [분석 완료] 총 {} 개 제품 처리됨", reportProducts.size());
+
+                return SupplementAnalysisResponse.builder()
+                                .reportData(SupplementAnalysisResponse.ReportData.builder()
+                                                .products(reportProducts)
+                                                .build())
+                                .build();
         }
 
-        SupplementAnalysisResponse.OverdoseAnalysis overdoseAnalysis = generateOverdoseReport(currentIntakeMap);
+        /**
+         * DB에서 제품 검색 (정확 매칭 우선, 부분 매칭 fallback)
+         */
+        private Product findProductInDb(String rawName) {
+                if (rawName == null || rawName.isEmpty())
+                        return null;
 
-        return SupplementAnalysisResponse.builder()
-                .displayData(SupplementAnalysisResponse.DisplayData.builder()
-                        .objectCount(displayInfos.size())
-                        .products(displayInfos)
-                        .build())
-                .reportData(SupplementAnalysisResponse.ReportData.builder()
-                        .products(reportInfos)
-                        .overdoseAnalysis(overdoseAnalysis)
-                        .build())
-                .build();
-    }
+                // 정확 매칭 시도
+                Optional<Product> exact = productRepository.findByPrdlstNm(rawName);
+                if (exact.isPresent()) {
+                        return exact.get();
+                }
 
-    private Product findProductInDb(String rawName) {
-        if (rawName == null || rawName.isEmpty()) return null;
-        Optional<Product> exact = productRepository.findByPrdlstNm(rawName);
-        if (exact.isPresent()) return exact.get();
-        List<Product> candidates = productRepository.findByPrdlstNmContaining(rawName);
-        if (candidates.isEmpty()) return null;
-        return candidates.stream()
-                .min(Comparator.comparingInt(p -> Math.abs(p.getPrdlstNm().length() - rawName.length())))
-                .orElse(null);
-    }
+                // 부분 매칭 시도 (가장 유사한 이름 선택)
+                List<Product> candidates = productRepository.findByPrdlstNmContaining(rawName);
+                if (candidates.isEmpty())
+                        return null;
 
-    /**
-     * LLM 호출 및 DB 저장 로직
-     */
-    private List<SupplementAnalysisResponse.ProductIngredientInfo> fetchAndSaveProductFromLlm(String rawProductName) {
-        log.info(">>> [LLM] 제품 '{}' 성분 정보 추출 요청 시작 (Temperature: Default)", rawProductName);
-
-        Map<String, Object> params = Map.of("productName", rawProductName);
-
-        var extractionResult = llmServiceFacade.querySafe(
-                productExtractionPrompt,
-                params,
-                com.ssafy.yaksok.global.common.dto.ProductExtractionResponse.class
-        );
-
-        if (extractionResult == null) {
-            log.warn("<<< [LLM] 성분 정보 추출 실패 (응답 Null)");
-            return Collections.emptyList();
+                return candidates.stream()
+                                .min(Comparator.comparingInt(
+                                                p -> Math.abs(p.getPrdlstNm().length() - rawName.length())))
+                                .orElse(null);
         }
 
-        log.info("<<< [LLM] 데이터 수신 완료. DB 저장을 시작합니다.");
-
-        // 1. 제품(Product) 저장
-        Product product = Product.builder()
-                .prdlstNm(extractionResult.getProductName())
-                .primaryFnclty(extractionResult.getPrimaryFunction())
-                .ntkMthd(extractionResult.getIntakeMethod())
-                .iftknAtntMatrCn(extractionResult.getPrecautions())
-                .build();
-
-        Product savedProduct = productRepository.save(product);
-        log.info("    [DB 저장] Product 테이블 저장 완료: ID={}, Name={}", savedProduct.getId(), savedProduct.getPrdlstNm());
-
-        List<SupplementAnalysisResponse.ProductIngredientInfo> uiResultList = new ArrayList<>();
-
-        // 2. 성분(Ingredient) 및 연결(ProductIngredient) 저장
-        for (var ingInfo : extractionResult.getIngredients()) {
-            BigDecimal rawAmount = ingInfo.getAmountAsBigDecimal();
-            String rawUnit = ingInfo.getUnit();
-            String ingName = ingInfo.getName().trim();
-
-            if (rawAmount.compareTo(BigDecimal.ZERO) <= 0 ||
-                    rawUnit == null || rawUnit.contains("정보") || rawUnit.contains("없음")) {
-
-                uiResultList.add(SupplementAnalysisResponse.ProductIngredientInfo.builder()
-                        .name(ingName).amount(ingInfo.getAmount()).unit(rawUnit).build());
-                continue;
-            }
-
-            // 단위 변환
-            ConversionResult conv = unitConverter.convert(ingName, rawAmount, rawUnit);
-
-            // [로그 수정] 성분명 포함하여 명확하게 출력
-            if (conv.isSuccess()) {
-                log.info("    -> [단위 변환] [{}] {} {} => {} {}",
-                        ingName, rawAmount, rawUnit, conv.getAmount(), conv.getUnit());
-            } else {
-                log.warn("    -> [변환 실패] [{}] {} {} (유지)", ingName, rawAmount, rawUnit);
-            }
-
-            BigDecimal finalAmount = conv.isSuccess() ? conv.getAmount() : rawAmount;
-            String finalUnit = conv.isSuccess() ? conv.getUnit() : rawUnit;
-
-            // 성분 저장
-            Ingredient ingredient = ingredientRepository.findByIngredientName(ingName)
-                    .orElseGet(() -> {
-                        log.info("    [DB 저장] 새로운 성분 등록: {}", ingName);
-                        return ingredientRepository.save(Ingredient.builder()
-                                .ingredientName(ingName)
-                                .displayUnit(finalUnit)
-                                .minIntakeValue(BigDecimal.ZERO)
-                                .maxIntakeValue(BigDecimal.valueOf(9999))
-                                .build());
-                    });
-
-            // 연결 정보 저장
-            productIngredientRepository.save(ProductIngredient.builder()
-                    .product(savedProduct)
-                    .ingredient(ingredient)
-                    .ingredientAmount(finalAmount)
-                    .amountUnit(finalUnit)
-                    .build());
-
-            uiResultList.add(SupplementAnalysisResponse.ProductIngredientInfo.builder()
-                    .name(ingName)
-                    .amount(finalAmount.toString())
-                    .unit(finalUnit)
-                    .build());
+        /**
+         * 현재 유저의 성분별 섭취량 조회
+         */
+        private Map<String, IngredientIntakeInfo> getCurrentUserIntake(Long userId) {
+                List<IngredientSummary> summaries = overdoseRepository.findIngredientSummaryByUserId(userId);
+                return summaries.stream()
+                                .collect(Collectors.toMap(
+                                                IngredientSummary::getIngredientName,
+                                                s -> new IngredientIntakeInfo(
+                                                                BigDecimal.valueOf(s.getTotalAmount()),
+                                                                s.getMaxIntakeValue() != null
+                                                                                ? BigDecimal.valueOf(
+                                                                                                s.getMaxIntakeValue())
+                                                                                : null,
+                                                                s.getUnit()),
+                                                (a, b) -> a // 중복 시 첫 번째 값 유지
+                                ));
         }
 
-        log.info(">>> [DB 저장] 모든 데이터 저장 완료. 총 성분 수: {}", uiResultList.size());
-        return uiResultList;
-    }
+        /**
+         * ProductIngredient 리스트를 기반으로 응답용 IngredientInfo 생성
+         * 과다섭취 판정 포함
+         */
+        private List<SupplementAnalysisResponse.ProductIngredientInfo> buildIngredientInfoList(
+                        List<ProductIngredient> productIngredients,
+                        Map<String, IngredientIntakeInfo> currentIntakeMap) {
 
-    private Map<String, BigDecimal> getCurrentUserIntake(Long userId) {
-        List<IngredientSummary> summaries = overdoseRepository.findIngredientSummaryByUserId(userId);
-        return summaries.stream()
-                .collect(Collectors.toMap(
-                        IngredientSummary::getIngredientName,
-                        s -> BigDecimal.valueOf(s.getTotalAmount()),
-                        BigDecimal::add
-                ));
-    }
+                List<SupplementAnalysisResponse.ProductIngredientInfo> result = new ArrayList<>();
 
-    private List<SupplementAnalysisResponse.ProductIngredientInfo> getIngredientsFromDb(Product product) {
-        return product.getProductIngredients().stream()
-                .map(pi -> SupplementAnalysisResponse.ProductIngredientInfo.builder()
-                        .name(pi.getIngredient().getIngredientName())
-                        .amount(pi.getIngredientAmount().toString())
-                        .unit(pi.getAmountUnit())
-                        .build())
-                .toList();
-    }
+                for (ProductIngredient pi : productIngredients) {
+                        String ingredientName = pi.getIngredient().getIngredientName();
+                        BigDecimal amount = pi.getIngredientAmount();
+                        String unit = pi.getAmountUnit();
 
-    private void calculateOverdose(Map<String, BigDecimal> intakeMap, List<ProductIngredient> newIngredients) {
-        for (ProductIngredient pi : newIngredients) {
-            String name = pi.getIngredient().getIngredientName();
-            BigDecimal amount = pi.getIngredientAmount();
-            intakeMap.merge(name, amount, BigDecimal::add);
+                        // 현재 유저 섭취량 조회
+                        IngredientIntakeInfo intakeInfo = currentIntakeMap.get(ingredientName);
+                        BigDecimal myAmount = intakeInfo != null ? intakeInfo.currentAmount : BigDecimal.ZERO;
+                        BigDecimal maxIntake = intakeInfo != null ? intakeInfo.maxIntake
+                                        : (pi.getIngredient().getMaxIntakeValue() != null
+                                                        ? pi.getIngredient().getMaxIntakeValue()
+                                                        : null);
+
+                        // totalAmount 계산
+                        BigDecimal totalAmount = myAmount.add(amount);
+
+                        // status 판정 (maxIntakeValue 초과 시 warning)
+                        String status = "safe";
+                        if (maxIntake != null && totalAmount.compareTo(maxIntake) > 0) {
+                                status = "warning";
+                        }
+
+                        result.add(SupplementAnalysisResponse.ProductIngredientInfo.builder()
+                                        .name(ingredientName)
+                                        .amount(amount.setScale(2, RoundingMode.HALF_UP).toString())
+                                        .unit(unit)
+                                        .myAmount(myAmount.setScale(2, RoundingMode.HALF_UP).toString())
+                                        .totalAmount(totalAmount.setScale(2, RoundingMode.HALF_UP).toString())
+                                        .status(status)
+                                        .build());
+                }
+
+                return result;
         }
-    }
 
-    private SupplementAnalysisResponse.OverdoseAnalysis generateOverdoseReport(Map<String, BigDecimal> intakeMap) {
-        return SupplementAnalysisResponse.OverdoseAnalysis.builder()
-                .comparison(new ArrayList<>())
-                .recommendations(SupplementAnalysisResponse.Recommendations.builder()
-                        .productNotes(List.of("분석 완료"))
-                        .interactions(new ArrayList<>())
-                        .dosageInfo(new ArrayList<>())
-                        .build())
-                .build();
-    }
+        /**
+         * GMS(LLM)를 호출하여 제품 정보와 성분 정보를 추출하고 DB에 저장
+         */
+        private ProductWithIngredients fetchAndSaveProductFromLlm(
+                        String rawProductName,
+                        Map<String, IngredientIntakeInfo> currentIntakeMap) {
+
+                log.info(">>> [GMS 호출] 제품 '{}' 정보 추출 요청", rawProductName);
+
+                Map<String, Object> params = Map.of("productName", rawProductName);
+
+                com.ssafy.yaksok.global.common.dto.ProductExtractionResponse extractionResult;
+                try {
+                        extractionResult = llmServiceFacade.queryWithRetry(
+                                        productExtractionPrompt,
+                                        params,
+                                        com.ssafy.yaksok.global.common.dto.ProductExtractionResponse.class,
+                                        3); // 최대 3회 재시도
+                        log.info("<<< [GMS 응답] productName={}, ingredients count={}",
+                                        extractionResult.getProductName(),
+                                        extractionResult.getIngredients() != null
+                                                        ? extractionResult.getIngredients().size()
+                                                        : 0);
+                } catch (Exception e) {
+                        log.error("<<< [GMS] 호출 실패: {}", e.getMessage(), e);
+                        return new ProductWithIngredients(null, Collections.emptyList());
+                }
+
+                // Product 저장
+                Product product = Product.builder()
+                                .prdlstNm(extractionResult.getProductName())
+                                .primaryFnclty(extractionResult.getPrimaryFunction())
+                                .ntkMthd(extractionResult.getIntakeMethod())
+                                .iftknAtntMatrCn(extractionResult.getPrecautions())
+                                .build();
+
+                Product savedProduct = productRepository.save(product);
+                log.info("    [DB 저장] Product ID={}, Name={}", savedProduct.getId(), savedProduct.getPrdlstNm());
+
+                // 성분 저장 및 IngredientInfo 생성
+                List<SupplementAnalysisResponse.ProductIngredientInfo> ingredientInfos = new ArrayList<>();
+
+                for (var ingInfo : extractionResult.getIngredients()) {
+                        BigDecimal rawAmount = ingInfo.getAmountAsBigDecimal();
+                        String rawUnit = ingInfo.getUnit();
+                        String ingName = ingInfo.getName().trim();
+
+                        if (rawAmount.compareTo(BigDecimal.ZERO) <= 0 ||
+                                        rawUnit == null || rawUnit.contains("정보") || rawUnit.contains("없음")) {
+                                ingredientInfos.add(createIngredientInfo(ingName, ingInfo.getAmount(), rawUnit,
+                                                currentIntakeMap, null));
+                                continue;
+                        }
+
+                        // 단위 변환
+                        ConversionResult conv = unitConverter.convert(ingName, rawAmount, rawUnit);
+                        BigDecimal finalAmount = conv.isSuccess() ? conv.getAmount() : rawAmount;
+                        String finalUnit = conv.isSuccess() ? conv.getUnit() : rawUnit;
+
+                        // Ingredient 저장 또는 조회
+                        Ingredient ingredient = ingredientRepository.findByIngredientName(ingName)
+                                        .orElseGet(() -> {
+                                                log.info("    [DB 저장] 새로운 성분 등록: {}", ingName);
+                                                return ingredientRepository.save(Ingredient.builder()
+                                                                .ingredientName(ingName)
+                                                                .displayUnit(finalUnit)
+                                                                .minIntakeValue(BigDecimal.ZERO)
+                                                                .maxIntakeValue(BigDecimal.valueOf(9999))
+                                                                .build());
+                                        });
+
+                        // ProductIngredient 연결 저장
+                        productIngredientRepository.save(ProductIngredient.builder()
+                                        .product(savedProduct)
+                                        .ingredient(ingredient)
+                                        .ingredientAmount(finalAmount)
+                                        .amountUnit(finalUnit)
+                                        .build());
+
+                        ingredientInfos.add(createIngredientInfo(ingName, finalAmount.toString(), finalUnit,
+                                        currentIntakeMap, ingredient.getMaxIntakeValue()));
+                }
+
+                log.info(">>> [GMS 처리 완료] 총 {} 개 성분 저장됨", ingredientInfos.size());
+
+                return new ProductWithIngredients(savedProduct, ingredientInfos);
+        }
+
+        /**
+         * 기존 제품에 성분이 없을 때 GMS로 성분만 추출하여 기존 제품에 연결/저장
+         */
+        private List<SupplementAnalysisResponse.ProductIngredientInfo> fetchAndSaveIngredientsFromLlm(
+                        Product existingProduct,
+                        String rawProductName,
+                        Map<String, IngredientIntakeInfo> currentIntakeMap) {
+
+                log.info(">>> [GMS 호출] 기존 제품 '{}'(ID={})에 대한 성분 정보 추출 요청",
+                                existingProduct.getPrdlstNm(), existingProduct.getId());
+
+                Map<String, Object> params = Map.of("productName", rawProductName);
+
+                com.ssafy.yaksok.global.common.dto.ProductExtractionResponse extractionResult;
+                try {
+                        extractionResult = llmServiceFacade.queryWithRetry(
+                                        productExtractionPrompt,
+                                        params,
+                                        com.ssafy.yaksok.global.common.dto.ProductExtractionResponse.class,
+                                        3); // 최대 3회 재시도
+                        log.info("<<< [GMS 응답] productName={}, ingredients count={}",
+                                        extractionResult.getProductName(),
+                                        extractionResult.getIngredients() != null
+                                                        ? extractionResult.getIngredients().size()
+                                                        : 0);
+                } catch (Exception e) {
+                        log.error("<<< [GMS] 호출 실패: {}", e.getMessage(), e);
+                        return Collections.emptyList();
+                }
+
+                if (extractionResult.getIngredients() == null || extractionResult.getIngredients().isEmpty()) {
+                        log.warn("<<< [GMS] 성분 정보 없음 - 기존 제품에 성분 연결 실패");
+                        return Collections.emptyList();
+                }
+
+                log.info("<<< [GMS] 응답 수신: {} 개의 성분 정보", extractionResult.getIngredients().size());
+
+                List<SupplementAnalysisResponse.ProductIngredientInfo> ingredientInfos = new ArrayList<>();
+
+                for (var ingInfo : extractionResult.getIngredients()) {
+                        BigDecimal rawAmount = ingInfo.getAmountAsBigDecimal();
+                        String rawUnit = ingInfo.getUnit();
+                        String ingName = ingInfo.getName().trim();
+
+                        if (rawAmount.compareTo(BigDecimal.ZERO) <= 0 ||
+                                        rawUnit == null || rawUnit.contains("정보") || rawUnit.contains("없음")) {
+                                ingredientInfos.add(createIngredientInfo(ingName, ingInfo.getAmount(), rawUnit,
+                                                currentIntakeMap, null));
+                                continue;
+                        }
+
+                        // 단위 변환
+                        ConversionResult conv = unitConverter.convert(ingName, rawAmount, rawUnit);
+                        BigDecimal finalAmount = conv.isSuccess() ? conv.getAmount() : rawAmount;
+                        String finalUnit = conv.isSuccess() ? conv.getUnit() : rawUnit;
+
+                        // Ingredient 저장 또는 조회
+                        Ingredient ingredient = ingredientRepository.findByIngredientName(ingName)
+                                        .orElseGet(() -> {
+                                                log.info("    [DB 저장] 새로운 성분 등록: {}", ingName);
+                                                return ingredientRepository.save(Ingredient.builder()
+                                                                .ingredientName(ingName)
+                                                                .displayUnit(finalUnit)
+                                                                .minIntakeValue(BigDecimal.ZERO)
+                                                                .maxIntakeValue(BigDecimal.valueOf(9999))
+                                                                .build());
+                                        });
+
+                        // 기존 제품에 ProductIngredient 연결 저장
+                        productIngredientRepository.save(ProductIngredient.builder()
+                                        .product(existingProduct)
+                                        .ingredient(ingredient)
+                                        .ingredientAmount(finalAmount)
+                                        .amountUnit(finalUnit)
+                                        .build());
+
+                        ingredientInfos.add(createIngredientInfo(ingName, finalAmount.toString(), finalUnit,
+                                        currentIntakeMap, ingredient.getMaxIntakeValue()));
+                }
+
+                log.info(">>> [GMS 처리 완료] 기존 제품 ID={}에 {} 개 성분 연결됨",
+                                existingProduct.getId(), ingredientInfos.size());
+
+                return ingredientInfos;
+        }
+
+        /**
+         * IngredientInfo 생성 헬퍼
+         */
+        private SupplementAnalysisResponse.ProductIngredientInfo createIngredientInfo(
+                        String name, String amount, String unit,
+                        Map<String, IngredientIntakeInfo> currentIntakeMap,
+                        BigDecimal maxIntakeFromDb) {
+
+                BigDecimal amountDecimal;
+                try {
+                        amountDecimal = new BigDecimal(amount);
+                } catch (NumberFormatException e) {
+                        amountDecimal = BigDecimal.ZERO;
+                }
+
+                IngredientIntakeInfo intakeInfo = currentIntakeMap.get(name);
+                BigDecimal myAmount = intakeInfo != null ? intakeInfo.currentAmount : BigDecimal.ZERO;
+                BigDecimal maxIntake = intakeInfo != null ? intakeInfo.maxIntake : maxIntakeFromDb;
+
+                BigDecimal totalAmount = myAmount.add(amountDecimal);
+
+                String status = "safe";
+                if (maxIntake != null && totalAmount.compareTo(maxIntake) > 0) {
+                        status = "warning";
+                }
+
+                return SupplementAnalysisResponse.ProductIngredientInfo.builder()
+                                .name(name)
+                                .amount(amountDecimal.setScale(2, RoundingMode.HALF_UP).toString())
+                                .unit(unit)
+                                .myAmount(myAmount.setScale(2, RoundingMode.HALF_UP).toString())
+                                .totalAmount(totalAmount.setScale(2, RoundingMode.HALF_UP).toString())
+                                .status(status)
+                                .build();
+        }
+
+        // ===== 내부 헬퍼 클래스 =====
+
+        private static class IngredientIntakeInfo {
+                BigDecimal currentAmount;
+                BigDecimal maxIntake;
+                String unit;
+
+                IngredientIntakeInfo(BigDecimal currentAmount, BigDecimal maxIntake, String unit) {
+                        this.currentAmount = currentAmount;
+                        this.maxIntake = maxIntake;
+                        this.unit = unit;
+                }
+        }
+
+        private static class ProductWithIngredients {
+                Product product;
+                List<SupplementAnalysisResponse.ProductIngredientInfo> ingredients;
+
+                ProductWithIngredients(Product product,
+                                List<SupplementAnalysisResponse.ProductIngredientInfo> ingredients) {
+                        this.product = product;
+                        this.ingredients = ingredients;
+                }
+        }
 }
