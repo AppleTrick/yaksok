@@ -12,23 +12,20 @@ interface CameraHeaderProps {
 }
 
 export default function CameraHeader({ title, onBack, onClose, stepInfo, theme = 'dark' }: CameraHeaderProps) {
-    const isDark = theme === 'dark';
-    const iconColor = isDark ? 'white' : '#1A1A1A';
-
     return (
-        <header className="cam-header-pwa">
+        <header className={`cam-header-pwa ${theme === 'dark' ? 'theme-dark-header' : ''}`}>
             {onBack && (
-                <button onClick={onBack} className="cam-btn-icon-circle" style={{ background: isDark ? '' : '#f1f5f9', border: isDark ? '' : 'none' }}>
-                    <ArrowLeft color={iconColor} size={24} />
+                <button onClick={onBack} className="cam-btn-icon-circle">
+                    <ArrowLeft size={24} className="header-icon" />
                 </button>
             )}
             {onClose && !onBack && (
-                <button onClick={onClose} className="cam-btn-icon-circle" style={{ background: isDark ? '' : '#f1f5f9', border: isDark ? '' : 'none' }}>
-                    <X color={iconColor} size={24} />
+                <button onClick={onClose} className="cam-btn-icon-circle">
+                    <X size={24} className="header-icon" />
                 </button>
             )}
 
-            <h1 className="cam-header-title" style={{ color: iconColor }}>{title}</h1>
+            <h1 className="cam-header-title">{title}</h1>
 
             {stepInfo ? (
                 <div className="cam-step-badge">{stepInfo}</div>
