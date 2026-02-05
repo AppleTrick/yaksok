@@ -47,7 +47,7 @@ public class AnalyzeController {
         SupplementAnalysisResponse response = analyzeService.analyzeSupplement(file, userId);
 
         long duration = System.currentTimeMillis() - startTime;
-        log.info("영양제 분석 API 호출 완료: User ID={}, 소요 시간={}ms", userId, duration);
+        log.info("영양제 분석 API 호출 완료: User ID={}, 소요 시간={}ms, Response={}", userId, duration, response);
 
         return ResponseUtil.ok(response);
     }
