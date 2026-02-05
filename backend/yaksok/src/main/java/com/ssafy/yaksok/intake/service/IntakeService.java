@@ -3,6 +3,8 @@ package com.ssafy.yaksok.intake.service;
 import com.ssafy.yaksok.global.exception.BusinessException;
 import com.ssafy.yaksok.global.exception.ErrorCode;
 import com.ssafy.yaksok.intake.dto.IntakeResponse;
+import com.ssafy.yaksok.notification.entity.Notification;
+import com.ssafy.yaksok.notification.repository.NotificationRepository;
 import com.ssafy.yaksok.product.entity.UserProduct;
 import com.ssafy.yaksok.product.repository.UserProductRepository;
 import lombok.RequiredArgsConstructor;
@@ -12,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -20,7 +23,7 @@ import java.util.stream.Collectors;
 public class IntakeService {
 
     private final UserProductRepository userProductRepository;
-
+    private final NotificationRepository notificationRepository;
     /**
      * 특정 날짜의 복용 스케줄 조회
      */
@@ -49,10 +52,15 @@ public class IntakeService {
 
         Long productId = null;
         String productName = null;
+        boolean isTaken = false;
 
         if (up.getProduct() != null) {
             productId = up.getProduct().getId();
             productName = up.getProduct().getPrdlstNm();
+        }
+        Notification no = notificationRepository.findByUserIdAndNickname(up.getUser().getId(), up.getNickname());
+        if(no != null) {
+            isTaken = no.isTaken();
         }
 
         return new IntakeResponse(
@@ -63,7 +71,9 @@ public class IntakeService {
                 up.getDailyDose(),
                 up.getDoseAmount(),
                 up.getDoseUnit(),
-                up.isActive());
+                up.isActive(),
+                isTaken);
+
     }
 
     /**
