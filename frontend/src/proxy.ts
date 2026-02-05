@@ -26,14 +26,19 @@ export function proxy(request: NextRequest) {
         const accessToken = request.cookies.get('ACCESS_TOKEN');
         const lowerAccessToken = request.cookies.get('access_token');
 
-        if (accessToken && !lowerAccessToken) {
+        // 둘 중 하나라도 있다면, 백엔드가 기대하는 형식으로 정규화
+        if (accessToken || lowerAccessToken) {
+            const tokenValue = accessToken?.value || lowerAccessToken?.value;
             const requestHeaders = new Headers(request.headers);
+
+            // 기존 쿠키들을 가져오되, 백엔드가 명확히 인식할 수 있도록 ACCESS_TOKEN 주입
             const cookieHeader = request.cookies
                 .getAll()
+                .filter(c => c.name !== 'ACCESS_TOKEN' && c.name !== 'access_token') // 기존 토큰 제거
                 .map((cookie) => `${cookie.name}=${cookie.value}`)
                 .join('; ');
 
-            const newCookieHeader = `${cookieHeader}; access_token=${accessToken.value}`;
+            const newCookieHeader = `${cookieHeader}${cookieHeader ? '; ' : ''}ACCESS_TOKEN=${tokenValue}; access_token=${tokenValue}`;
             requestHeaders.set('cookie', newCookieHeader);
 
             return NextResponse.next({
@@ -45,7 +50,7 @@ export function proxy(request: NextRequest) {
     }
 
     // 2. 페이지 접근 제어 로직
-    const accessTokenValue = request.cookies.get('ACCESS_TOKEN')?.value;
+    const accessTokenValue = request.cookies.get('ACCESS_TOKEN')?.value || request.cookies.get('access_token')?.value;
 
     // 2-1. 보호된 경로 접근 제어 (메인 페이지 '/' 및 정의된 경로들)
     const isProtectedRoute = pathname === '/' || protectedRoutes.some(route => pathname.startsWith(route));
