@@ -1,87 +1,115 @@
 :root {
-  /* Main Colors */
-  --primary-color: #FF5722;
-  --success-color: #4CAF50;
-  --error-color: #EF4444;
+  /* --- 🎨 Light Mode (Default) --- */
+  /* Background (Light Grey for contrast with white cards) */
+  --bg-base: #F5F6F8;
 
-  /* Surface/Background Colors */
-  --background-color: #FFFFFF;
-  --surface-1: #FFFFFF;
-  /* New: Card Background */
+  /* Card/Surface (White) */
+  --bg-card: #FFFFFF;
+
+  /* Brand/Point (Vibrant Coral Orange - Shared) */
+  --color-brand: #FF6B3D;
+
+  /* Text (Dark Grey/Black) */
+  --text-main: #1A1A1A;
+
+  /* Functional Colors */
+  --color-error: #FF453A;
+  --color-success: #32D74B;
+
+  /* Mappings for Legacy Compatibility */
+  --primary-color: var(--color-brand);
+  --background-color: var(--bg-base);
+  --surface-1: var(--bg-card);
   --surface-2: #FFFFFF;
-  /* New: Modal/Elevated Background */
+  --foreground-color: var(--text-main);
 
-  --sub-background: #EDF7ED;
-  /* Keeping for legacy compatibility */
-  --section-divider: #F6F0DC;
-  --highlight-color: #FFDAAB;
-  --light-grey: #F5F5F5;
+  /* Legacy Colors */
+  --text-muted: #6B7280;
+  --sub-background: #E5E7EB;
+  --section-divider: #E5E7EB;
+  --highlight-color: rgba(255, 107, 61, 0.1);
+  --light-grey: #F3F4F6;
   --white: #FFFFFF;
 
-  /* Text Colors */
-  --foreground-color: #1A1A1A;
-  --text-muted: #9E9E9E;
-
-  /* Borders */
-  --border-color: rgba(0, 0, 0, 0.08);
-  /* Subtle border for light mode */
-
-  /* Contextual/Timeline Colors */
-  --morning-color: #F59E0B;
-  --lunch-color: #F97316;
-  --dinner-color: #6366F1;
+  /* Borders & Shadows */
+  --border-color: rgba(0, 0, 0, 0.06);
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.05);
+  --shadow-premium: 0 10px 30px rgba(0, 0, 0, 0.08);
 
   /* Shared Properties */
-  --font-main: "Geist", sans-serif;
-  --radius-xl: 1.5rem;
-  --radius-2xl: 2.5rem;
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.05);
+  --font-main: "Pretendard", -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+  --radius-xl: 24px;
+  --radius-2xl: 32px;
 
-  /* Legacy aliases for compatibility */
-  --secondary-color: var(--sub-background);
-
-  /* Premium Design Tokens */
-  --brand-gradient: linear-gradient(135deg, #FF5722 0%, #FF8A65 100%);
-  --glass-bg: rgba(255, 255, 255, 0.7);
-  --glass-border: rgba(255, 255, 255, 0.5);
+  /* Premium Design Tokens (Light Mode Version) */
+  --brand-gradient: linear-gradient(135deg, #FF6B3D 0%, #FF8A65 100%);
+  --glass-bg: rgba(255, 255, 255, 0.8);
+  --glass-border: rgba(255, 255, 255, 0.6);
   --glass-blur: blur(12px);
-  --shadow-premium: 0 20px 40px -5px rgba(255, 87, 34, 0.15), 0 10px 20px -5px rgba(0, 0, 0, 0.04);
-  --shadow-inner: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);
 }
 
 :root[data-theme='dark'] {
-  /* Material Design Dark Theme Recommendation */
-  --background-color: #121212;
-  --surface-1: #1E1E1E;
-  /* 5% Lighter than bg - Card Level */
-  --surface-2: #252525;
-  /* 7% Lighter than bg - Elevated Level */
+  /* --- 🎨 Premium Dark Mode (The New Tone & Manner) --- */
+  /* Background (Deep Navy Black) */
+  --bg-base: #17171C;
 
-  --foreground-color: rgba(255, 255, 255, 0.87);
-  /* High Emphasis */
-  --text-muted: rgba(255, 255, 255, 0.60);
-  /* Medium Emphasis */
+  /* Card/Surface (Soft Charcoal) */
+  --bg-card: #2B2C37;
 
-  --primary-color: #FFAB91;
-  /* Desaturated Orange (200) for Dark Mode */
+  /* Text (Off-White) */
+  --text-main: #F2F4F6;
 
-  /* Mappings for legacy variables */
-  --sub-background: var(--surface-1);
-  --light-grey: #2C2C2E;
-  --white: var(--surface-1);
-  /* Cards use surface color */
+  /* Mappings */
+  --primary-color: var(--color-brand);
+  --background-color: var(--bg-base);
+  --surface-1: var(--bg-card);
+  --surface-2: var(--bg-card);
+  --foreground-color: var(--text-main);
+
+  /* Legacy & Utils */
+  --text-muted: rgba(242, 244, 246, 0.6);
+  --sub-background: #25262E;
   --section-divider: #2C2C2E;
+  --light-grey: #3A3B45;
+  --white: #FFFFFF;
+  /* Keep white for icons/text overrides if needed, but contextually use text-main */
 
-  /* Borders & Shadows */
-  --border-color: rgba(255, 255, 255, 0.12);
-  --shadow-sm: none;
-  --shadow-premium: none;
-  --shadow-lg: none;
+  /* Borders & Shadows (Dark Specific) */
+  --border-color: rgba(255, 255, 255, 0.08);
+  /* Minimal border for depth */
+  --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.2);
+  --shadow-premium: 0 10px 30px rgba(0, 0, 0, 0.5);
+  /* Stronger shadow for dark mode depth */
 
-  /* Glass Overrides */
-  --glass-bg: rgba(30, 30, 30, 0.8);
-  --glass-border: var(--border-color);
+  /* Premium Design Tokens (Dark Mode Version) */
+  --glass-bg: rgba(43, 44, 55, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.1);
+}
+
+/* --- Global Utilities for Interaction --- */
+/* Tangibility: Click Feedback */
+.btn:active,
+button:active,
+.interactive-card:active {
+  transform: scale(0.96);
+  transition: transform 0.1s ease-in-out;
+}
+
+/* Page Transition */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+main {
+  animation: fadeIn 0.4s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
 * {
