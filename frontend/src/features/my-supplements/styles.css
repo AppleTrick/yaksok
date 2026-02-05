@@ -88,7 +88,7 @@
 .my-supplements-container {
     padding: 1.5rem;
     padding-bottom: 100px;
-    background-color: var(--background-color);
+    background-color: white;
     min-height: 100vh;
 }
 
@@ -110,12 +110,12 @@
 }
 
 .count-badge {
-    background-color: var(--sub-background);
-    color: var(--primary-color);
-    padding: 0.25rem 0.75rem;
+    background-color: rgba(255, 107, 61, 0.1);
+    color: #FF6B3D;
+    padding: 0.4rem 1rem;
     border-radius: 12px;
     font-size: 0.9rem;
-    font-weight: 700;
+    font-weight: 800;
 }
 
 .search-bar {
@@ -126,19 +126,23 @@
 .search-input {
     width: 100%;
     padding: 1rem 1rem 1rem 3rem;
-    border-radius: 16px;
-    border: 1px solid var(--light-grey);
-    background-color: var(--light-grey);
+    border-radius: 12px;
+    border: 1px solid #E5E8EB;
+    background-color: #F2F4F6;
     font-size: 1rem;
     color: var(--foreground-color);
     outline: none;
     transition: all 0.2s;
 }
 
+.search-input::placeholder {
+    color: #8B95A1;
+}
+
 .search-input:focus {
     background-color: white;
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px rgba(255, 87, 34, 0.1);
+    border-color: #FF6B3D;
+    box-shadow: 0 0 0 3px rgba(255, 107, 61, 0.1);
 }
 
 .search-icon {
@@ -146,33 +150,68 @@
     left: 1rem;
     top: 50%;
     transform: translateY(-50%);
-    color: var(--text-muted);
+    color: #8B95A1;
 }
 
 /* Modal Internal Content Styles */
 /* Note: Overlay, Content container, Animations are now handled by common Modal component */
 
+.modal-internal-container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    animation: slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 .modal-hero {
     display: flex;
     flex-direction: column;
     align-items: center;
-    margin-bottom: 2rem;
+    margin: clamp(0.5rem, 2vh, 1.5rem) 0 clamp(1.5rem, 4vh, 2.5rem) 0;
+    position: relative;
+    padding-bottom: clamp(1.5rem, 3vh, 2.5rem);
+    border-bottom: 1px solid var(--border-color);
 }
 
 .modal-icon-wrapper {
-    width: 100px;
-    height: 100px;
-    background-color: var(--sub-background);
-    border-radius: 30px;
+    width: clamp(90px, 20vw, 130px);
+    height: clamp(90px, 20vw, 130px);
+    background: linear-gradient(135deg, var(--bg-base) 0%, var(--sub-background) 100%);
+    border-radius: clamp(28px, 6vw, 42px);
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-bottom: 1rem;
+    margin-bottom: clamp(1rem, 2vh, 1.5rem);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border-color);
+    position: relative;
+    overflow: hidden;
+}
+
+.modal-icon-wrapper::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at top left, rgba(255, 107, 61, 0.1), transparent 70%);
 }
 
 .modal-title {
-    font-size: 1.5rem;
+    font-size: clamp(1.3rem, 3vw, 1.8rem);
     font-weight: 800;
+    color: var(--text-main);
+    letter-spacing: -0.03em;
     margin-bottom: 0.5rem;
     text-align: center;
 }
@@ -218,40 +257,63 @@
 
 
 .detail-section {
-    margin-bottom: 2rem;
+    margin-bottom: 2.5rem;
+    animation: fadeInSection 0.5s ease-out forwards;
 }
 
-.detail-section:last-child {
-    margin-bottom: 0 !important;
+@keyframes fadeInSection {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .section-label {
-    font-size: 0.95rem;
+    font-size: 0.85rem;
     font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
     color: var(--text-muted);
-    margin-bottom: 0.75rem;
+    margin-bottom: 1rem;
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 8px;
+}
+
+.section-label svg {
+    color: var(--color-brand);
+}
+
+.nutrient-analysis-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
 }
 
 .info-card {
-    background-color: var(--light-grey);
-    padding: 1rem;
-    border-radius: 16px;
+    background-color: var(--bg-base);
+    padding: 1.25rem;
+    border-radius: 18px;
     font-size: 0.95rem;
-    line-height: 1.5;
+    line-height: 1.6;
+    border: 1px solid var(--border-color);
 }
 
 .caution-box {
-    background-color: #FEF2F2;
-    border: 1px solid #FECACA;
-    color: #DC2626;
-    padding: 1rem;
-    border-radius: 16px;
+    background-color: rgba(239, 68, 68, 0.05);
+    border: 1px solid rgba(239, 68, 68, 0.1);
+    color: #EF4444;
+    padding: 1.25rem;
+    border-radius: 18px;
     font-size: 0.9rem;
+    line-height: 1.6;
     display: flex;
-    gap: 10px;
+    gap: 12px;
     align-items: flex-start;
 }
 
@@ -281,10 +343,28 @@
     color: var(--text-muted);
 }
 
+/* Scrollbar Styling for Modal */
+.cm-modal-body::-webkit-scrollbar {
+    width: 6px;
+}
+
+.cm-modal-body::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.cm-modal-body::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 10px;
+}
+
+.cm-modal-body::-webkit-scrollbar-thumb:hover {
+    background: var(--text-muted);
+}
+
 .modal-actions {
     display: flex;
-    gap: 1rem;
-    /* Margin top is handled by modal-footer usually, but ensuring spacing */
+    gap: 0.75rem;
+    width: 100%;
 }
 
 .setting-group {
@@ -292,31 +372,43 @@
     padding: 0;
 }
 
-.setting-group:last-child {
-    margin-bottom: 0 !important;
-    padding-bottom: 0 !important;
-}
-
-
-
 .action-btn {
     flex: 1;
-    padding: 1rem;
-    border-radius: 16px;
+    padding: clamp(0.75rem, 2vh, 1.25rem) 0.5rem;
+    border-radius: clamp(14px, 3vw, 20px);
     font-weight: 700;
+    font-size: clamp(0.85rem, 2vw, 1rem);
     border: none;
     cursor: pointer;
-    transition: filter 0.2s;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.action-btn:active {
+    transform: scale(0.96);
 }
 
 .action-btn.edit {
-    background-color: var(--primary-color);
+    background: var(--brand-gradient);
     color: white;
+    box-shadow: 0 4px 12px rgba(255, 107, 61, 0.2);
+}
+
+.action-btn.stop {
+    background-color: #FEF3C7;
+    color: #D97706;
+}
+
+.action-btn.resume {
+    background-color: #D1FAE5;
+    color: #059669;
 }
 
 .action-btn.delete {
-    background-color: var(--light-grey);
-    color: var(--error-color);
+    background-color: rgba(239, 68, 68, 0.08);
+    color: #EF4444;
 }
 
 /* SupplementList Component Styles */
@@ -359,13 +451,82 @@
 }
 
 
-.empty-state {
-    padding: 3rem 1rem;
+.empty-state-animated {
+    padding: 6rem 1rem;
     text-align: center;
-    color: var(--text-muted);
-    background-color: var(--surface-1);
-    border-radius: 1rem;
-    border: 1px dashed var(--border-color);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2rem;
+}
+
+.floating-icon-wrapper {
+    width: 120px;
+    height: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #F8F9FA;
+    border-radius: 40px;
+    margin-bottom: 0.5rem;
+}
+
+.floating-icon {
+    font-size: 80px;
+    filter: grayscale(1) opacity(0.2);
+}
+
+.empty-content-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.empty-text-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.empty-main-text {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #333D4B;
+    margin: 0;
+}
+
+.empty-sub-text {
+    font-size: 0.95rem;
+    color: #8B95A1;
+    margin: 0;
+}
+
+.empty-cta-btn.primary {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.9rem 1.75rem;
+    background: var(--brand-gradient);
+    color: white;
+    border: none;
+    border-radius: 16px;
+    font-weight: 700;
+    font-size: 1rem;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(255, 107, 61, 0.2);
+    transition: all 0.3s ease;
+}
+
+.empty-cta-link {
+    background: none;
+    border: none;
+    color: #8B95A1;
+    font-size: 0.95rem;
+    font-weight: 600;
+    text-decoration: underline;
+    cursor: pointer;
+    padding: 0.5rem;
 }
 
 .loading-trigger {
@@ -377,96 +538,244 @@
 
 .fab-button {
     position: fixed;
-    bottom: 100px;
-    /* Above bottom tab bar */
+    bottom: calc(85px + 20px);
+    /* 85px is approx bottom nav height + 20px margin */
     right: 20px;
-    width: 56px;
-    height: 56px;
+    width: 60px;
+    height: 60px;
     border-radius: 50%;
-    background-color: var(--primary-color);
+    background: var(--brand-gradient);
     color: white;
     border: none;
-    box-shadow: 0 4px 12px rgba(255, 87, 34, 0.3);
+    box-shadow: 0 4px 16px rgba(255, 107, 61, 0.3);
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: transform 0.2s, box-shadow 0.2s;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     z-index: 50;
 }
 
 .fab-button:active {
-    transform: scale(0.95);
-    box-shadow: 0 2px 6px rgba(255, 87, 34, 0.3);
+    transform: scale(0.92);
+    box-shadow: 0 2px 8px rgba(255, 107, 61, 0.2);
 }
 
 /* Removed outdated tablet centering logic */
 
-/* ManualRegistrationForm Styles */
-.manual-form {
+/* ManualRegistrationForm v2 - Modern & Responsive */
+.manual-registration-v2 {
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
+    gap: clamp(1rem, 3vh, 2rem);
+    padding: clamp(0.5rem, 2vw, 1rem);
+    max-width: 100%;
 }
 
-.form-title {
-    font-size: 1.25rem;
-    font-weight: 700;
-    margin-bottom: 0.5rem;
-    color: var(--foreground-color);
-}
-
-.form-group {
+.form-group-v2 {
     display: flex;
     flex-direction: column;
+    gap: 0.75rem;
+}
+
+.label-with-icon {
+    display: flex;
+    align-items: center;
     gap: 0.5rem;
+    color: var(--text-muted);
 }
 
-.form-group label {
-    font-size: 0.95rem;
+.label-with-icon label {
+    font-size: clamp(0.85rem, 1.5vw, 1rem);
+    font-weight: 700;
+    letter-spacing: -0.01em;
+}
+
+.label-icon {
+    opacity: 0.7;
+}
+
+.modern-input {
+    width: 100%;
+    padding: 1.25rem;
+    background-color: var(--bg-base);
+    border: 2px solid transparent;
+    border-radius: 20px;
+    font-size: clamp(0.95rem, 1.8vw, 1.1rem);
+    font-weight: 500;
+    color: var(--text-main);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.modern-input:focus {
+    background-color: var(--bg-card);
+    border-color: var(--color-brand);
+    box-shadow: 0 8px 24px rgba(255, 107, 61, 0.12);
+    outline: none;
+}
+
+/* Segmented Control */
+.segmented-control-v2 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    background-color: var(--bg-base);
+    padding: 6px;
+    border-radius: 22px;
+    position: relative;
+    gap: 4px;
+}
+
+.segment-btn {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: clamp(10px, 2vw, 16px) 8px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    z-index: 1;
+    border-radius: 16px;
+    transition: color 0.3s ease;
+}
+
+.segment-btn .btn-icon,
+.segment-btn .btn-text {
+    position: relative;
+    z-index: 2;
+}
+
+.segment-btn .btn-icon {
+    transition: transform 0.3s ease;
+}
+
+.segment-btn.active .btn-icon {
+    transform: scale(1.1);
+    color: var(--color-brand);
+}
+
+.segment-btn.active .btn-text {
+    color: var(--color-brand);
+    font-weight: 700;
+}
+
+.segment-btn .btn-text {
+    font-size: clamp(0.75rem, 1.3vw, 0.9rem);
     font-weight: 600;
     color: var(--text-muted);
 }
 
-.form-input {
-    padding: 1rem;
-    border: 1px solid var(--border-color);
-    border-radius: 12px;
-    font-size: 1rem;
-    outline: none;
-    transition: border-color 0.2s;
-}
-
-.form-input:focus {
-    border-color: var(--primary-color);
-}
-
-.time-picker-wrapper {
-    background-color: var(--sub-background);
-    padding: 1rem;
+.segment-active-bg {
+    position: absolute;
+    inset: 0;
+    background: var(--bg-card);
     border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    z-index: 1;
+}
+
+/* Time Picker Card */
+.modern-time-picker-card {
+    background-color: var(--bg-base);
+    border-radius: 24px;
+    padding: 1.5rem;
     display: flex;
     justify-content: center;
+    transition: background-color 0.3s ease;
 }
 
-.form-actions {
-    display: flex;
+.modern-time-picker-card:focus-within {
+    background-color: var(--bg-card);
+    box-shadow: inset 0 0 0 2px var(--color-brand);
+}
+
+/* Actions */
+.form-actions-v2 {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
     gap: 1rem;
     margin-top: 1rem;
 }
 
-.cancel-btn {
-    flex: 1;
-    padding: 1rem;
-    border-radius: 16px;
-    background-color: var(--light-grey);
-    color: var(--text-muted);
-    font-weight: 700;
-    border: none;
+.modern-btn-primary,
+.modern-btn-secondary {
+    padding: 1.25rem;
+    border-radius: 20px;
+    font-weight: 800;
+    font-size: clamp(0.95rem, 1.8vw, 1.1rem);
     cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
 }
 
-/* Supplements Detail Modal Accordion */
+.modern-btn-primary {
+    background: var(--brand-gradient);
+    color: white;
+    box-shadow: 0 8px 20px rgba(255, 107, 61, 0.25);
+}
+
+.modern-btn-primary:active {
+    transform: scale(0.97);
+}
+
+.modern-btn-primary:disabled {
+    opacity: 0.5;
+    filter: grayscale(0.8);
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.modern-btn-secondary {
+    background-color: var(--bg-base);
+    color: var(--text-muted);
+}
+
+.modern-btn-secondary:active {
+    background-color: var(--sub-background);
+}
+
+/* Responsive Adjustments */
+@media (max-width: 480px) {
+    .manual-registration-v2 {
+        gap: 1.25rem;
+    }
+
+    .modern-input,
+    .modern-btn-primary,
+    .modern-btn-secondary {
+        padding: 1rem;
+    }
+
+    .modern-time-picker-card {
+        padding: 1rem;
+    }
+}
+
+@media (min-width: 768px) {
+    .manual-registration-v2 {
+        padding: 1rem 2rem;
+    }
+
+    .form-actions-v2 {
+        margin-top: 2rem;
+    }
+}
+
+@media (min-width: 1024px) {
+    .manual-registration-v2 {
+        max-width: 500px;
+        margin: 0 auto;
+    }
+}
+
+/* Supplements Detail Modal Accordion & Misc */
 .cm-accordion {
     width: 100%;
 }
@@ -477,10 +786,8 @@
     justify-content: space-between;
     cursor: pointer;
     list-style: none;
-    /* Hide default triangle */
 }
 
-/* Hide default marker for webkit */
 .cm-accordion-header::-webkit-details-marker {
     display: none;
 }
@@ -503,29 +810,20 @@
     line-height: 1.5;
     color: var(--foreground-color);
     white-space: pre-wrap;
-    /* Allow line breaks */
 }
 
-.submit-btn {
-    flex: 2;
-    padding: 1rem;
-    border-radius: 16px;
-    background-color: var(--primary-color);
-    color: white;
-    font-weight: 700;
-    border: none;
-    cursor: pointer;
-}
-
-/* Dosage Counter Styles */
 .dosage-counter-container {
     background-color: #FEF3C7;
-    /* Beige/Yellowish bg similar to image */
     padding: 1rem 1.5rem;
     border-radius: 20px;
     display: flex;
     justify-content: space-between;
     align-items: center;
+}
+
+[data-theme='dark'] .dosage-counter-container {
+    background-color: rgba(254, 243, 199, 0.1);
+    border: 1px solid rgba(252, 211, 77, 0.3);
 }
 
 .counter-btn {
@@ -544,75 +842,12 @@
     transition: transform 0.1s, background-color 0.2s;
 }
 
-.counter-btn:active {
-    transform: scale(0.95);
-}
-
-.counter-btn:disabled {
-    background-color: var(--text-muted);
-    cursor: not-allowed;
-    box-shadow: none;
-}
-
 .dosage-value {
     font-size: 1.25rem;
     font-weight: 700;
     color: var(--foreground-color);
 }
 
-.meal-cat-btn {
-    padding: 10px;
-    border-radius: 8px;
-    border: 1px solid var(--border-color);
-    background-color: var(--white);
-    color: var(--text-muted);
-    font-size: 0.9rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.meal-cat-btn.active {
-    border-color: var(--primary-color);
-    background-color: #FFF7ED;
-    /* Light Orange */
-    color: var(--primary-color);
-}
-
-/* Dark Mode Overrides for Forms & Modal Elements */
-[data-theme='dark'] .dosage-counter-container {
-    background-color: rgba(254, 243, 199, 0.1);
-    border: 1px solid rgba(252, 211, 77, 0.3);
-}
-
 [data-theme='dark'] .dosage-value {
     color: #FDE68A;
-}
-
-[data-theme='dark'] .form-input,
-[data-theme='dark'] .search-input {
-    background-color: var(--surface-1);
-    border-color: var(--border-color);
-    color: var(--foreground-color);
-}
-
-[data-theme='dark'] .form-input:focus {
-    border-color: var(--primary-color);
-}
-
-[data-theme='dark'] .meal-cat-btn {
-    background-color: var(--surface-1);
-    border-color: var(--border-color);
-    color: var(--text-muted);
-}
-
-[data-theme='dark'] .meal-cat-btn.active {
-    background-color: rgba(255, 171, 145, 0.15);
-    border-color: var(--primary-color);
-    color: var(--primary-color);
-}
-
-[data-theme='dark'] .time-picker-wrapper {
-    background-color: var(--surface-1);
-    border: 1px solid var(--border-color);
 }

@@ -13,12 +13,14 @@ import java.util.List;
     public interface NotificationRepository extends JpaRepository<Notification, Long> {
 
         List<Notification> findAllByUserId(long userId);
+        void deleteAllByUserProductId(Long userProductId);
         Notification findByUserIdAndUserProductId(Long userId, Long userProductId);
         @Query("""
         SELECT n FROM Notification n
         WHERE n.enabled = true
           AND n.intaken = false
+          AND n.intakeTime = :now
           AND n.nextNotify <= :now
     """)
         List<Notification> findSendableNotifications(LocalTime now);
-    }
+}
