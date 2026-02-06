@@ -1,12 +1,14 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { RotateCcw, ShieldCheck, AlertTriangle, Pill, TrendingUp, Info, ArrowRight } from 'lucide-react';
+import { RotateCcw, ShieldCheck, AlertTriangle, Pill, TrendingUp, Info, ArrowRight, CheckCircle } from 'lucide-react';
 import { useReportContext } from '@/features/report/contexts/ReportContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import '@/features/report/styles.css';
 import { motion, Variants } from 'framer-motion';
+import Modal from '@/components/Modal';
+import Button from '@/components/Button';
 
 const containerVariants: Variants = {
     hidden: { opacity: 0 },
@@ -47,9 +49,13 @@ export default function ReportPage() {
     const { theme } = useTheme();
     const isDark = theme === 'dark';
     const [selectedProductIdx, setSelectedProductIdx] = useState<number>(0);
+    const [successModal, setSuccessModal] = useState<{ open: boolean; count: number }>({ open: false, count: 0 });
+    const [isRegistering, setIsRegistering] = useState(false);
+    const isNavigatingRef = useRef(false);
 
     useEffect(() => {
-        if (!reportData.analysisResult) {
+        // 등록 완료 후 네비게이션 중에는 리다이렉트 하지 않음
+        if (!reportData.analysisResult && !isNavigatingRef.current) {
             router.replace('/camera');
         }
     }, [reportData.analysisResult, router]);
@@ -63,7 +69,65 @@ export default function ReportPage() {
         router.push('/camera');
     };
 
-    const handleConfirmRegister = () => {
+    const handleConfirmRegister = async () => {
+        const realReportData = reportData.analysisResult?.reportData;
+        const products: Product[] = realReportData?.products || [];
+
+        if (products.length === 0) {
+            alert('등록할 영양제가 없습니다.');
+            return;
+        }
+
+        setIsRegistering(true);
+
+        try {
+            // 유효한 productId가 있는 제품만 등록
+            const validProducts = products.filter(p => p.productId !== null);
+
+            if (validProducts.length === 0) {
+                alert('등록 가능한 영양제가 없습니다. (제품 정보가 DB에 없음)');
+                isNavigatingRef.current = true;
+                clearReportData();
+                router.push('/my-supplements');
+                return;
+            }
+
+            // 각 제품 등록 API 호출
+            for (const product of validProducts) {
+                const response = await fetch('/api/v1/products/user', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        productId: product.productId,
+                        nickname: product.name,
+                        dailyDose: 1,
+                        doseAmount: 1,
+                        doseUnit: '정'
+                    }),
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error(`영양제 등록 실패: ${product.name}`, errorText);
+                }
+            }
+
+            // 성공 Modal 표시
+            setSuccessModal({ open: true, count: validProducts.length });
+        } catch (error) {
+            console.error('영양제 등록 중 오류:', error);
+            alert('영양제 등록 중 오류가 발생했습니다.');
+        } finally {
+            setIsRegistering(false);
+        }
+    };
+
+    const handleSuccessModalClose = () => {
+        setSuccessModal({ open: false, count: 0 });
+        isNavigatingRef.current = true;
         clearReportData();
         router.push('/my-supplements');
     };
@@ -364,23 +428,57 @@ export default function ReportPage() {
                         padding: '18px',
                         borderRadius: '20px',
                         border: 'none',
-                        background: 'linear-gradient(to right, #FF6B3D, #FF8E5E)',
+                        background: isRegistering ? '#ccc' : 'linear-gradient(to right, #FF6B3D, #FF8E5E)',
                         color: '#fff',
                         fontSize: '1.05rem',
                         fontWeight: 800,
-                        cursor: 'pointer',
+                        cursor: isRegistering ? 'not-allowed' : 'pointer',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
                         gap: '10px',
-                        boxShadow: '0 12px 24px rgba(255, 107, 61, 0.3)',
+                        boxShadow: isRegistering ? 'none' : '0 12px 24px rgba(255, 107, 61, 0.3)',
                         transition: 'transform 0.2s active'
                     }}
+                    disabled={isRegistering}
                 >
-                    <span>{products.length}개 영양제 등록하기</span>
-                    <ArrowRight size={22} />
+                    <span>{isRegistering ? '등록 중...' : `${products.length}개 영양제 등록하기`}</span>
+                    {!isRegistering && <ArrowRight size={22} />}
                 </button>
             </motion.footer>
+
+            {/* 등록 성공 Modal */}
+            <Modal
+                isOpen={successModal.open}
+                onClose={handleSuccessModalClose}
+                title="등록 완료"
+            >
+                <div style={{ textAlign: 'center', padding: '20px 0' }}>
+                    <CheckCircle size={64} color="#4CAF50" style={{ marginBottom: '16px' }} />
+                    <p style={{ fontSize: '1.1rem', marginBottom: '8px' }}>
+                        <strong>{successModal.count}개</strong> 영양제가 등록되었습니다!
+                    </p>
+                    <p style={{ color: '#666', fontSize: '0.9rem' }}>
+                        내 영양제 목록에서 확인하세요.
+                    </p>
+                </div>
+                <Button
+                    onClick={handleSuccessModalClose}
+                    style={{
+                        width: '100%',
+                        padding: '14px',
+                        background: 'linear-gradient(to right, #FF6B3D, #FF8E5E)',
+                        color: '#fff',
+                        border: 'none',
+                        borderRadius: '12px',
+                        fontSize: '1rem',
+                        fontWeight: 700,
+                        cursor: 'pointer'
+                    }}
+                >
+                    내 영양제 보기
+                </Button>
+            </Modal>
 
             <style jsx>{`
                 main::-webkit-scrollbar {
