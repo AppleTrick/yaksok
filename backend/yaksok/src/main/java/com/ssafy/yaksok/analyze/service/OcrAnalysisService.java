@@ -168,19 +168,42 @@ public class OcrAnalysisService {
 
                 log.info("    [0단계] 제품명 유효성 검증: '{}'", productName);
 
+                String lowerName = productName.toLowerCase().replaceAll("\\s", "");
+
+                // 1. 필리 브랜드 및 주요 영양제 키워드 즉시 통과 (Bypass LLM)
+                if (lowerName.contains("필리") || lowerName.contains("pilly") ||
+                                lowerName.contains("비타민") || lowerName.contains("vitamin") ||
+                                lowerName.contains("칼슘") || lowerName.contains("마그네슘") ||
+                                lowerName.contains("루테인") || lowerName.contains("오메가")) {
+                        log.info("    [검증 결과] 주요 키워드 포함 확인 -> 무조건 통과");
+                        return true;
+                }
+
                 try {
                         Map<String, Object> params = Map.of("productName", productName);
                         ProductVerificationResponse result = llmServiceFacade.queryWithRetry(
                                         productVerificationPrompt,
                                         params,
                                         ProductVerificationResponse.class,
-                                        2); // 최대 2회 재시도
+                                        0.1,
+                                        2);
 
-                        log.info("    [검증 결과] isValid={}, reason={}", result.isValid(), result.getReason());
-                        return result.isValid();
-                } catch (Exception e) {
-                        log.warn("    [검증 오류] GMS 호출 실패, 기본값 false 반환: {}", e.getMessage());
+                        if (result.isValid()) {
+                                log.info("    [검증 결과] LLM 승인: {}", result.getReason());
+                                return true;
+                        }
+
+                        // 2. LLM이 무효라고 해도, 한글 단어가 어느 정도 명확하면 실제품으로 간주하고 통과 (연하게)
+                        if (productName.matches(".*[가-힣]{2,}.*")) {
+                                log.info("    [검증 완화] LLM 반려되었으나 한글 단어 감지되어 통과: {}", result.getReason());
+                                return true;
+                        }
+
+                        log.warn("    [검증 기각] 최종적으로 유효하지 않음: {}", result.getReason());
                         return false;
+                } catch (Exception e) {
+                        log.warn("    [검증 오류] GMS 호출 실패, 안전하게 통과 처리: {}", e.getMessage());
+                        return true; // 에러 시에는 사용자 편의를 위해 통과
                 }
         }
 
@@ -346,13 +369,18 @@ public class OcrAnalysisService {
                                                                 .build());
                                         });
 
-                        // ProductIngredient 연결 저장
-                        productIngredientRepository.save(ProductIngredient.builder()
-                                        .product(savedProduct)
-                                        .ingredient(ingredient)
-                                        .ingredientAmount(finalAmount)
-                                        .amountUnit(finalUnit)
-                                        .build());
+                        // ProductIngredient 연결 저장 (중복 체크)
+                        if (!productIngredientRepository.existsByProductAndIngredient(savedProduct, ingredient)) {
+                                productIngredientRepository.save(ProductIngredient.builder()
+                                                .product(savedProduct)
+                                                .ingredient(ingredient)
+                                                .ingredientAmount(finalAmount)
+                                                .amountUnit(finalUnit)
+                                                .build());
+                        } else {
+                                log.info("    [DB 스킵] 이미 존재하는 ProductIngredient: product={}, ingredient={}",
+                                                savedProduct.getId(), ingName);
+                        }
 
                         ingredientInfos.add(createIngredientInfo(ingName, finalAmount.toString(), finalUnit,
                                         currentIntakeMap, ingredient.getMaxIntakeValue()));
@@ -431,13 +459,18 @@ public class OcrAnalysisService {
                                                                 .build());
                                         });
 
-                        // 기존 제품에 ProductIngredient 연결 저장
-                        productIngredientRepository.save(ProductIngredient.builder()
-                                        .product(existingProduct)
-                                        .ingredient(ingredient)
-                                        .ingredientAmount(finalAmount)
-                                        .amountUnit(finalUnit)
-                                        .build());
+                        // 기존 제품에 ProductIngredient 연결 저장 (중복 체크)
+                        if (!productIngredientRepository.existsByProductAndIngredient(existingProduct, ingredient)) {
+                                productIngredientRepository.save(ProductIngredient.builder()
+                                                .product(existingProduct)
+                                                .ingredient(ingredient)
+                                                .ingredientAmount(finalAmount)
+                                                .amountUnit(finalUnit)
+                                                .build());
+                        } else {
+                                log.info("    [DB 스킵] 이미 존재하는 ProductIngredient: product={}, ingredient={}",
+                                                existingProduct.getId(), ingName);
+                        }
 
                         ingredientInfos.add(createIngredientInfo(ingName, finalAmount.toString(), finalUnit,
                                         currentIntakeMap, ingredient.getMaxIntakeValue()));
