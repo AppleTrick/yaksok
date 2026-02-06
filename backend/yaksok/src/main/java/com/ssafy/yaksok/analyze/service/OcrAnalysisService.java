@@ -168,10 +168,14 @@ public class OcrAnalysisService {
 
                 log.info("    [0단계] 제품명 유효성 검증: '{}'", productName);
 
-                // "필리" 또는 "pilly"는 LLM이 가끔 인식을 못하므로 명시적으로 화이트리스트 처리
-                String lowerName = productName.toLowerCase();
-                if (lowerName.contains("필리") || lowerName.contains("pilly")) {
-                        log.info("    [검증 결과] 화이트리스트 브랜드 발견: '필리' -> true");
+                String lowerName = productName.toLowerCase().replaceAll("\\s", "");
+
+                // 1. 필리 브랜드 및 주요 영양제 키워드 즉시 통과 (Bypass LLM)
+                if (lowerName.contains("필리") || lowerName.contains("pilly") ||
+                                lowerName.contains("비타민") || lowerName.contains("vitamin") ||
+                                lowerName.contains("칼슘") || lowerName.contains("마그네슘") ||
+                                lowerName.contains("루테인") || lowerName.contains("오메가")) {
+                        log.info("    [검증 결과] 주요 키워드 포함 확인 -> 무조건 통과");
                         return true;
                 }
 
@@ -181,14 +185,25 @@ public class OcrAnalysisService {
                                         productVerificationPrompt,
                                         params,
                                         ProductVerificationResponse.class,
-                                        0.1, // 낮은 온도로 일관성 있는 검증 유도
-                                        2); // 최대 2회 재시도
+                                        0.1,
+                                        2);
 
-                        log.info("    [검증 결과] isValid={}, reason={}", result.isValid(), result.getReason());
-                        return result.isValid();
-                } catch (Exception e) {
-                        log.warn("    [검증 오류] GMS 호출 실패, 기본값 false 반환: {}", e.getMessage());
+                        if (result.isValid()) {
+                                log.info("    [검증 결과] LLM 승인: {}", result.getReason());
+                                return true;
+                        }
+
+                        // 2. LLM이 무효라고 해도, 한글 단어가 어느 정도 명확하면 실제품으로 간주하고 통과 (연하게)
+                        if (productName.matches(".*[가-힣]{2,}.*")) {
+                                log.info("    [검증 완화] LLM 반려되었으나 한글 단어 감지되어 통과: {}", result.getReason());
+                                return true;
+                        }
+
+                        log.warn("    [검증 기각] 최종적으로 유효하지 않음: {}", result.getReason());
                         return false;
+                } catch (Exception e) {
+                        log.warn("    [검증 오류] GMS 호출 실패, 안전하게 통과 처리: {}", e.getMessage());
+                        return true; // 에러 시에는 사용자 편의를 위해 통과
                 }
         }
 
