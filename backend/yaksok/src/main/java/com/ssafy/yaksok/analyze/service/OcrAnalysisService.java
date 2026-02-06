@@ -168,6 +168,13 @@ public class OcrAnalysisService {
 
                 log.info("    [0단계] 제품명 유효성 검증: '{}'", productName);
 
+                // "필리" 또는 "pilly"는 LLM이 가끔 인식을 못하므로 명시적으로 화이트리스트 처리
+                String lowerName = productName.toLowerCase();
+                if (lowerName.contains("필리") || lowerName.contains("pilly")) {
+                        log.info("    [검증 결과] 화이트리스트 브랜드 발견: '필리' -> true");
+                        return true;
+                }
+
                 try {
                         Map<String, Object> params = Map.of("productName", productName);
                         ProductVerificationResponse result = llmServiceFacade.queryWithRetry(
