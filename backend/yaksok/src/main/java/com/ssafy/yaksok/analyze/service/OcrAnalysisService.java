@@ -369,13 +369,18 @@ public class OcrAnalysisService {
                                                                 .build());
                                         });
 
-                        // ProductIngredient 연결 저장
-                        productIngredientRepository.save(ProductIngredient.builder()
-                                        .product(savedProduct)
-                                        .ingredient(ingredient)
-                                        .ingredientAmount(finalAmount)
-                                        .amountUnit(finalUnit)
-                                        .build());
+                        // ProductIngredient 연결 저장 (중복 체크)
+                        if (!productIngredientRepository.existsByProductAndIngredient(savedProduct, ingredient)) {
+                                productIngredientRepository.save(ProductIngredient.builder()
+                                                .product(savedProduct)
+                                                .ingredient(ingredient)
+                                                .ingredientAmount(finalAmount)
+                                                .amountUnit(finalUnit)
+                                                .build());
+                        } else {
+                                log.info("    [DB 스킵] 이미 존재하는 ProductIngredient: product={}, ingredient={}",
+                                                savedProduct.getId(), ingName);
+                        }
 
                         ingredientInfos.add(createIngredientInfo(ingName, finalAmount.toString(), finalUnit,
                                         currentIntakeMap, ingredient.getMaxIntakeValue()));
@@ -454,13 +459,18 @@ public class OcrAnalysisService {
                                                                 .build());
                                         });
 
-                        // 기존 제품에 ProductIngredient 연결 저장
-                        productIngredientRepository.save(ProductIngredient.builder()
-                                        .product(existingProduct)
-                                        .ingredient(ingredient)
-                                        .ingredientAmount(finalAmount)
-                                        .amountUnit(finalUnit)
-                                        .build());
+                        // 기존 제품에 ProductIngredient 연결 저장 (중복 체크)
+                        if (!productIngredientRepository.existsByProductAndIngredient(existingProduct, ingredient)) {
+                                productIngredientRepository.save(ProductIngredient.builder()
+                                                .product(existingProduct)
+                                                .ingredient(ingredient)
+                                                .ingredientAmount(finalAmount)
+                                                .amountUnit(finalUnit)
+                                                .build());
+                        } else {
+                                log.info("    [DB 스킵] 이미 존재하는 ProductIngredient: product={}, ingredient={}",
+                                                existingProduct.getId(), ingName);
+                        }
 
                         ingredientInfos.add(createIngredientInfo(ingName, finalAmount.toString(), finalUnit,
                                         currentIntakeMap, ingredient.getMaxIntakeValue()));
