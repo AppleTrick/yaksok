@@ -12,13 +12,14 @@ public class NotificationScheduler {
     private final NotificationService notificationService;
 
     @Scheduled(cron = "0 */1 * * * *")
-    @SchedulerLock(
-            name = "notification_send_job",
-            lockAtLeastFor = "PT50S",
-            lockAtMostFor = "PT2M"
-    )
+    @SchedulerLock(name = "notification_send_job", lockAtLeastFor = "PT50S", lockAtMostFor = "PT2M")
     public void sendNotifications() {
         notificationService.processNotifications();
     }
-}
 
+    @Scheduled(cron = "0 0 0 * * *") // 매일 자정
+    @SchedulerLock(name = "notification_reset_job", lockAtLeastFor = "PT10M", lockAtMostFor = "PT30M")
+    public void resetNotifications() {
+        notificationService.resetDailyNotifications();
+    }
+}
