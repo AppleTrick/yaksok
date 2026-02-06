@@ -82,12 +82,37 @@ export default function CaptureStep({ onCapture, onFileUpload }: CaptureStepProp
         }
     };
 
-    const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    // EXIF 정규화: 캔버스에 다시 그려서 EXIF 방향을 적용
+    const normalizeImage = (dataUrl: string): Promise<string> => {
+        return new Promise((resolve) => {
+            const img = new Image();
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                // 브라우저가 EXIF를 자동 적용한 크기 사용
+                canvas.width = img.width;
+                canvas.height = img.height;
+                const ctx = canvas.getContext('2d');
+                if (ctx) {
+                    ctx.drawImage(img, 0, 0);
+                    resolve(canvas.toDataURL('image/jpeg', 0.95));
+                } else {
+                    resolve(dataUrl);
+                }
+            };
+            img.src = dataUrl;
+        });
+    };
+
+    const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         if (file) {
             const reader = new FileReader();
-            reader.onloadend = () => {
-                onFileUpload(reader.result as string);
+            reader.onloadend = async () => {
+                const rawDataUrl = reader.result as string;
+                // 캔버스를 통해 EXIF 정규화
+                const normalizedDataUrl = await normalizeImage(rawDataUrl);
+                console.log('[CaptureStep] Image normalized via canvas');
+                onFileUpload(normalizedDataUrl);
             };
             reader.readAsDataURL(file);
         }
