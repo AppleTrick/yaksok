@@ -1,28 +1,19 @@
 package com.ssafy.yaksok.global.common.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
 
 /**
  * LLM 제품 검증 응답 DTO
  */
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class ProductVerificationResponse {
 
-    private boolean exists;
-    private String confidence;
-    private String source;
-
-    /**
-     * 신뢰도가 높은지 확인
-     */
-    public boolean isHighConfidence() {
-        return "high".equalsIgnoreCase(confidence);
-    }
-
-    /**
-     * 존재하고 신뢰도가 높은지 확인
-     */
-    public boolean isVerified() {
-        return exists && isHighConfidence();
-    }
+    @JsonProperty("isValid")
+    private boolean valid;
+    private String reason;
 }

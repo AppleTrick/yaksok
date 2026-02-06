@@ -140,18 +140,60 @@ export default function ResultStep({ imageSrc, result, onRetake, onRegister }: R
                             </motion.div>
                         </motion.div>
 
-                        {/* Bounding Boxes */}
-                        {imageSize.width > 0 && products.map((obj, idx) => {
-                            const img = imageRef.current;
-                            if (!img || !obj.box || obj.box.length < 4) return null;
+                        {/* Bounding Boxes - object-fit: contain 오프셋 보정 */}
+                        {imageSize.width > 0 && imageRef.current && products.map((obj, idx) => {
+                            if (!obj.box || obj.box.length < 4) return null;
 
-                            const scaleX = imageSize.width / img.naturalWidth;
-                            const scaleY = imageSize.height / img.naturalHeight;
+                            const img = imageRef.current;
+                            if (!img) return null;
+
+                            // 원본 이미지 비율과 컨테이너 비율 계산
+                            const containerWidth = imageSize.width;
+                            const containerHeight = imageSize.height;
+                            const naturalWidth = img.naturalWidth;
+                            const naturalHeight = img.naturalHeight;
+
+                            // object-fit: contain 시 실제 렌더링 크기 계산
+                            const containerRatio = containerWidth / containerHeight;
+                            const imageRatio = naturalWidth / naturalHeight;
+
+                            let renderedWidth: number;
+                            let renderedHeight: number;
+                            let offsetX: number;
+                            let offsetY: number;
+
+                            if (imageRatio > containerRatio) {
+                                // 이미지가 더 넓음 - 가로 꽉 채움, 세로 여백
+                                renderedWidth = containerWidth;
+                                renderedHeight = containerWidth / imageRatio;
+                                offsetX = 0;
+                                offsetY = (containerHeight - renderedHeight) / 2;
+                            } else {
+                                // 이미지가 더 높음 - 세로 꽉 채움, 가로 여백
+                                renderedHeight = containerHeight;
+                                renderedWidth = containerHeight * imageRatio;
+                                offsetX = (containerWidth - renderedWidth) / 2;
+                                offsetY = 0;
+                            }
+
+                            // box는 정규화된 좌표 [x1, y1, x2, y2] (0~1 범위)
                             const [x1, y1, x2, y2] = obj.box;
-                            const boxWidth = (x2 - x1) * scaleX;
-                            const boxHeight = (y2 - y1) * scaleY;
-                            const boxLeft = x1 * scaleX;
-                            const boxTop = y1 * scaleY;
+
+                            // 디버그 로그
+                            console.log(`[BBox Debug] Product: ${obj.name}`);
+                            console.log(`  Container: ${containerWidth.toFixed(0)}x${containerHeight.toFixed(0)}`);
+                            console.log(`  Natural Image: ${naturalWidth}x${naturalHeight}`);
+                            console.log(`  Rendered Image: ${renderedWidth.toFixed(0)}x${renderedHeight.toFixed(0)}`);
+                            console.log(`  Offset: (${offsetX.toFixed(0)}, ${offsetY.toFixed(0)})`);
+                            console.log(`  Box (normalized): [${x1.toFixed(3)}, ${y1.toFixed(3)}, ${x2.toFixed(3)}, ${y2.toFixed(3)}]`);
+
+                            // 정규화 좌표를 실제 렌더링 영역에 맞게 변환 후 오프셋 적용
+                            const boxLeft = offsetX + x1 * renderedWidth;
+                            const boxTop = offsetY + y1 * renderedHeight;
+                            const boxWidth = (x2 - x1) * renderedWidth;
+                            const boxHeight = (y2 - y1) * renderedHeight;
+
+                            console.log(`  Box (pixels): left=${boxLeft.toFixed(0)}, top=${boxTop.toFixed(0)}, w=${boxWidth.toFixed(0)}, h=${boxHeight.toFixed(0)}`);
 
                             const hasIngredients = obj.ingredients && obj.ingredients.length > 0;
                             const borderColor = hasIngredients ? 'var(--cam-green)' : 'var(--cam-orange)';
