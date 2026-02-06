@@ -87,12 +87,19 @@
 }
 
 .full-width-btn {
-    width: 100%;
-    justify-content: space-between;
+    display: flex !important;
+    width: 100% !important;
+    justify-content: center !important;
+    align-items: center;
+    gap: 8px;
     padding: 1rem 1.5rem;
-    font-size: 1.1rem;
-    background: var(--brand-gradient);
-    box-shadow: 0 4px 15px rgba(255, 107, 61, 0.3);
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--white);
+    background-color: #FF5722 !important;
+    /* 강제 지정 */
+    box-shadow: 0 4px 6px rgba(255, 87, 34, 0.1) !important;
+    border-radius: 12px;
 }
 
 .full-width-btn:active {

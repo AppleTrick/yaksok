@@ -24,6 +24,7 @@ public class IntakeService {
 
     private final UserProductRepository userProductRepository;
     private final NotificationRepository notificationRepository;
+
     /**
      * 특정 날짜의 복용 스케줄 조회
      */
@@ -44,7 +45,8 @@ public class IntakeService {
      */
     private boolean isActiveOnDate(UserProduct up, LocalDate date) {
         // 비활성화된 제품 제외
-        if (!up.isActive()) return false;
+        if (!up.isActive())
+            return false;
         return true;
     }
 
@@ -59,14 +61,14 @@ public class IntakeService {
             productName = up.getProduct().getPrdlstNm();
         }
         Notification no = notificationRepository.findByUserIdAndNickname(up.getUser().getId(), up.getNickname());
-        if(no != null) {
+        if (no != null) {
             isTaken = no.isTaken();
         }
 
         return new IntakeResponse(
                 up.getId(),
-                productId,        // 셀프 등록이면 null
-                productName,      // 셀프 등록이면 null
+                productId, // 셀프 등록이면 null
+                productName, // 셀프 등록이면 null
                 up.getNickname(),
                 up.getDailyDose(),
                 up.getDoseAmount(),
@@ -77,7 +79,7 @@ public class IntakeService {
     }
 
     /**
-     * 복용 체크 - active를 true로 변경
+     * 복용 체크 - active를 true로 변경하고, 연결된 notification의 intaken도 true로 업데이트
      */
     @Transactional
     public void checkIntake(Long userId, Long userProductId) {
@@ -96,6 +98,19 @@ public class IntakeService {
 
         // 3. active 활성화
         userProduct.activate();
+
+        // 4. 연결된 Notification의 intaken도 true로 업데이트
+        Notification notification = notificationRepository.findByUserIdAndUserProductId(userId, userProductId);
+        if (notification != null) {
+            if(notification.getIntaken()){
+                notification.nottaken();
+            }else{
+                notification.taken();
+            }
+            log.info("알림 복용 상태 업데이트: notificationId={}, intaken={}", notification.getId(), notification.getIntaken());
+        } else {
+            log.warn("연결된 알림을 찾을 수 없음: userId={}, userProductId={}", userId, userProductId);
+        }
 
         log.info("복용 체크 완료: userProductId={}, active={}", userProductId, userProduct.isActive());
     }

@@ -9,6 +9,7 @@ public final class SecurityUrls {
             "/api/v1/auth/**",
             "/swagger-ui/**",
             "/v3/api-docs/**",
-            "/favicon.ico"
+            "/favicon.ico",
+            "/error"
     };
 }
