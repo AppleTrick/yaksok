@@ -14,10 +14,10 @@ public class UserProductResponse {
     private Long productId;
     private String productName;
     private String nickname;
-    private int dailyDose;
+    private Integer dailyDose;
     private BigDecimal doseAmount;
     private String doseUnit;
-    private boolean active;
+    private Boolean active;
 
     private List<ProductIngredientResponse> ingredients = List.of();
 
@@ -26,11 +26,10 @@ public class UserProductResponse {
             Long productId,
             String productName,
             String nickname,
-            int dailyDose,
+            Integer dailyDose,
             BigDecimal doseAmount,
             String doseUnit,
-            boolean active
-    ) {
+            Boolean active) {
         this.userProductId = userProductId;
         this.productId = productId;
         this.productName = productName;
