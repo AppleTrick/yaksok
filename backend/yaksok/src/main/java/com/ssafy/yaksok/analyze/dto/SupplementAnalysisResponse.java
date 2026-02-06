@@ -36,6 +36,8 @@ public class SupplementAnalysisResponse {
         private String name;
         private List<Double> box;
         private List<ProductIngredientInfo> ingredients;
+        private String intakeTime; // HH:mm:ss 형식 (예: "08:00:00")
+        private String intakeCategory; // AFTERMEAL, BEFOREMEAL, BEFORESLEEP
     }
 
     @Data
