@@ -16,6 +16,7 @@ export default function MySupplementsPage() {
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedItem, setSelectedItem] = useState<MedicationItem | null>(null);
     const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
+    const [activeTab, setActiveTab] = useState<'taking' | 'stopped'>('taking');
 
     // 1. Flatten and Deduplicate Items by Name
     const uniqueItems = useMemo(() => {
@@ -119,6 +120,8 @@ export default function MySupplementsPage() {
                 items={filteredItems}
                 onItemClick={setSelectedItem}
                 onAddClick={() => openRegisterModal()}
+                activeTab={activeTab}
+                onTabChange={setActiveTab}
             />
 
             {/* Detail Modal */}
@@ -132,6 +135,8 @@ export default function MySupplementsPage() {
                     onToggleStatus={(newStatus) => {
                         toggleMedicationStatus(selectedItem.name, newStatus);
                         setSelectedItem(prev => prev ? { ...prev, status: newStatus } : null);
+                        // 상태 변경 시 자동으로 해당 탭으로 전환
+                        setActiveTab(newStatus);
                     }}
                     onEdit={() => openRegisterModal(selectedItem)}
                     onSave={() => setSelectedItem(null)} // 저장 후 모달 닫기

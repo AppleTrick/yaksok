@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import axios from '@/lib/axios';
+import axios from 'axios';
 import LoginForm from './components/LoginForm';
 import './styles.css';
 
