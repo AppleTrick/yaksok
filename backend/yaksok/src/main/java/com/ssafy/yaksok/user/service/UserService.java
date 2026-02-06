@@ -2,6 +2,10 @@ package com.ssafy.yaksok.user.service;
 
 import com.ssafy.yaksok.auth.dto.KakaoUserInfo;
 import com.ssafy.yaksok.auth.dto.SignupRequest;
+import com.ssafy.yaksok.disease.entity.Disease;
+import com.ssafy.yaksok.disease.entity.UserDisease;
+import com.ssafy.yaksok.disease.repository.DiseaseRepository;
+import com.ssafy.yaksok.disease.repository.UserDiseaseRepository;
 import com.ssafy.yaksok.disease.service.DiseaseService;
 import com.ssafy.yaksok.disease.service.UserDiseaseService;
 import com.ssafy.yaksok.global.exception.BusinessException;
@@ -10,6 +14,7 @@ import com.ssafy.yaksok.product.dto.ProductIngredientResponse;
 import com.ssafy.yaksok.product.dto.UserProductResponse;
 import com.ssafy.yaksok.product.service.ProductIngredientService;
 import com.ssafy.yaksok.product.service.UserProductService;
+import com.ssafy.yaksok.user.dto.UpdateUserRequest;
 import com.ssafy.yaksok.user.dto.UserDataResponse;
 import com.ssafy.yaksok.user.dto.UserInfoResponse;
 import com.ssafy.yaksok.user.dto.UsernameResponse;
@@ -37,7 +42,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true) // 🔧 기본은 읽기 전용
+@Transactional(readOnly = true) // 기본은 읽기 전용
 public class UserService {
 
     private final UserRepository userRepository;
@@ -46,6 +51,8 @@ public class UserService {
     private final UserProductService userProductService;
     private final ProductIngredientService productIngredientService;
     private final PasswordEncoder passwordEncoder;
+    private final DiseaseRepository diseaseRepository;
+    private final UserDiseaseRepository userDiseaseRepository;
 
     // ========================================
     // 인증 관련
@@ -129,7 +136,6 @@ public class UserService {
     /**
      * 사용자 복용 영양제 목록 조회 (성분 포함)
      *
-     * 🔧 개선: N+1 문제 해결
      * - Batch fetching으로 성능 최적화
      * - 101개 쿼리 → 2개 쿼리로 감소 (98% 개선)
      */
@@ -175,7 +181,7 @@ public class UserService {
     /**
      * 로컬 회원가입
      */
-    @Transactional // 🔧 쓰기 작업이므로 @Transactional 필요
+    @Transactional // 쓰기 작업이므로 @Transactional 필요
     public void signUp(SignupRequest request) {
         log.info("회원가입 시도: email={}", request.getEmail());
 
@@ -201,7 +207,7 @@ public class UserService {
     /**
      * 카카오 회원가입
      */
-    @Transactional // 🔧 쓰기 작업
+    @Transactional // 쓰기 작업
     public void kakaoSignUp(KakaoUserInfo kakaoUserInfo) {
         log.info("카카오 회원가입 시도: kakaoId={}", kakaoUserInfo.getKakaoId());
 
@@ -229,18 +235,77 @@ public class UserService {
     // ========================================
 
     /**
-     * 사용자 정보 수정
+     * @deprecated 대신 updateUserProfile()을 사용하세요
      */
-    @Transactional // 🔧 쓰기 작업
+    @Deprecated
+    @Transactional
     public void updateUser(User user) {
-        log.info("사용자 정보 수정: userId={}", user.getId());
+        log.warn("Deprecated 메서드 호출: updateUser() - updateUserProfile() 사용 권장");
         userRepository.save(user);
+    }
+
+    /**
+     * 사용자 프로필 수정 (질병 정보 포함)
+     */
+    @Transactional
+    public void updateUserProfile(Long userId, UpdateUserRequest request) {
+        log.info("유저 정보 수정 시도: userId={}", userId);
+
+        User user = findByUserId(userId);
+
+        // 1. 기본 정보 수정
+        UserEnums.AgeGroup ageGroup = request.getAgeGroup() != null
+                ? UserEnums.AgeGroup.from(request.getAgeGroup())
+                : null;
+
+        UserEnums.Gender gender = request.getGender() != null
+                ? UserEnums.Gender.from(request.getGender())
+                : null;
+
+        user.updateProfile(request.getName(), ageGroup, gender);
+
+        // 2. 질병 정보 수정 (user 객체 전달하여 중복 조회 방지)
+        if (request.getDiseaseIds() != null) {
+            updateUserDiseases(user, request.getDiseaseIds());
+        }
+
+        log.info("유저 정보 수정 완료: userId={}, name={}, diseases={}",
+                userId, request.getName(), request.getDiseaseIds());
+    }
+
+    /**
+     * 사용자 질병 정보 업데이트
+     * 기존 질병을 모두 삭제하고 새로운 질병 목록으로 교체
+     *
+     * @param user 사용자 엔티티 (중복 조회 방지)
+     * @param diseaseIds 질병 ID 목록
+     */
+    private void updateUserDiseases(User user, List<Long> diseaseIds) {
+        log.info("질병 정보 업데이트 시작: userId={}, diseaseIds={}", user.getId(), diseaseIds);
+
+        // 1. 기존 질병 정보 삭제
+        userDiseaseRepository.deleteAllByUserId(user.getId());
+
+        // 2. 새로운 질병 정보 저장
+        if (!diseaseIds.isEmpty()) {
+            List<UserDisease> userDiseases = diseaseIds.stream()
+                    .map(diseaseId -> {
+                        Disease disease = diseaseRepository.findById(diseaseId)
+                                .orElseThrow(() -> new BusinessException(ErrorCode.DISEASE_NOT_FOUND));
+                        return UserDisease.create(user, disease);
+                    })
+                    .toList();
+
+            userDiseaseRepository.saveAll(userDiseases);
+        }
+
+        log.info("질병 정보 업데이트 완료: userId={}, diseaseCount={}", user.getId(), diseaseIds.size());
     }
 
     /**
      * 사용자 삭제
      */
-    @Transactional // 🔧 쓰기 작업
+    @Transactional // 쓰기 작업
     public void deleteUser(Long userId) {
         log.warn("사용자 삭제: userId={}", userId);
         userRepository.deleteById(userId);
