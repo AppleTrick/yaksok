@@ -144,6 +144,12 @@ public class OcrAnalysisService {
                 log.info("[성능측정] 제품{} - 제품명 검증: {}ms", productIndex,
                                 System.currentTimeMillis() - verifyStart);
 
+                // 섭취시간 LLM을 미리 비동기로 시작 (제품 추출과 병렬 실행)
+                log.info("    [5단계-선행] 섭취시간 추천 비동기 시작: '{}'", raw.getProductName());
+                long intakeTimeStart = System.currentTimeMillis();
+                CompletableFuture<IntakeTimeResponse> intakeTimeFuture = CompletableFuture.supplyAsync(
+                                () -> fetchIntakeTime(raw.getProductName()));
+
                 // 1단계: DB에서 제품 검색
                 long dbSearchStart = System.currentTimeMillis();
                 Product product = findProductInDb(raw.getProductName());
@@ -182,12 +188,17 @@ public class OcrAnalysisService {
                         ingredients = result.ingredients;
                 }
 
-                // 5단계: 섭취 시간 추천 조회
+                // 섭취시간 LLM 결과 대기 (이미 병렬로 실행 완료됨)
+                IntakeTimeResponse intakeTimeInfo = null;
+                try {
+                        intakeTimeInfo = intakeTimeFuture.join();
+                        log.info("[성능측정] 제품{} - 섭취시간 추천 (병렬 LLM): {}ms", productIndex,
+                                        System.currentTimeMillis() - intakeTimeStart);
+                } catch (Exception e) {
+                        log.warn("    [섭취시간 오류] 비동기 호출 실패: {}", e.getMessage());
+                }
+
                 String productName = product != null ? product.getPrdlstNm() : raw.getProductName();
-                long intakeTimeStart = System.currentTimeMillis();
-                IntakeTimeResponse intakeTimeInfo = fetchIntakeTime(productName);
-                log.info("[성능측정] 제품{} - 섭취시간 추천 (LLM): {}ms", productIndex,
-                                System.currentTimeMillis() - intakeTimeStart);
 
                 log.info("[성능측정] 제품{} - 총 처리 시간: {}ms (스레드: {})", productIndex,
                                 System.currentTimeMillis() - productStart, Thread.currentThread().getName());
