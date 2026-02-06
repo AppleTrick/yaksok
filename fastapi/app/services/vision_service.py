@@ -193,6 +193,67 @@ def process_single_object(pil_image: Image.Image, obj_annotation, width: int, he
         "box": box
     }
 
+def calculate_iou(box1_vertices, box2_vertices) -> float:
+    """두 바운딩 박스의 IoU(Intersection over Union)를 계산합니다."""
+    # box1 좌표 추출
+    x1_coords = [v.x for v in box1_vertices]
+    y1_coords = [v.y for v in box1_vertices]
+    box1 = [min(x1_coords), min(y1_coords), max(x1_coords), max(y1_coords)]
+    
+    # box2 좌표 추출
+    x2_coords = [v.x for v in box2_vertices]
+    y2_coords = [v.y for v in box2_vertices]
+    box2 = [min(x2_coords), min(y2_coords), max(x2_coords), max(y2_coords)]
+    
+    # 교차 영역 계산
+    x_left = max(box1[0], box2[0])
+    y_top = max(box1[1], box2[1])
+    x_right = min(box1[2], box2[2])
+    y_bottom = min(box1[3], box2[3])
+    
+    if x_right < x_left or y_bottom < y_top:
+        return 0.0
+    
+    intersection = (x_right - x_left) * (y_bottom - y_top)
+    
+    # 각 박스 면적
+    area1 = (box1[2] - box1[0]) * (box1[3] - box1[1])
+    area2 = (box2[2] - box2[0]) * (box2[3] - box2[1])
+    
+    # Union
+    union = area1 + area2 - intersection
+    
+    return intersection / union if union > 0 else 0.0
+
+def deduplicate_objects(objects, iou_threshold=0.5):
+    """
+    겹치는 객체를 제거합니다 (NMS와 유사).
+    같은 영역에 여러 클래스로 탐지된 경우, score가 높은 것만 남깁니다.
+    """
+    if not objects:
+        return []
+    
+    # score 기준 내림차순 정렬
+    sorted_objects = sorted(objects, key=lambda x: x.score, reverse=True)
+    kept = []
+    
+    for obj in sorted_objects:
+        should_keep = True
+        for kept_obj in kept:
+            iou = calculate_iou(
+                obj.bounding_poly.normalized_vertices,
+                kept_obj.bounding_poly.normalized_vertices
+            )
+            if iou > iou_threshold:
+                # 이미 더 높은 score의 객체가 선택됨
+                should_keep = False
+                print(f"   => 중복 제거: {obj.name} (IoU={iou:.2f}와 {kept_obj.name} 겹침)")
+                break
+        if should_keep:
+            kept.append(obj)
+    
+    return kept
+
 def analyze_logic(image_content: bytes) -> List[Dict[str, Any]]:
     """
     실제 분석 로직 (동기 함수).
@@ -231,20 +292,24 @@ def analyze_logic(image_content: bytes) -> List[Dict[str, Any]]:
     for obj in objects:
         print(f" - 탐지됨: {obj.name} (Score: {obj.score:.2f})")
     
+    # 4. 타겟 클래스 필터링
+    target_objects = [obj for obj in objects if obj.name in TARGET_CLASSES]
+    print(f"[Vision Service] 타겟 클래스 필터링 후: {len(target_objects)}개")
+    
+    # 5. 중복 객체 제거 (IoU 기반)
+    deduplicated_objects = deduplicate_objects(target_objects, iou_threshold=0.3)
+    print(f"[Vision Service] 중복 제거 후: {len(deduplicated_objects)}개")
+    
     results = []
     
-    # 3. Filter & Process
-    found_target = False
-    for obj in objects:
-        if obj.name in TARGET_CLASSES:
-            found_target = True
-            print(f"   => 타겟 매칭 성공! 처리 시작: {obj.name}")
-            # 각 객체별 처리 (Crop -> OCR -> Extract)
-            result = process_single_object(pil_image, obj, width, height)
-            if result:
-                results.append(result)
+    # 6. Filter & Process
+    for obj in deduplicated_objects:
+        print(f"   => 처리 시작: {obj.name} (Score: {obj.score:.2f})")
+        result = process_single_object(pil_image, obj, width, height)
+        if result:
+            results.append(result)
     
-    if not results and not found_target:
+    if not results:
         print("[Vision Service] 지정된 타겟(Bottle, Container 등)이 감지되지 않았습니다.")
                 
     return results
