@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 
 interface SseData {
@@ -16,12 +16,13 @@ interface SseData {
  */
 export function useSSE(onNotification?: (data: SseData) => void) {
     const searchParams = useSearchParams();
+    const [isConnected, setIsConnected] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
     const processNotification = useCallback((data: SseData) => {
         console.warn('📨 [useSSE] 데이터 수신:', data);
 
         // 알림 관리자(NotificationManagerEnhanced)에게 데이터 전달
-        // 관리자가 중복 체크 후 토스트 또는 시스템 알림을 결정함.
         if (onNotification) {
             onNotification(data);
         }
@@ -45,6 +46,7 @@ export function useSSE(onNotification?: (data: SseData) => void) {
                 processNotification(data);
             } catch (err) {
                 console.error('❌ [useSSE] 데이터 파싱 에러:', err);
+                setError('데이터 파싱 에러');
             }
         };
 
@@ -54,14 +56,24 @@ export function useSSE(onNotification?: (data: SseData) => void) {
         // 2. 기본 메시지 리스너 (보험용)
         eventSource.onmessage = handleEvent;
 
-        eventSource.onopen = () => console.log('✅ [useSSE] SSE 연결 성공');
-        eventSource.onerror = () => console.error('❌ [useSSE] SSE 연결 에러 또는 중단');
+        eventSource.onopen = () => {
+            console.log('✅ [useSSE] SSE 연결 성공');
+            setIsConnected(true);
+            setError(null);
+        };
+
+        eventSource.onerror = () => {
+            console.error('❌ [useSSE] SSE 연결 에러 또는 중단');
+            setIsConnected(false);
+            setError('SSE 연결 끊김');
+        };
 
         return () => {
             eventSource.close();
             console.log('🔌 [useSSE] SSE 연결 해제');
+            setIsConnected(false);
         };
     }, [processNotification]);
 
-    return null;
+    return { isConnected, error };
 }

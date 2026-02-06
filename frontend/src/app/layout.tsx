@@ -1,3 +1,4 @@
+import React from "react";
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
@@ -66,7 +67,9 @@ export default function RootLayout({
                     {children}
                   </PageTransition>
                 </AnimatePresence>
-                <NotificationManagerEnhanced />
+                <React.Suspense fallback={null}>
+                  <NotificationManagerEnhanced />
+                </React.Suspense>
                 <FCMPermissionRequest />
               </AppContainer>
               <BottomTabBar />
