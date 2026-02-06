@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import axios from '@/lib/axios';
+import axios from 'axios';
 import FindPasswordForm from './components/FindPasswordForm';
 import VerifyCodeForm from './components/VerifyCodeForm';
 import ResetPasswordForm from './components/ResetPasswordForm';

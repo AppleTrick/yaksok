@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import axios from '@/lib/axios';
+import axios from 'axios';
 import SignupForm from './components/SignupForm';
 import './styles.css';
 
