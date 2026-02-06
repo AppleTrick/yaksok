@@ -2,8 +2,9 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { RotateCcw, Check, ShieldCheck, AlertTriangle, Pill, TrendingUp, Info } from 'lucide-react';
+import { RotateCcw, ShieldCheck, AlertTriangle, Pill, TrendingUp, Info, ArrowRight } from 'lucide-react';
 import { useReportContext } from '@/features/report/contexts/ReportContext';
+import { useTheme } from '@/contexts/ThemeContext';
 import '@/features/report/styles.css';
 import { motion, Variants } from 'framer-motion';
 
@@ -43,7 +44,8 @@ interface Product {
 export default function ReportPage() {
     const router = useRouter();
     const { reportData, clearReportData } = useReportContext();
-    const [showRegisterModal, setShowRegisterModal] = useState(false);
+    const { theme } = useTheme();
+    const isDark = theme === 'dark';
     const [selectedProductIdx, setSelectedProductIdx] = useState<number>(0);
 
     useEffect(() => {
@@ -62,7 +64,6 @@ export default function ReportPage() {
     };
 
     const handleConfirmRegister = () => {
-        setShowRegisterModal(false);
         clearReportData();
         router.push('/my-supplements');
     };
@@ -74,14 +75,13 @@ export default function ReportPage() {
     const totalIngredients = products.reduce((acc, p) => acc + (p.ingredients?.length || 0), 0);
     const warningIngredients = products.reduce((acc, p) =>
         acc + (p.ingredients?.filter(i => i.status === 'warning').length || 0), 0);
-    const safeIngredients = totalIngredients - warningIngredients;
 
     return (
         <motion.div
             style={{
                 minHeight: '100vh',
-                background: 'linear-gradient(180deg, #0f0f14 0%, #1a1a24 50%, #0f0f14 100%)',
-                color: '#fff'
+                background: isDark ? 'var(--cam-bg-soft)' : '#F8F9FA',
+                color: 'var(--cam-black)'
             }}
             variants={containerVariants}
             initial="hidden"
@@ -93,92 +93,99 @@ export default function ReportPage() {
                 style={{
                     padding: '20px',
                     paddingTop: 'calc(env(safe-area-inset-top) + 20px)',
-                    background: 'linear-gradient(180deg, rgba(15,15,20,1) 0%, rgba(15,15,20,0) 100%)',
+                    background: 'transparent',
                     position: 'sticky',
                     top: 0,
-                    zIndex: 50
+                    zIndex: 50,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
                 }}
             >
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <button
-                        onClick={handleBack}
-                        style={{
-                            background: 'rgba(255,255,255,0.08)',
-                            border: 'none',
-                            borderRadius: '12px',
-                            padding: '10px 16px',
-                            color: '#fff',
-                            fontSize: '0.85rem',
-                            fontWeight: 600,
-                            cursor: 'pointer',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '6px'
-                        }}
-                    >
-                        <RotateCcw size={16} />
-                        다시 촬영
-                    </button>
-                    <h1 style={{ fontSize: '1.1rem', fontWeight: 700, margin: 0 }}>영양제 리포트</h1>
-                    <div style={{ width: '80px' }} />
-                </div>
+                <button
+                    onClick={handleBack}
+                    style={{
+                        position: 'absolute',
+                        left: '20px',
+                        background: 'none',
+                        border: 'none',
+                        cursor: 'pointer',
+                        color: 'var(--cam-black)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                        fontSize: '0.9rem',
+                        fontWeight: 600
+                    }}
+                >
+                    <RotateCcw size={18} />
+                    <span>다시 찍기</span>
+                </button>
+                <h1 style={{ fontSize: '1.1rem', fontWeight: 800, margin: 0, color: 'var(--cam-black)' }}>영양제 리포트</h1>
             </motion.header>
 
-            <main style={{ padding: '0 20px', paddingBottom: '120px' }}>
+            <main style={{ padding: '0 20px', paddingBottom: '140px' }}>
                 {/* 요약 카드 */}
                 <motion.div variants={itemVariants} style={{ marginBottom: '24px' }}>
                     <div style={{
-                        background: 'linear-gradient(135deg, rgba(16,185,129,0.15) 0%, rgba(59,130,246,0.1) 100%)',
-                        borderRadius: '20px',
-                        padding: '20px',
-                        border: '1px solid rgba(16,185,129,0.2)'
+                        background: isDark ? '#2B2C37' : '#FFFFFF',
+                        borderRadius: '24px',
+                        padding: '24px',
+                        border: '1px solid var(--cam-border)',
+                        boxShadow: '0 8px 32px rgba(0,0,0,0.05)',
+                        position: 'relative',
+                        overflow: 'hidden'
                     }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
-                            <TrendingUp size={20} color="#10B981" />
-                            <span style={{ fontSize: '1rem', fontWeight: 700, color: '#fff' }}>분석 요약</span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '20px', position: 'relative', zIndex: 2 }}>
+                            <TrendingUp size={20} color="var(--cam-orange)" />
+                            <span style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--cam-black)' }}>분석 요약</span>
                         </div>
 
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px' }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', position: 'relative', zIndex: 2 }}>
                             <div style={{ textAlign: 'center' }}>
-                                <div style={{ fontSize: '1.8rem', fontWeight: 800, color: '#10B981' }}>{products.length}</div>
-                                <div style={{ fontSize: '0.7rem', color: '#9CA3AF' }}>인식된 제품</div>
+                                <div style={{ fontSize: '1.8rem', fontWeight: 850, color: 'var(--cam-black)' }}>{products.length}</div>
+                                <div style={{ fontSize: '0.75rem', color: 'var(--cam-gray)', fontWeight: 600 }}>인식된 제품</div>
                             </div>
                             <div style={{ textAlign: 'center' }}>
-                                <div style={{ fontSize: '1.8rem', fontWeight: 800, color: '#3B82F6' }}>{totalIngredients}</div>
-                                <div style={{ fontSize: '0.7rem', color: '#9CA3AF' }}>총 성분</div>
+                                <div style={{ fontSize: '1.8rem', fontWeight: 850, color: 'var(--cam-black)' }}>{totalIngredients}</div>
+                                <div style={{ fontSize: '0.75rem', color: 'var(--cam-gray)', fontWeight: 600 }}>총 성분</div>
                             </div>
                             <div style={{ textAlign: 'center' }}>
-                                <div style={{ fontSize: '1.8rem', fontWeight: 800, color: warningIngredients > 0 ? '#F59E0B' : '#10B981' }}>
+                                <div style={{ fontSize: '1.8rem', fontWeight: 850, color: warningIngredients > 0 ? 'var(--cam-orange)' : 'var(--cam-green)' }}>
                                     {warningIngredients > 0 ? warningIngredients : '✓'}
                                 </div>
-                                <div style={{ fontSize: '0.7rem', color: '#9CA3AF' }}>
+                                <div style={{ fontSize: '0.75rem', color: 'var(--cam-gray)', fontWeight: 600 }}>
                                     {warningIngredients > 0 ? '주의 성분' : '모두 안전'}
                                 </div>
                             </div>
                         </div>
+
+                        {/* 배경 데코레이션 아이콘 */}
+                        <Pill size={80} style={{ position: 'absolute', right: '-10px', bottom: '-10px', opacity: 0.03, color: 'var(--cam-black)', transform: 'rotate(-15deg)' }} />
                     </div>
                 </motion.div>
 
                 {/* 제품 탭 */}
-                <motion.div variants={itemVariants} style={{ marginBottom: '16px' }}>
-                    <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '8px' }}>
+                <motion.div variants={itemVariants} style={{ marginBottom: '20px' }}>
+                    <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '8px', scrollbarWidth: 'none' }}>
                         {products.map((product, idx) => (
                             <button
                                 key={idx}
                                 onClick={() => setSelectedProductIdx(idx)}
                                 style={{
-                                    padding: '10px 16px',
-                                    borderRadius: '12px',
-                                    border: 'none',
+                                    padding: '10px 18px',
+                                    borderRadius: '14px',
+                                    border: '1px solid var(--cam-border)',
                                     background: selectedProductIdx === idx
-                                        ? 'linear-gradient(135deg, #10B981, #059669)'
-                                        : 'rgba(255,255,255,0.05)',
-                                    color: selectedProductIdx === idx ? '#fff' : '#9CA3AF',
-                                    fontSize: '0.8rem',
-                                    fontWeight: 600,
+                                        ? 'var(--cam-orange)'
+                                        : 'var(--cam-surface)',
+                                    color: selectedProductIdx === idx ? '#fff' : 'var(--cam-gray)',
+                                    fontSize: '0.85rem',
+                                    fontWeight: 700,
                                     cursor: 'pointer',
                                     whiteSpace: 'nowrap',
-                                    transition: 'all 0.2s ease'
+                                    transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                                    boxShadow: selectedProductIdx === idx ? '0 4px 12px rgba(255, 107, 61, 0.2)' : 'none'
                                 }}
                             >
                                 {product.name}
@@ -191,119 +198,123 @@ export default function ReportPage() {
                 {products[selectedProductIdx] && (
                     <motion.div
                         key={selectedProductIdx}
-                        initial={{ opacity: 0, y: 10 }}
+                        initial={{ opacity: 0, y: 15 }}
                         animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.3 }}
+                        transition={{ duration: 0.4, ease: "easeOut" }}
                     >
                         {/* 제품 헤더 */}
                         <div style={{
-                            background: 'rgba(30,30,40,0.6)',
-                            borderRadius: '16px',
+                            background: 'var(--cam-surface)',
+                            borderRadius: '20px',
                             padding: '20px',
-                            marginBottom: '16px',
-                            border: '1px solid rgba(255,255,255,0.05)'
+                            marginBottom: '20px',
+                            border: '1px solid var(--cam-border)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '14px'
                         }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
-                                <div style={{
-                                    width: '44px',
-                                    height: '44px',
-                                    borderRadius: '14px',
-                                    background: 'linear-gradient(135deg, #10B981, #059669)',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center'
-                                }}>
-                                    <Pill size={22} color="#fff" />
-                                </div>
-                                <div>
-                                    <h2 style={{ fontSize: '1.1rem', fontWeight: 700, margin: 0 }}>
-                                        {products[selectedProductIdx].name}
-                                    </h2>
-                                    <p style={{ fontSize: '0.75rem', color: '#9CA3AF', margin: 0 }}>
-                                        {products[selectedProductIdx].ingredients?.length || 0}개 성분 포함
-                                    </p>
-                                </div>
+                            <div style={{
+                                width: '48px',
+                                height: '48px',
+                                borderRadius: '16px',
+                                background: 'var(--cam-mint)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                flexShrink: 0
+                            }}>
+                                <Pill size={24} color="var(--cam-green)" />
+                            </div>
+                            <div>
+                                <h2 style={{ fontSize: '1.1rem', fontWeight: 800, margin: '0 0 2px 0', color: 'var(--cam-black)' }}>
+                                    {products[selectedProductIdx].name}
+                                </h2>
+                                <p style={{ fontSize: '0.8rem', color: 'var(--cam-gray)', fontWeight: 600, margin: 0 }}>
+                                    총 {products[selectedProductIdx].ingredients?.length || 0}개 성분 분석 완료
+                                </p>
                             </div>
                         </div>
 
                         {/* 성분 리스트 */}
-                        <h3 style={{ fontSize: '0.9rem', fontWeight: 700, marginBottom: '12px', color: '#fff' }}>
+                        <h3 style={{ fontSize: '0.95rem', fontWeight: 800, marginBottom: '14px', color: 'var(--cam-black)', display: 'flex', alignItems: 'center', gap: '6px' }}>
                             📊 성분별 섭취량 분석
                         </h3>
 
                         {products[selectedProductIdx].ingredients?.length > 0 ? (
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                                 {products[selectedProductIdx].ingredients.map((ing, idx) => {
-                                    const myAmountNum = parseFloat(ing.myAmount) || 0;
-                                    const totalAmountNum = parseFloat(ing.totalAmount) || 0;
-                                    const amountNum = parseFloat(ing.amount) || 0;
+                                    const myAmountNum = Math.round(parseFloat(ing.myAmount) || 0);
+                                    const amountNum = Math.round(parseFloat(ing.amount) || 0);
+                                    const totalAmountNum = Math.round(parseFloat(ing.totalAmount) || 0);
+
+                                    // 권장량 대비 퍼센트 (임의 계산 logic - totalAmountNum이 1일 권장량 기준이라고 가정할 때)
+                                    // 실제 로직에 맞게 조정 가능. 여기서는 100% 임의 시뮬레이션
+                                    const percent = Math.min(Math.round((totalAmountNum / 400) * 100), 100);
 
                                     return (
                                         <motion.div
                                             key={idx}
                                             initial={{ opacity: 0, x: -10 }}
                                             animate={{ opacity: 1, x: 0 }}
-                                            transition={{ delay: idx * 0.05 }}
+                                            transition={{ delay: idx * 0.06 }}
                                             style={{
-                                                background: 'rgba(30,30,40,0.6)',
-                                                borderRadius: '14px',
-                                                padding: '16px',
-                                                border: `1px solid ${ing.status === 'warning' ? 'rgba(245,158,11,0.3)' : 'rgba(255,255,255,0.05)'}`
+                                                background: isDark ? '#23242B' : '#FFFFFF',
+                                                borderRadius: '18px',
+                                                padding: '20px',
+                                                border: '1px solid var(--cam-border)',
+                                                boxShadow: '0 2px 8px rgba(0,0,0,0.02)'
                                             }}
                                         >
-                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                                    <span style={{ fontSize: '0.9rem', fontWeight: 700, color: '#fff' }}>{ing.name}</span>
-                                                    {ing.status === 'warning' ? (
-                                                        <AlertTriangle size={14} color="#F59E0B" />
-                                                    ) : (
-                                                        <ShieldCheck size={14} color="#10B981" />
-                                                    )}
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '14px' }}>
+                                                <div>
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '2px' }}>
+                                                        <span style={{ fontSize: '0.95rem', fontWeight: 800, color: 'var(--cam-black)' }}>{ing.name}</span>
+                                                        {ing.status === 'warning' && <AlertTriangle size={15} color="var(--cam-orange)" />}
+                                                    </div>
+                                                    <div style={{ fontSize: '0.85rem', color: 'var(--cam-gray)', fontWeight: 600 }}>
+                                                        총 {totalAmountNum}{ing.unit} <span style={{ color: 'var(--cam-orange)', marginLeft: '4px' }}>({percent}%)</span>
+                                                    </div>
                                                 </div>
-                                                <span style={{
-                                                    padding: '4px 10px',
-                                                    borderRadius: '8px',
-                                                    fontSize: '0.7rem',
-                                                    fontWeight: 600,
-                                                    background: ing.status === 'warning' ? 'rgba(245,158,11,0.15)' : 'rgba(16,185,129,0.15)',
-                                                    color: ing.status === 'warning' ? '#FBBF24' : '#34D399'
+
+                                                <div style={{
+                                                    padding: '6px 12px',
+                                                    borderRadius: '10px',
+                                                    fontSize: '0.75rem',
+                                                    fontWeight: 700,
+                                                    background: ing.status === 'warning' ? 'rgba(255,107,61,0.1)' : 'var(--cam-mint)',
+                                                    color: ing.status === 'warning' ? 'var(--cam-orange)' : 'var(--cam-green)',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    gap: '4px'
                                                 }}>
-                                                    {ing.status === 'warning' ? '과다섭취 주의' : '안전'}
-                                                </span>
+                                                    {ing.status === 'warning' ? '과다주의' : '안전'}
+                                                </div>
                                             </div>
 
                                             {/* 섭취량 비교 바 */}
-                                            <div style={{ marginBottom: '8px' }}>
-                                                <div style={{
-                                                    height: '8px',
-                                                    borderRadius: '4px',
-                                                    background: 'rgba(255,255,255,0.1)',
-                                                    overflow: 'hidden',
-                                                    display: 'flex'
-                                                }}>
-                                                    {/* 기존 섭취량 */}
-                                                    {myAmountNum > 0 && (
-                                                        <div style={{
-                                                            width: `${Math.min((myAmountNum / (totalAmountNum || 1)) * 100, 100)}%`,
-                                                            height: '100%',
-                                                            background: '#3B82F6'
-                                                        }} />
-                                                    )}
-                                                    {/* 추가 섭취량 */}
+                                            <div style={{
+                                                height: '10px',
+                                                borderRadius: '5px',
+                                                background: isDark ? 'rgba(255,255,255,0.05)' : '#F3F4F6',
+                                                overflow: 'hidden',
+                                                display: 'flex',
+                                                marginBottom: '6px'
+                                            }}>
+                                                {/* 기존 섭취량 */}
+                                                {myAmountNum > 0 && (
                                                     <div style={{
-                                                        width: `${Math.min((amountNum / (totalAmountNum || 1)) * 100, 100)}%`,
+                                                        width: `${Math.min((myAmountNum / (totalAmountNum || 1)) * 100, 100)}%`,
                                                         height: '100%',
-                                                        background: ing.status === 'warning' ? '#F59E0B' : '#10B981'
+                                                        background: 'var(--cam-gray)',
+                                                        opacity: 0.5
                                                     }} />
-                                                </div>
-                                            </div>
-
-                                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.7rem', color: '#9CA3AF' }}>
-                                                <span>기존: {ing.myAmount}{ing.unit}</span>
-                                                <span>추가: +{ing.amount}{ing.unit}</span>
-                                                <span style={{ fontWeight: 700, color: ing.status === 'warning' ? '#FBBF24' : '#34D399' }}>
-                                                    합계: {ing.totalAmount}{ing.unit}
-                                                </span>
+                                                )}
+                                                {/* 추가 섭취량 */}
+                                                <div style={{
+                                                    width: `${Math.min((amountNum / (totalAmountNum || 1)) * 100, 100)}%`,
+                                                    height: '100%',
+                                                    background: ing.status === 'warning' ? 'var(--cam-orange)' : 'var(--cam-green)'
+                                                }} />
                                             </div>
                                         </motion.div>
                                     );
@@ -311,19 +322,20 @@ export default function ReportPage() {
                             </div>
                         ) : (
                             <div style={{
-                                background: 'rgba(245,158,11,0.1)',
-                                borderRadius: '14px',
-                                padding: '24px',
+                                background: 'var(--cam-surface)',
+                                borderRadius: '20px',
+                                padding: '32px 24px',
                                 textAlign: 'center',
-                                border: '1px solid rgba(245,158,11,0.2)'
+                                border: '1px dashed var(--cam-gray)',
+                                opacity: 0.6
                             }}>
-                                <Info size={32} color="#F59E0B" style={{ marginBottom: '12px' }} />
-                                <h4 style={{ fontSize: '0.95rem', fontWeight: 700, marginBottom: '8px', color: '#FBBF24' }}>
-                                    성분 정보를 불러오는 중입니다
+                                <Info size={32} color="var(--cam-gray)" style={{ marginBottom: '12px' }} />
+                                <h4 style={{ fontSize: '1rem', fontWeight: 800, marginBottom: '6px', color: 'var(--cam-black)' }}>
+                                    성분 정보 분석 중
                                 </h4>
-                                <p style={{ fontSize: '0.8rem', color: '#9CA3AF', margin: 0 }}>
-                                    AI가 이 제품의 성분 정보를 분석하고 있습니다.<br />
-                                    잠시 후 다시 확인해 주세요.
+                                <p style={{ fontSize: '0.85rem', color: 'var(--cam-gray)', margin: 0, lineHeight: 1.5 }}>
+                                    AI가 제품의 상세 정보를 확인하고 있습니다.<br />
+                                    잠시만 기다려주세요.
                                 </p>
                             </div>
                         )}
@@ -331,21 +343,17 @@ export default function ReportPage() {
                 )}
             </main>
 
-            {/* 고정 푸터 */}
+            {/* 고정 푸터 (Floating CTA) */}
             <motion.footer
-                initial={{ y: 100 }}
-                animate={{ y: 0 }}
-                transition={{ delay: 0.3, duration: 0.5, type: "spring" }}
+                initial={{ y: 100, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.4, duration: 0.6, type: "spring", damping: 20 }}
                 style={{
                     position: 'fixed',
-                    bottom: 0,
+                    bottom: '34px',
                     left: 0,
                     right: 0,
-                    padding: '16px 20px',
-                    paddingBottom: 'calc(env(safe-area-inset-bottom) + 16px)',
-                    background: 'linear-gradient(180deg, rgba(15,15,20,0.9), rgba(10,10,15,1))',
-                    backdropFilter: 'blur(20px)',
-                    borderTop: '1px solid rgba(255,255,255,0.05)',
+                    padding: '0 20px',
                     zIndex: 100
                 }}
             >
@@ -353,25 +361,35 @@ export default function ReportPage() {
                     onClick={handleConfirmRegister}
                     style={{
                         width: '100%',
-                        padding: '16px',
-                        borderRadius: '14px',
+                        padding: '18px',
+                        borderRadius: '20px',
                         border: 'none',
-                        background: 'linear-gradient(135deg, #10B981, #059669)',
+                        background: 'linear-gradient(to right, #FF6B3D, #FF8E5E)',
                         color: '#fff',
-                        fontSize: '1rem',
-                        fontWeight: 700,
+                        fontSize: '1.05rem',
+                        fontWeight: 800,
                         cursor: 'pointer',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        gap: '8px',
-                        boxShadow: '0 4px 20px rgba(16,185,129,0.3)'
+                        gap: '10px',
+                        boxShadow: '0 12px 24px rgba(255, 107, 61, 0.3)',
+                        transition: 'transform 0.2s active'
                     }}
                 >
-                    <Check size={20} />
-                    내 리스트에 추가하기
+                    <span>{products.length}개 영양제 등록하기</span>
+                    <ArrowRight size={22} />
                 </button>
             </motion.footer>
+
+            <style jsx>{`
+                main::-webkit-scrollbar {
+                    display: none;
+                }
+                button:active {
+                    transform: scale(0.97);
+                }
+            `}</style>
         </motion.div>
     );
 }

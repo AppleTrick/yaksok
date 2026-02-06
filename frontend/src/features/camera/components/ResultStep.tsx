@@ -38,6 +38,7 @@ interface ResultStepProps {
 
 export default function ResultStep({ imageSrc, result, onRetake, onRegister }: ResultStepProps) {
     const { theme } = useTheme();
+    const isDark = theme === 'dark';
     const imageRef = useRef<HTMLImageElement>(null);
     const [imageSize, setImageSize] = useState({ width: 0, height: 0 });
     const products = result?.reportData?.products || [];
@@ -93,23 +94,29 @@ export default function ResultStep({ imageSrc, result, onRetake, onRegister }: R
         acc + (p.ingredients?.filter(i => i.status === 'warning').length || 0), 0);
 
     return (
-        <div className="camera-container theme-dark">
+        <div className={`camera-container theme-${theme}`}>
             <CameraHeader
                 title="분석 결과"
-                theme="dark"
+                theme={isDark ? "dark" : "light"}
                 stepInfo="Step 3/3"
                 onBack={onRetake}
             />
 
-            <div className="result-scroll" style={{ overflow: 'hidden', position: 'relative' }}>
-                <div className="camera-content-center" style={{ padding: '0 20px', height: '55dvh' }}>
+            <div className="result-scroll" style={{ overflow: 'hidden', position: 'relative', background: 'var(--cam-bg-soft)' }}>
+                <div className="camera-content-center" style={{ padding: '0 20px', height: '52dvh' }}>
                     <RatioBox>
                         <img
                             ref={imageRef}
                             src={imageSrc}
                             alt="Analyzed"
                             onLoad={handleImageLoad}
-                            style={{ width: '100%', height: '100%', objectFit: 'contain', backgroundColor: '#0a0a0a', borderRadius: '16px' }}
+                            style={{
+                                width: '100%',
+                                height: '100%',
+                                objectFit: 'contain',
+                                backgroundColor: isDark ? '#0a0a0a' : '#f0f0f0',
+                                borderRadius: '16px'
+                            }}
                         />
                         {/* 스캔 완료 인디케이터 */}
                         <motion.div
@@ -117,13 +124,18 @@ export default function ResultStep({ imageSrc, result, onRetake, onRegister }: R
                             initial={{ scale: 0.8, opacity: 0 }}
                             animate={{ scale: 1, opacity: 1 }}
                             transition={{ type: "spring", stiffness: 260, damping: 20 }}
+                            style={{
+                                background: 'var(--cam-glass)',
+                                color: 'var(--cam-black)',
+                                border: '1px solid var(--cam-border)'
+                            }}
                         >
                             <motion.div
                                 animate={{ scale: [1, 1.05, 1] }}
                                 transition={{ repeat: Infinity, duration: 2.5 }}
                                 style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
                             >
-                                <Sparkles size={14} />
+                                <Sparkles size={14} color="var(--cam-orange)" />
                                 <span>AI 분석 완료</span>
                             </motion.div>
                         </motion.div>
@@ -142,7 +154,7 @@ export default function ResultStep({ imageSrc, result, onRetake, onRegister }: R
                             const boxTop = y1 * scaleY;
 
                             const hasIngredients = obj.ingredients && obj.ingredients.length > 0;
-                            const borderColor = hasIngredients ? '#10B981' : '#F59E0B';
+                            const borderColor = hasIngredients ? 'var(--cam-green)' : 'var(--cam-orange)';
 
                             return (
                                 <React.Fragment key={idx}>
@@ -160,7 +172,7 @@ export default function ResultStep({ imageSrc, result, onRetake, onRegister }: R
                                             borderRadius: '12px',
                                             pointerEvents: 'none',
                                             zIndex: 10,
-                                            boxShadow: `0 0 20px ${borderColor}40`
+                                            boxShadow: isDark ? `0 0 20px ${borderColor}40` : 'none'
                                         }}
                                     >
                                         <div style={{
@@ -168,42 +180,19 @@ export default function ResultStep({ imageSrc, result, onRetake, onRegister }: R
                                             bottom: '-28px',
                                             left: '50%',
                                             transform: 'translateX(-50%)',
-                                            background: 'linear-gradient(135deg, rgba(0,0,0,0.85), rgba(20,20,20,0.95))',
-                                            color: 'white',
+                                            background: isDark ? 'rgba(0,0,0,0.85)' : 'rgba(255,255,255,0.9)',
+                                            color: 'var(--cam-black)',
                                             padding: '4px 12px',
                                             borderRadius: '20px',
                                             fontSize: '0.7rem',
-                                            fontWeight: 600,
+                                            fontWeight: 700,
                                             whiteSpace: 'nowrap',
                                             backdropFilter: 'blur(10px)',
-                                            border: '1px solid rgba(255,255,255,0.1)'
+                                            border: '1px solid var(--cam-border)',
+                                            boxShadow: '0 2px 10px rgba(0,0,0,0.1)'
                                         }}>
                                             {obj.name}
                                         </div>
-                                    </motion.div>
-                                    <motion.div
-                                        initial={{ opacity: 0, scale: 0 }}
-                                        animate={{ opacity: 1, scale: 1 }}
-                                        transition={{ delay: 0.4 + idx * 0.1, type: "spring" }}
-                                        style={{
-                                            position: 'absolute',
-                                            left: `${boxLeft - 10}px`,
-                                            top: `${boxTop - 10}px`,
-                                            width: '24px',
-                                            height: '24px',
-                                            borderRadius: '50%',
-                                            background: `linear-gradient(135deg, ${borderColor}, ${borderColor}dd)`,
-                                            color: 'white',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            fontSize: '0.75rem',
-                                            fontWeight: 700,
-                                            zIndex: 20,
-                                            boxShadow: `0 2px 8px ${borderColor}60`
-                                        }}
-                                    >
-                                        {idx + 1}
                                     </motion.div>
                                 </React.Fragment>
                             );
@@ -224,20 +213,21 @@ export default function ResultStep({ imageSrc, result, onRetake, onRegister }: R
                         touchAction: 'none',
                         marginTop: '-10px',
                         minHeight: '80vh',
-                        background: 'linear-gradient(180deg, rgba(15,15,20,0.98) 0%, rgba(10,10,15,1) 100%)',
+                        background: 'var(--cam-surface)',
                         borderRadius: '24px 24px 0 0',
-                        boxShadow: '0 -10px 40px rgba(0,0,0,0.5)'
+                        boxShadow: isDark ? '0 -10px 40px rgba(0,0,0,0.5)' : '0 -10px 40px rgba(0,0,0,0.05)',
+                        borderTop: '1px solid var(--cam-border)'
                     }}
                 >
                     {/* Drag Handle */}
                     <div style={{ width: '100%', height: '28px', display: 'flex', justifyContent: 'center', alignItems: 'center', cursor: 'grab' }}>
-                        <div style={{ width: '40px', height: '4px', borderRadius: '2px', background: 'rgba(255,255,255,0.15)' }} />
+                        <div style={{ width: '40px', height: '4px', borderRadius: '2px', background: 'var(--cam-gray)', opacity: 0.3 }} />
                     </div>
 
                     {/* 헤더 섹션 */}
                     <div style={{ padding: '0 20px', marginBottom: '16px' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                            <h3 style={{ fontSize: '1.3rem', fontWeight: 800, color: '#fff', margin: 0 }}>
+                            <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--cam-black)', margin: 0 }}>
                                 인식된 영양제
                             </h3>
                             <span style={{
@@ -245,8 +235,8 @@ export default function ResultStep({ imageSrc, result, onRetake, onRegister }: R
                                 borderRadius: '20px',
                                 fontSize: '0.8rem',
                                 fontWeight: 700,
-                                background: 'linear-gradient(135deg, #10B981, #059669)',
-                                color: 'white'
+                                background: 'var(--cam-mint)',
+                                color: 'var(--cam-green)'
                             }}>
                                 {products.length}개 발견
                             </span>
@@ -258,25 +248,31 @@ export default function ResultStep({ imageSrc, result, onRetake, onRegister }: R
                                 <div style={{
                                     flex: 1,
                                     padding: '12px 16px',
-                                    borderRadius: '12px',
-                                    background: 'rgba(16,185,129,0.1)',
-                                    border: '1px solid rgba(16,185,129,0.2)'
+                                    borderRadius: '16px',
+                                    background: 'var(--cam-bg-soft)',
+                                    border: '1px solid var(--cam-border)',
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    alignItems: 'center'
                                 }}>
-                                    <div style={{ fontSize: '1.2rem', fontWeight: 800, color: '#10B981' }}>{totalIngredients}</div>
-                                    <div style={{ fontSize: '0.7rem', color: '#9CA3AF' }}>총 성분</div>
+                                    <div style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--cam-green)' }}>{totalIngredients}</div>
+                                    <div style={{ fontSize: '0.7rem', color: 'var(--cam-gray)', fontWeight: 600 }}>총 성분</div>
                                 </div>
                                 <div style={{
                                     flex: 1,
                                     padding: '12px 16px',
-                                    borderRadius: '12px',
-                                    background: warningCount > 0 ? 'rgba(245,158,11,0.1)' : 'rgba(16,185,129,0.1)',
-                                    border: `1px solid ${warningCount > 0 ? 'rgba(245,158,11,0.2)' : 'rgba(16,185,129,0.2)'}`
+                                    borderRadius: '16px',
+                                    background: 'var(--cam-bg-soft)',
+                                    border: '1px solid var(--cam-border)',
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    alignItems: 'center'
                                 }}>
-                                    <div style={{ fontSize: '1.2rem', fontWeight: 800, color: warningCount > 0 ? '#F59E0B' : '#10B981' }}>
+                                    <div style={{ fontSize: '1.1rem', fontWeight: 800, color: warningCount > 0 ? 'var(--cam-orange)' : 'var(--cam-green)' }}>
                                         {warningCount > 0 ? warningCount : '✓'}
                                     </div>
-                                    <div style={{ fontSize: '0.7rem', color: '#9CA3AF' }}>
-                                        {warningCount > 0 ? '주의 성분' : '안전'}
+                                    <div style={{ fontSize: '0.7rem', color: 'var(--cam-gray)', fontWeight: 600 }}>
+                                        {warningCount > 0 ? '주의 성분' : '안전 확인'}
                                     </div>
                                 </div>
                             </div>
@@ -300,117 +296,67 @@ export default function ResultStep({ imageSrc, result, onRetake, onRegister }: R
                                             key={idx}
                                             variants={itemVariants}
                                             style={{
-                                                background: 'linear-gradient(145deg, rgba(30,30,40,0.8), rgba(20,20,30,0.9))',
-                                                borderRadius: '16px',
-                                                padding: '16px',
+                                                background: 'var(--cam-bg-soft)',
+                                                borderRadius: '20px',
+                                                padding: '18px',
                                                 marginBottom: '12px',
-                                                border: '1px solid rgba(255,255,255,0.06)',
-                                                backdropFilter: 'blur(10px)'
+                                                border: '1px solid var(--cam-border)',
                                             }}
                                         >
-                                            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '14px' }}>
-                                                {/* 인덱스 서클 */}
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                                                {/* 아이콘 */}
                                                 <div style={{
-                                                    width: '36px',
-                                                    height: '36px',
-                                                    borderRadius: '12px',
-                                                    background: hasIngredients
-                                                        ? 'linear-gradient(135deg, #10B981, #059669)'
-                                                        : 'linear-gradient(135deg, #F59E0B, #D97706)',
+                                                    width: '40px',
+                                                    height: '40px',
+                                                    borderRadius: '14px',
+                                                    background: hasIngredients ? 'var(--cam-mint)' : 'rgba(255, 107, 61, 0.1)',
                                                     display: 'flex',
                                                     alignItems: 'center',
                                                     justifyContent: 'center',
                                                     flexShrink: 0
                                                 }}>
-                                                    <Pill size={18} color="white" />
+                                                    <Pill size={20} color={hasIngredients ? 'var(--cam-green)' : 'var(--cam-orange)'} />
                                                 </div>
 
                                                 <div style={{ flex: 1, minWidth: 0 }}>
                                                     {/* 제품명 */}
-                                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-                                                        <h4 style={{
-                                                            fontSize: '1rem',
-                                                            fontWeight: 700,
-                                                            color: '#fff',
-                                                            margin: 0,
+                                                    <h4 style={{
+                                                        fontSize: '1rem',
+                                                        fontWeight: 700,
+                                                        color: 'var(--cam-black)',
+                                                        margin: '0 0 4px 0',
+                                                        overflow: 'hidden',
+                                                        textOverflow: 'ellipsis',
+                                                        whiteSpace: 'nowrap'
+                                                    }}>
+                                                        {obj.name}
+                                                    </h4>
+
+                                                    {/* 성분 표시 (한 줄로 간소화) */}
+                                                    {hasIngredients ? (
+                                                        <div style={{
+                                                            fontSize: '0.8rem',
+                                                            color: 'var(--cam-gray)',
                                                             overflow: 'hidden',
                                                             textOverflow: 'ellipsis',
-                                                            whiteSpace: 'nowrap'
+                                                            whiteSpace: 'nowrap',
+                                                            fontWeight: 500
                                                         }}>
-                                                            {obj.name}
-                                                        </h4>
-                                                    </div>
-
-                                                    {/* 성분 표시 */}
-                                                    {hasIngredients ? (
-                                                        <>
-                                                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '12px' }}>
-                                                                {obj.ingredients.slice(0, 4).map((ing, ingIdx) => (
-                                                                    <span
-                                                                        key={ingIdx}
-                                                                        style={{
-                                                                            padding: '5px 10px',
-                                                                            borderRadius: '8px',
-                                                                            fontSize: '0.7rem',
-                                                                            fontWeight: 600,
-                                                                            background: ing.status === 'warning'
-                                                                                ? 'rgba(245,158,11,0.15)'
-                                                                                : 'rgba(16,185,129,0.15)',
-                                                                            color: ing.status === 'warning' ? '#FBBF24' : '#34D399',
-                                                                            border: `1px solid ${ing.status === 'warning' ? 'rgba(245,158,11,0.3)' : 'rgba(16,185,129,0.3)'}`
-                                                                        }}
-                                                                    >
-                                                                        {ing.name} {ing.amount}{ing.unit}
-                                                                    </span>
-                                                                ))}
-                                                                {obj.ingredients.length > 4 && (
-                                                                    <span style={{
-                                                                        padding: '5px 10px',
-                                                                        fontSize: '0.7rem',
-                                                                        color: '#6B7280',
-                                                                        background: 'rgba(107,114,128,0.1)',
-                                                                        borderRadius: '8px'
-                                                                    }}>
-                                                                        +{obj.ingredients.length - 4}개
-                                                                    </span>
-                                                                )}
-                                                            </div>
-
-                                                            {/* 상태 배지 */}
-                                                            <div style={{
-                                                                display: 'inline-flex',
-                                                                alignItems: 'center',
-                                                                gap: '6px',
-                                                                padding: '6px 12px',
-                                                                borderRadius: '20px',
-                                                                fontSize: '0.75rem',
-                                                                fontWeight: 600,
-                                                                background: productWarnings > 0
-                                                                    ? 'rgba(245,158,11,0.15)'
-                                                                    : 'rgba(16,185,129,0.15)',
-                                                                color: productWarnings > 0 ? '#FBBF24' : '#34D399'
-                                                            }}>
-                                                                {productWarnings > 0
-                                                                    ? <><AlertTriangle size={14} /> {productWarnings}개 성분 주의</>
-                                                                    : <><ShieldCheck size={14} /> 안전한 섭취량</>
-                                                                }
-                                                            </div>
-                                                        </>
-                                                    ) : (
-                                                        <div style={{
-                                                            padding: '12px 16px',
-                                                            borderRadius: '10px',
-                                                            background: 'rgba(245,158,11,0.1)',
-                                                            border: '1px solid rgba(245,158,11,0.2)'
-                                                        }}>
-                                                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#FBBF24', fontSize: '0.8rem', fontWeight: 600 }}>
-                                                                <AlertTriangle size={16} />
-                                                                성분 정보 로딩 중...
-                                                            </div>
-                                                            <p style={{ fontSize: '0.7rem', color: '#9CA3AF', margin: '6px 0 0 0' }}>
-                                                                AI가 성분 정보를 분석하고 있습니다. 잠시 후 다시 확인해주세요.
-                                                            </p>
+                                                            {obj.ingredients.map(ing => ing.name).join(', ')}
                                                         </div>
+                                                    ) : (
+                                                        <div style={{ fontSize: '0.75rem', color: 'var(--cam-orange)', fontWeight: 600 }}>
+                                                            성분 분석 중...
+                                                        </div>
+                                                    )}
+                                                </div>
+
+                                                {/* 상태 아이콘 배지 */}
+                                                <div style={{ flexShrink: 0 }}>
+                                                    {productWarnings > 0 ? (
+                                                        <AlertTriangle size={18} color="var(--cam-orange)" />
+                                                    ) : (
+                                                        <ShieldCheck size={18} color="var(--cam-green)" />
                                                     )}
                                                 </div>
                                             </div>
@@ -432,21 +378,22 @@ export default function ResultStep({ imageSrc, result, onRetake, onRegister }: R
                                 }}
                             >
                                 <div style={{
-                                    width: '80px',
-                                    height: '80px',
+                                    width: '70px',
+                                    height: '70px',
                                     borderRadius: '50%',
-                                    background: 'rgba(107,114,128,0.1)',
+                                    background: 'var(--cam-bg-soft)',
                                     display: 'flex',
                                     alignItems: 'center',
                                     justifyContent: 'center',
-                                    marginBottom: '20px'
+                                    marginBottom: '20px',
+                                    border: '1px solid var(--cam-border)'
                                 }}>
-                                    <SearchX size={36} color="#6B7280" />
+                                    <SearchX size={32} color="var(--cam-gray)" />
                                 </div>
-                                <h4 style={{ fontSize: '1.2rem', fontWeight: 700, marginBottom: '8px', color: '#fff' }}>
+                                <h4 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: '8px', color: 'var(--cam-black)' }}>
                                     인식된 영양제가 없습니다
                                 </h4>
-                                <p style={{ fontSize: '0.85rem', color: '#9CA3AF', lineHeight: 1.6 }}>
+                                <p style={{ fontSize: '0.85rem', color: 'var(--cam-gray)', lineHeight: 1.6 }}>
                                     영양제가 잘 보이도록 촬영해주세요.<br />
                                     밝은 곳에서 촬영하면 인식률이 높아져요.
                                 </p>
@@ -456,8 +403,8 @@ export default function ResultStep({ imageSrc, result, onRetake, onRegister }: R
                 </motion.div>
             </div>
 
-            <footer className="sticky-footer" style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-                <div className="cam-btn-row" style={{ padding: '16px 20px', width: '100%' }}>
+            <footer className="sticky-footer" style={{ borderTop: '1px solid var(--cam-border)' }}>
+                <div className="cam-btn-row" style={{ padding: '16px 20px', width: '100%', background: 'none' }}>
                     <ActionButton onClick={onRetake} variant="secondary">
                         <RotateCcw size={18} />
                         <span>다시 촬영</span>
@@ -489,7 +436,7 @@ export default function ResultStep({ imageSrc, result, onRetake, onRegister }: R
                     bottom: 0;
                     left: 0;
                     right: 0;
-                    background: linear-gradient(180deg, rgba(15,15,20,0.95), rgba(10,10,15,1));
+                    background: var(--cam-surface);
                     backdrop-filter: blur(20px);
                     z-index: 1000;
                     padding-bottom: env(safe-area-inset-bottom);
