@@ -4,7 +4,6 @@ import com.ssafy.yaksok.global.exception.BusinessException;
 import com.ssafy.yaksok.global.exception.ErrorCode;
 import com.ssafy.yaksok.notification.infrastructure.fcm.config.FirebaseConfig;
 import com.ssafy.yaksok.notification.infrastructure.fcm.sender.FcmSender;
-import com.ssafy.yaksok.notification.infrastructure.fcm.token.FcmTokenRepository;
 import com.ssafy.yaksok.notification.infrastructure.fcm.token.FcmTokenRequest;
 import com.ssafy.yaksok.notification.infrastructure.fcm.token.FcmTokenService;
 import com.ssafy.yaksok.notification.infrastructure.fcm.token.UserFcmToken;
@@ -75,7 +74,8 @@ public class FcmNotificationTest {
         void createAndFetchToken() {
             // Given
             String tokenValue = "final_fcm_token_test_abc_123";
-            FcmTokenRequest request = new FcmTokenRequest(fcmTokenService.findByUserId(testUser.getId()).getToken(),tokenValue);
+            FcmTokenRequest request = new FcmTokenRequest(
+                    com.ssafy.yaksok.notification.enums.NotificationEnums.Platform.WEB, tokenValue);
 
             // When
             fcmTokenService.createOrUpdateFcmToken(testUser.getId(), request);
@@ -101,7 +101,8 @@ public class FcmNotificationTest {
         @DisplayName("이미 등록된 토큰 문자열을 새로운 값으로 갱신한다")
         void updateExistingToken() {
             // Given
-            fcmTokenService.createOrUpdateFcmToken(testUser.getId(), new FcmTokenRequest(fcmTokenService.findByUserId(testUser.getId()).getToken(),"old_token"));
+            fcmTokenService.createOrUpdateFcmToken(testUser.getId(), new FcmTokenRequest(
+                    com.ssafy.yaksok.notification.enums.NotificationEnums.Platform.WEB, "old_token"));
 
             // When
             String updatedToken = "new_vibrant_token";
@@ -115,7 +116,8 @@ public class FcmNotificationTest {
         @DisplayName("토큰의 활성화 상태(active)를 켜거나 끌 수 있다")
         void toggleTokenActiveState() {
             // Given
-            fcmTokenService.createOrUpdateFcmToken(testUser.getId(), new FcmTokenRequest(fcmTokenService.findByUserId(testUser.getId()).getToken(),"toggle_test_token"));
+            fcmTokenService.createOrUpdateFcmToken(testUser.getId(), new FcmTokenRequest(
+                    com.ssafy.yaksok.notification.enums.NotificationEnums.Platform.WEB, "toggle_test_token"));
 
             // When & Then: Disable
             fcmTokenService.updateTokenActive(testUser.getId(), false);
@@ -145,7 +147,8 @@ public class FcmNotificationTest {
 
             // When & Then
             assertThrows(RuntimeException.class, () -> {
-                fcmSender.sendWeb(mockToken, mockTitle, mockBody);
+                fcmSender.sendWeb(mockToken, mockTitle, mockBody, java.util.Arrays.asList(1L),
+                        java.util.Arrays.asList(1L));
             });
         }
     }

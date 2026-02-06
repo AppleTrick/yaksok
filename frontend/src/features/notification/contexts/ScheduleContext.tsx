@@ -135,14 +135,33 @@ export const ScheduleProvider = ({ children }: { children: ReactNode }) => {
 
 
     // Action: Toggle Alarm (Local UI only for now)
-    const toggleAlarm = (id: string) => {
+    const toggleAlarm = useCallback((id: string) => {
         setSchedules(prev => prev.map(s =>
             s.id === id ? { ...s, isActive: !s.isActive } : s
         ));
-    };
+    }, []);
+
+    // [Moved] Listen for updates from Service Worker or NotificationManager
+    useEffect(() => {
+        const channel = new BroadcastChannel('pill_channel');
+
+        const handleMessage = (event: MessageEvent) => {
+            console.log('📢 [ScheduleContext] 외부 상태 변경 감지:', event.data);
+            if (event.data.type === 'PILL_TAKEN_COMPLETE' || event.data.type === 'PILL_SNOOZE_COMPLETE') {
+                refreshSchedules();
+            }
+        };
+
+        channel.addEventListener('message', handleMessage);
+
+        return () => {
+            channel.removeEventListener('message', handleMessage);
+            channel.close();
+        };
+    }, [refreshSchedules]);
 
     // Action: Update Schedule (Local -> API placeholder)
-    const updateSchedule = (id: string, newRawTime: string, newMealCategory: MealCategory, newItems: MedicationItem[]) => {
+    const updateSchedule = useCallback((id: string, newRawTime: string, newMealCategory: MealCategory, newItems: MedicationItem[]) => {
         const [h, m] = newRawTime.split(':').map(Number);
         const ampm = h < 12 ? '오전' : '오후';
         const displayHour = h === 0 ? 12 : (h > 12 ? h - 12 : h);
@@ -157,17 +176,17 @@ export const ScheduleProvider = ({ children }: { children: ReactNode }) => {
                 items: newItems
             } : s
         ));
-    };
+    }, []);
 
     // Action: Add Medication (Triggers refresh)
-    const addMedication = (item: MedicationItem, targetRawTime: string, mealCategory: MealCategory) => {
+    const addMedication = useCallback((item: MedicationItem, targetRawTime: string, mealCategory: MealCategory) => {
         // Assume API call is done by the form
         refreshSchedules();
-    };
+    }, [refreshSchedules]);
 
     // Action: Toggle Item Taken (API Call)
-    const toggleItemTaken = async (scheduleId: string, itemId: string) => {
-        // Optimistic Update
+    const toggleItemTaken = useCallback(async (scheduleId: string, itemId: string) => {
+        // 1. Optimistic Update (UI 즉시 반영)
         setSchedules(prev => prev.map(schedule => {
             if (schedule.id !== scheduleId) return schedule;
             return {
@@ -179,20 +198,24 @@ export const ScheduleProvider = ({ children }: { children: ReactNode }) => {
         }));
 
         try {
-            // Call Backend
+            // 2. Call Backend
             await checkIntake(Number(itemId));
+
+            // 3. Sync with Backend (토글 불일치 방지)
+            // 백엔드의 토글 로직과 UI 상태를 확실하게 맞추기 위해 최신 데이터를 다시 불러옵니다.
+            await refreshSchedules();
         } catch (error) {
             console.error("Failed to sync taken status:", error);
-            // Revert or refresh
+            // 에러 시에도 원복을 위해 새로고침
             refreshSchedules();
         }
-    };
+    }, [refreshSchedules]);
 
-    const toggleScheduleActive = (scheduleId: string) => {
+    const toggleScheduleActive = useCallback((scheduleId: string) => {
         setSchedules(prev => prev.map(s =>
             s.id === scheduleId ? { ...s, isActive: !s.isActive } : s
         ));
-    };
+    }, []);
 
     const toggleMedicationStatus = async (medicationName: string, newStatus: 'taking' | 'stopped') => {
         // Optimistic UI Update: Update status in all schedules containing this medication

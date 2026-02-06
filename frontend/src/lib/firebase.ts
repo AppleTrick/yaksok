@@ -42,15 +42,11 @@ export const getFirebaseMessaging = async (): Promise<Messaging | null> => {
         // Service Worker 등록 확인 및 처리
         if ('serviceWorker' in navigator) {
             try {
-                // 1. 현재 등록된 Service Worker 가져오기 (next-pwa 등과의 충돌 방지)
-                let registration = await navigator.serviceWorker.getRegistration();
-
-                // 2. 등록된 SW가 없으면 수동 등록 (주로 Dev 환경)
+                // next-pwa가 등록한 'sw.js'를 가로채거나, 없으면 수동 등록
+                const registration = await navigator.serviceWorker.getRegistration();
                 if (!registration) {
-                    registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
-                    console.log('✅ Service Worker 수동 등록 성공 (Dev/Fallback):', registration);
-                } else {
-                    console.log('✅ 기존 Service Worker 재사용:', registration);
+                    console.log('👷 수동 서비스 워커 등록 시도...');
+                    await navigator.serviceWorker.register('/firebase-messaging-sw.js');
                 }
             } catch (error) {
                 console.error('❌ Service Worker 등록/확인 실패:', error);

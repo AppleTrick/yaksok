@@ -25,12 +25,37 @@ const nextConfig: NextConfig = {
 
     return [
       {
+        source: '/api/v1/notification/subscribe',
+        destination: `${apiUrl}/api/v1/notification/subscribe`,
+      },
+      {
         source: '/api/v1/:path*',
         destination: `${apiUrl}/api/v1/:path*`,
       },
       {
         source: '/ai/v1/:path*',
         destination: `${apiUrl}/ai/v1/:path*`, // 백엔드와 AI 서버 주소가 동일함
+      },
+    ];
+  },
+  async headers() {
+    return [
+      {
+        source: '/api/v1/notification/subscribe',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'no-cache, no-transform',
+          },
+          {
+            key: 'X-Accel-Buffering',
+            value: 'no',
+          },
+          {
+            key: 'Content-Type',
+            value: 'text/event-stream',
+          },
+        ],
       },
     ];
   },

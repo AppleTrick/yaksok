@@ -46,22 +46,24 @@ export default function TimelineSection({ today, schedules, onToggleItem }: Time
                     <span className="slot-label" style={{ marginLeft: '8px', fontSize: '0.8rem', color: '#9ca3af' }}>{schedule.label}</span>
                 </div>
 
-                {dueItems.map(item => (
-                    <div
-                        key={item.id}
-                        className={`med-card ${item.isTaken ? 'done' : ''}`}
-                        onClick={() => onToggleItem(schedule.id, item.id)}
-                    >
-                        <div className={`med-checkbox ${item.isTaken ? 'checked' : ''}`}>
-                            {item.isTaken && <CheckCircle size={24} color="#10b981" />}
-                            {!item.isTaken && <input type="checkbox" readOnly checked={false} />}
+                {dueItems.map((item, idx) => {
+                    return (
+                        <div
+                            key={`${item.id}-${idx}`} // Force unique key to prevent re-render issues
+                            className={`med-card ${item.isTaken ? 'done' : ''}`}
+                            onClick={() => onToggleItem(schedule.id, item.id)}
+                        >
+                            <div className={`med-checkbox ${item.isTaken ? 'checked' : ''}`}>
+                                {item.isTaken && <CheckCircle size={24} color="#10b981" />}
+                                {!item.isTaken && <input type="checkbox" readOnly checked={false} />}
+                            </div>
+                            <div className="med-info">
+                                <h3>{item.name}</h3>
+                                <p>{item.detail || '상세 정보 없음'}</p>
+                            </div>
                         </div>
-                        <div className="med-info">
-                            <h3>{item.name}</h3>
-                            {item.detail && <p>{item.detail}</p>}
-                        </div>
-                    </div>
-                ))}
+                    );
+                })}
             </div>
         );
     });
