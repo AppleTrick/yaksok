@@ -174,6 +174,7 @@ public class OcrAnalysisService {
                                         productVerificationPrompt,
                                         params,
                                         ProductVerificationResponse.class,
+                                        0.1, // 낮은 온도로 일관성 있는 검증 유도
                                         2); // 최대 2회 재시도
 
                         log.info("    [검증 결과] isValid={}, reason={}", result.isValid(), result.getReason());
