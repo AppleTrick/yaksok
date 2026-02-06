@@ -118,5 +118,23 @@ public class User {
                 gender
         );
     }
-}
 
+    /**
+     * 사용자 프로필 수정
+     *
+     * @param name 이름 (null이면 변경하지 않음)
+     * @param ageGroup 연령대 (null이면 변경하지 않음)
+     * @param gender 성별 (null이면 변경하지 않음)
+     */
+    public void updateProfile(String name, UserEnums.AgeGroup ageGroup, UserEnums.Gender gender) {
+        if (name != null && !name.trim().isEmpty()) {
+            this.name = name;
+        }
+        if (ageGroup != null) {
+            this.ageGroup = ageGroup;
+        }
+        if (gender != null) {
+            this.gender = gender;
+        }
+    }
+}
