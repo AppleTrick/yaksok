@@ -50,22 +50,40 @@ export function proxy(request: NextRequest) {
     }
 
     // 2. 페이지 접근 제어 로직
-    const accessTokenValue = request.cookies.get('ACCESS_TOKEN')?.value || request.cookies.get('access_token')?.value;
+    const accessToken = request.cookies.get('ACCESS_TOKEN');
+    const lowerAccessToken = request.cookies.get('access_token');
+    const accessTokenValue = accessToken?.value || lowerAccessToken?.value;
+
+    // 토큰 유효성 검증 (값이 없거나, 문자열로 'undefined', 'null'인 경우 제외)
+    const hasValidToken = accessTokenValue &&
+        accessTokenValue !== 'undefined' &&
+        accessTokenValue !== 'null' &&
+        accessTokenValue.trim() !== '';
 
     // 2-1. 보호된 경로 접근 제어 (메인 페이지 '/' 및 정의된 경로들)
     const isProtectedRoute = pathname === '/' || protectedRoutes.some(route => pathname.startsWith(route));
 
-    // 인증 관련 경로 체크 (무한 루프 방지용)
+    // 인증 관련 경로 체크
     const isAuthRoute = authRoutes.some(route => pathname.startsWith(route));
 
-    if (isProtectedRoute && !accessTokenValue && !isAuthRoute) {
+    // 미인증 사용자가 보호된 경로 접근 시 리다이렉트
+    if (isProtectedRoute && !hasValidToken) {
         const url = new URL('/login', request.url);
         return NextResponse.redirect(url);
     }
 
-    // 2-2. 인증된 사용자 인증 경로 접근 제어 (로그인/회원가입 등)
-    if (isAuthRoute && accessTokenValue) {
-        return NextResponse.redirect(new URL('/', request.url));
+    // 인증된 사용자 혹은 '찌꺼기 쿠키'가 있는 사용자가 인증 경로(/login 등) 접근 시
+    if (isAuthRoute) {
+        if (hasValidToken) {
+            // 진짜 유효한 토큰이 있으면 홈으로
+            return NextResponse.redirect(new URL('/', request.url));
+        } else if (accessTokenValue) {
+            // 유효하지 않은 '찌꺼기' 값이 들어있다면 쿠키를 삭제하고 진입 허용 (루프 방지)
+            const response = NextResponse.next();
+            response.cookies.delete('ACCESS_TOKEN');
+            response.cookies.delete('access_token');
+            return response;
+        }
     }
 
     return NextResponse.next();
