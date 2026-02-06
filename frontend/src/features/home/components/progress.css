@@ -105,3 +105,83 @@
 .full-width-btn:active {
     transform: scale(0.98);
 }
+
+/* Camera Guide Section */
+.camera-guide-section {
+    background: rgba(255, 107, 61, 0.05);
+    border-radius: 20px;
+    padding: 1.25rem;
+    border: 1px dashed rgba(255, 107, 61, 0.3);
+}
+
+.guide-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+}
+
+.guide-icon-box {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    background: var(--brand-gradient);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    box-shadow: 0 4px 10px rgba(255, 107, 61, 0.2);
+}
+
+.ai-sparkle {
+    animation: sparkle-rotate 3s infinite linear;
+}
+
+@keyframes sparkle-rotate {
+    0% {
+        transform: rotate(0deg) scale(1);
+    }
+
+    50% {
+        transform: rotate(180deg) scale(1.2);
+    }
+
+    100% {
+        transform: rotate(360deg) scale(1);
+    }
+}
+
+.guide-text-box {
+    flex: 1;
+}
+
+.guide-title {
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 0.2rem;
+    color: var(--text-main);
+}
+
+.guide-subtitle {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    line-height: 1.3;
+}
+
+.scan-btn {
+    background: var(--brand-gradient);
+    border-radius: 24px;
+    font-weight: 700;
+    transition: all 0.3s ease;
+    border: none;
+    overflow: hidden;
+}
+
+.scan-btn:hover {
+    box-shadow: 0 8px 20px rgba(255, 107, 61, 0.4);
+    transform: translateY(-2px);
+}
+
+.scan-btn span {
+    letter-spacing: -0.5px;
+}
