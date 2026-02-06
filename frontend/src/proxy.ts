@@ -48,6 +48,26 @@ export function proxy(request: NextRequest) {
                 requestHeaders.set('cookie', cookieHeader);
             }
 
+            // SSE 엔드포인트인 경우 버퍼링 방지 헤더 추가
+            if (pathname === '/api/v1/notification/subscribe') {
+                requestHeaders.set('Accept', 'text/event-stream');
+                requestHeaders.set('Cache-Control', 'no-cache, no-transform');
+                requestHeaders.set('Connection', 'keep-alive');
+
+                const response = NextResponse.next({
+                    request: {
+                        headers: requestHeaders,
+                    },
+                });
+
+                // 응답 헤더에도 버퍼링 방지 설정
+                response.headers.set('Cache-Control', 'no-cache, no-transform');
+                response.headers.set('X-Accel-Buffering', 'no');
+                response.headers.set('Content-Type', 'text/event-stream');
+
+                return response;
+            }
+
             return NextResponse.next({
                 request: {
                     headers: requestHeaders,

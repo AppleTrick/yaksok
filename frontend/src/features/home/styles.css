@@ -4,9 +4,14 @@
     min-height: 100vh;
     background-color: var(--background-color);
     max-width: 1200px;
-    /* Constrain max content width on huge screens */
     margin: 0 auto;
-    /* Center content */
+}
+
+/* Base Layout (Mobile First) */
+.dashboard-content {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
 }
 
 /* Desktop Grid Layout (> Large Desktop) */
@@ -16,7 +21,6 @@
         grid-template-columns: 1fr 1fr;
         gap: 2rem;
         align-items: start;
-        /* Prevent items from stretching height */
     }
 
     .left-column {
@@ -31,9 +35,6 @@
        but action-card has margin-bottom: 2rem. DailyProgressCard isn't shown in CSS but component likely has styles. 
        Let's leave it natural for now. */
 
-    .right-column {
-        /* Timeline takes right side */
-    }
 }
 
 .home-header {
