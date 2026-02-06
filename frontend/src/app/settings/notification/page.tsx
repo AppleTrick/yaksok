@@ -21,7 +21,7 @@ export default function NotificationSettingsPage() {
             {/* Header */}
             <div className="settings-header">
                 <Link href="/settings" className="icon-button">
-                    <ArrowLeft size={24} color="#1F2937" />
+                    <ArrowLeft size={24} className="text-[var(--foreground-color)]" />
                 </Link>
                 <h1 className="header-title">알림 설정</h1>
                 <div style={{ width: 24 }}></div>
@@ -75,43 +75,7 @@ export default function NotificationSettingsPage() {
                     )}
                 </section>
 
-                {/* Developer Tools - FCM Token */}
-                <section className="settings-card" style={{ marginTop: '1rem' }}>
-                    <h2 className="card-title">개발자 도구</h2>
-                    <div className="setting-row" style={{ flexDirection: 'column', alignItems: 'stretch', gap: '0.5rem' }}>
-                        <span className="setting-label" style={{ fontSize: '0.9rem', color: '#6B7280' }}>
-                            FCM 토큰 (백엔드 테스트용)
-                        </span>
-                        <button
-                            onClick={() => {
-                                const token = localStorage.getItem('fcmToken');
-                                if (token) {
-                                    navigator.clipboard.writeText(token);
-                                    alert('FCM 토큰이 클립보드에 복사되었습니다!\n\n' + token);
-                                } else {
-                                    alert('FCM 토큰이 없습니다.\n알림 권한을 허용하고 푸시 알림을 켜주세요.');
-                                }
-                            }}
-                            style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                gap: '0.5rem',
-                                padding: '0.75rem',
-                                backgroundColor: '#3B82F6',
-                                color: 'white',
-                                border: 'none',
-                                borderRadius: '8px',
-                                cursor: 'pointer',
-                                fontSize: '0.95rem',
-                                fontWeight: '500',
-                            }}
-                        >
-                            <Copy size={18} />
-                            FCM 토큰 복사
-                        </button>
-                    </div>
-                </section>
+
 
 
             </div>
