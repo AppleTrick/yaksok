@@ -200,17 +200,29 @@ def analyze_logic(image_content: bytes) -> List[Dict[str, Any]]:
     if vision_client is None:
         raise RuntimeError("Vision API Client가 초기화되지 않아 분석을 수행할 수 없습니다.")
 
-    # 1. 이미지 로드 및 정보 획득
+    # 1. 이미지 로드 및 EXIF 정규화
     try:
         pil_image = Image.open(io.BytesIO(image_content))
+        
+        # EXIF orientation 적용하여 이미지 정규화
+        # 이렇게 하면 Vision API와 프론트엔드가 동일한 방향의 이미지를 사용
+        from PIL import ImageOps
+        pil_image = ImageOps.exif_transpose(pil_image)
+        print(f"[Vision Service] EXIF 정규화 완료: {pil_image.size}")
+        
     except Exception as e:
         raise ValueError(f"Invalid image format: {e}")
         
     width, height = pil_image.size
     
+    # 2. 정규화된 이미지를 바이트로 재인코딩 (Vision API 전송용)
+    normalized_buffer = io.BytesIO()
+    pil_image.save(normalized_buffer, format='JPEG', quality=95)
+    normalized_content = normalized_buffer.getvalue()
+    print(f"[Vision Service] 정규화된 이미지 크기: {len(normalized_content)} bytes")
 
-    # 2. Object Localization
-    image = vision.Image(content=image_content)
+    # 3. Object Localization (정규화된 이미지로 호출)
+    image = vision.Image(content=normalized_content)
     print(f"[Vision Service] Object Localization API 호출 중...")
     objects = vision_client.object_localization(image=image).localized_object_annotations
     print(f"[Vision Service] ✅ 객체 탐지 응답 수신 완료")

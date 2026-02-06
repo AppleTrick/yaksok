@@ -2,8 +2,12 @@ package com.ssafy.yaksok.analyze.service;
 
 import com.ssafy.yaksok.analyze.dto.*;
 import com.ssafy.yaksok.analyze.repository.OverdoseRepository;
+import com.ssafy.yaksok.global.common.dto.IntakeTimeResponse;
+import com.ssafy.yaksok.global.common.dto.ProductVerificationResponse;
+import com.ssafy.yaksok.global.common.llm.prompt.IntakeTimePrompt;
 import com.ssafy.yaksok.global.common.llm.prompt.LLMServiceFacade;
 import com.ssafy.yaksok.global.common.llm.prompt.ProductExtractionPrompt;
+import com.ssafy.yaksok.global.common.llm.prompt.ProductVerificationPrompt;
 import com.ssafy.yaksok.global.common.unit.ConversionResult;
 import com.ssafy.yaksok.global.common.unit.UnitConverter;
 import com.ssafy.yaksok.ingredient.entity.Ingredient;
@@ -35,6 +39,8 @@ public class OcrAnalysisService {
         private final UnitConverter unitConverter;
         private final LLMServiceFacade llmServiceFacade;
         private final ProductExtractionPrompt productExtractionPrompt;
+        private final ProductVerificationPrompt productVerificationPrompt;
+        private final IntakeTimePrompt intakeTimePrompt;
 
         /**
          * FastAPI 분석 결과를 정제하여 최종 응답 생성
@@ -68,6 +74,12 @@ public class OcrAnalysisService {
                 for (FastApiAnalysisResult.RawAnalysisResult raw : aiResult.getAnalysisResults()) {
                         log.info(">>> [제품 처리] product_name: {}", raw.getProductName());
 
+                        // 0단계: 제품명 유효성 검증 (OCR 노이즈 필터링)
+                        if (!verifyProductName(raw.getProductName())) {
+                                log.warn("    [검증 실패] '{}' - 유효하지 않은 제품명으로 제외", raw.getProductName());
+                                continue; // 해당 제품 스킵
+                        }
+
                         // 1단계: DB에서 제품 검색
                         Product product = findProductInDb(raw.getProductName());
 
@@ -98,12 +110,18 @@ public class OcrAnalysisService {
                                 ingredients = result.ingredients;
                         }
 
+                        // 5단계: 섭취 시간 추천 조회
+                        String productName = product != null ? product.getPrdlstNm() : raw.getProductName();
+                        IntakeTimeResponse intakeTimeInfo = fetchIntakeTime(productName);
+
                         // ReportProductInfo 생성
                         reportProducts.add(SupplementAnalysisResponse.ReportProductInfo.builder()
                                         .productId(product != null ? product.getId() : null)
-                                        .name(product != null ? product.getPrdlstNm() : raw.getProductName())
+                                        .name(productName)
                                         .box(raw.getBox())
                                         .ingredients(ingredients)
+                                        .intakeTime(intakeTimeInfo != null ? intakeTimeInfo.getIntakeTime() : null)
+                                        .intakeCategory(intakeTimeInfo != null ? intakeTimeInfo.getCategory() : null)
                                         .build());
                 }
 
@@ -138,6 +156,59 @@ public class OcrAnalysisService {
                                 .min(Comparator.comparingInt(
                                                 p -> Math.abs(p.getPrdlstNm().length() - rawName.length())))
                                 .orElse(null);
+        }
+
+        /**
+         * 제품명 유효성 검증 (OCR 노이즈 필터링)
+         */
+        private boolean verifyProductName(String productName) {
+                if (productName == null || productName.trim().isEmpty()) {
+                        return false;
+                }
+
+                log.info("    [0단계] 제품명 유효성 검증: '{}'", productName);
+
+                try {
+                        Map<String, Object> params = Map.of("productName", productName);
+                        ProductVerificationResponse result = llmServiceFacade.queryWithRetry(
+                                        productVerificationPrompt,
+                                        params,
+                                        ProductVerificationResponse.class,
+                                        2); // 최대 2회 재시도
+
+                        log.info("    [검증 결과] isValid={}, reason={}", result.isValid(), result.getReason());
+                        return result.isValid();
+                } catch (Exception e) {
+                        log.warn("    [검증 오류] GMS 호출 실패, 기본값 false 반환: {}", e.getMessage());
+                        return false;
+                }
+        }
+
+        /**
+         * 영양제 섭취 시간 추천 조회
+         */
+        private IntakeTimeResponse fetchIntakeTime(String productName) {
+                if (productName == null || productName.trim().isEmpty()) {
+                        return null;
+                }
+
+                log.info("    [5단계] 섭취 시간 추천 조회: '{}'", productName);
+
+                try {
+                        Map<String, Object> params = Map.of("productName", productName);
+                        IntakeTimeResponse result = llmServiceFacade.queryWithRetry(
+                                        intakeTimePrompt,
+                                        params,
+                                        IntakeTimeResponse.class,
+                                        2); // 최대 2회 재시도
+
+                        log.info("    [섭취 시간] intakeTime={}, category={}",
+                                        result.getIntakeTime(), result.getCategory());
+                        return result;
+                } catch (Exception e) {
+                        log.warn("    [섭취 시간 오류] GMS 호출 실패: {}", e.getMessage());
+                        return null;
+                }
         }
 
         /**
