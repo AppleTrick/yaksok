@@ -34,7 +34,7 @@
 }
 
 .settings-card {
-    background-color: var(--white);
+    background-color: var(--surface-1);
     border-radius: 1.5rem;
     /* radius-xl */
     padding: 1.5rem;
@@ -67,6 +67,11 @@
     /* Light Orange Tint */
     margin-bottom: 1rem;
     border: 1px solid var(--highlight-color);
+}
+
+[data-theme='dark'] .schedule-item {
+    background-color: rgba(255, 107, 61, 0.15);
+    border-color: rgba(255, 107, 61, 0.3);
 }
 
 .schedule-item:last-child {
@@ -126,7 +131,7 @@
     width: 100%;
     padding: 1rem;
     border: 2px dashed var(--highlight-color);
-    background-color: var(--white);
+    background-color: var(--surface-1);
     border-radius: 1rem;
     color: var(--primary-color);
     font-weight: 600;
@@ -206,7 +211,7 @@
 }
 
 .modal-content {
-    background-color: var(--white);
+    background-color: var(--bg-card);
     width: 100%;
     max-width: 480px;
     border-top-left-radius: 1.5rem;
