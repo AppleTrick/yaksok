@@ -20,11 +20,12 @@ const getGreeting = (date: Date): string => {
 export default function Home() {
   const [userName, setUserName] = useState("사용자");
   const [isLoading, setIsLoading] = useState(true);
-  const { schedules, toggleItemTaken } = useScheduleContext();
+  const { schedules, toggleItemTaken, refreshSchedules } = useScheduleContext();
   const [today, setToday] = useState<Date | null>(null);
 
   useEffect(() => {
     setToday(new Date());
+    refreshSchedules();
 
     const loadData = async () => {
       setIsLoading(true);

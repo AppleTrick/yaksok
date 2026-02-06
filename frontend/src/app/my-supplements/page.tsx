@@ -18,6 +18,11 @@ export default function MySupplementsPage() {
     const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
     const [activeTab, setActiveTab] = useState<'taking' | 'stopped'>('taking');
 
+    // 마운트 시 데이터 새로고침
+    React.useEffect(() => {
+        refreshSchedules();
+    }, [refreshSchedules]);
+
     // 1. Flatten and Deduplicate Items by Name
     const uniqueItems = useMemo(() => {
         const map = new Map<string, MedicationItem>();

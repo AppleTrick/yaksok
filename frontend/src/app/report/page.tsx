@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { RotateCcw, ShieldCheck, AlertTriangle, Pill, TrendingUp, Info, ArrowRight, CheckCircle } from 'lucide-react';
 import { useReportContext } from '@/features/report/contexts/ReportContext';
+import { useScheduleContext } from '@/features/notification/contexts/ScheduleContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import '@/features/report/styles.css';
 import { motion, Variants } from 'framer-motion';
@@ -46,6 +47,7 @@ interface Product {
 export default function ReportPage() {
     const router = useRouter();
     const { reportData, clearReportData } = useReportContext();
+    const { refreshSchedules } = useScheduleContext();
     const { theme } = useTheme();
     const isDark = theme === 'dark';
     const [selectedProductIdx, setSelectedProductIdx] = useState<number>(0);
@@ -114,6 +116,9 @@ export default function ReportPage() {
                     console.error(`영양제 등록 실패: ${product.name}`, errorText);
                 }
             }
+
+            // 데이터 새로고침
+            await refreshSchedules();
 
             // 성공 Modal 표시
             setSuccessModal({ open: true, count: validProducts.length });
