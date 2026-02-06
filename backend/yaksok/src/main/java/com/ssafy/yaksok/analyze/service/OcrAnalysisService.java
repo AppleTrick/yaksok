@@ -53,12 +53,15 @@ public class OcrAnalysisService {
          */
         @Transactional
         public SupplementAnalysisResponse processAnalysisResult(Long userId, FastApiAnalysisResult aiResult) {
+                long methodStart = System.currentTimeMillis();
                 log.info(">>> [분석 시작] User ID: {}, 감지된 제품 수: {}", userId,
                                 aiResult.getAnalysisResults() != null ? aiResult.getAnalysisResults().size() : 0);
 
                 // 사용자의 현재 성분별 섭취량 조회
+                long intakeStart = System.currentTimeMillis();
                 Map<String, IngredientIntakeInfo> currentIntakeMap = getCurrentUserIntake(userId);
-                log.info(">>> [1단계] 유저 현재 섭취량 조회 완료: {} 종류의 성분", currentIntakeMap.size());
+                log.info("[성능측정] 유저 섭취량 조회: {}ms, {} 종류", System.currentTimeMillis() - intakeStart,
+                                currentIntakeMap.size());
 
                 List<SupplementAnalysisResponse.ReportProductInfo> reportProducts = new ArrayList<>();
 
@@ -71,17 +74,27 @@ public class OcrAnalysisService {
                                         .build();
                 }
 
+                int productIndex = 0;
                 for (FastApiAnalysisResult.RawAnalysisResult raw : aiResult.getAnalysisResults()) {
-                        log.info(">>> [제품 처리] product_name: {}", raw.getProductName());
+                        productIndex++;
+                        long productStart = System.currentTimeMillis();
+                        log.info(">>> [제품 {}/{}] 처리 시작: {}", productIndex, aiResult.getAnalysisResults().size(),
+                                        raw.getProductName());
 
                         // 0단계: 제품명 유효성 검증 (OCR 노이즈 필터링)
+                        long verifyStart = System.currentTimeMillis();
                         if (!verifyProductName(raw.getProductName())) {
-                                log.warn("    [검증 실패] '{}' - 유효하지 않은 제품명으로 제외", raw.getProductName());
+                                log.warn("    [검증 실패] '{}' - 유효하지 않은 제품명으로 제외 ({}ms)", raw.getProductName(),
+                                                System.currentTimeMillis() - verifyStart);
                                 continue; // 해당 제품 스킵
                         }
+                        log.info("[성능측정] 제품{} - 제품명 검증 (LLM): {}ms", productIndex,
+                                        System.currentTimeMillis() - verifyStart);
 
                         // 1단계: DB에서 제품 검색
+                        long dbSearchStart = System.currentTimeMillis();
                         Product product = findProductInDb(raw.getProductName());
+                        log.info("[성능측정] 제품{} - DB 검색: {}ms", productIndex, System.currentTimeMillis() - dbSearchStart);
 
                         List<SupplementAnalysisResponse.ProductIngredientInfo> ingredients;
 
@@ -95,8 +108,11 @@ public class OcrAnalysisService {
                                 if (productIngredients == null || productIngredients.isEmpty()) {
                                         // 4단계: 성분 없으면 GMS 호출하여 성분 추출/저장
                                         log.info("    [4단계] DB에 성분 정보 없음 -> GMS 호출");
+                                        long llmIngStart = System.currentTimeMillis();
                                         ingredients = fetchAndSaveIngredientsFromLlm(product, raw.getProductName(),
                                                         currentIntakeMap);
+                                        log.info("[성능측정] 제품{} - 성분 추출 (LLM): {}ms", productIndex,
+                                                        System.currentTimeMillis() - llmIngStart);
                                 } else {
                                         // 성분 있으면 바로 사용
                                         ingredients = buildIngredientInfoList(productIngredients, currentIntakeMap);
@@ -104,15 +120,21 @@ public class OcrAnalysisService {
                         } else {
                                 // 3단계: DB에 없으면 GMS 호출하여 제품/성분 정보 추출 및 저장
                                 log.info("    [3단계] DB에 제품 없음 -> GMS 호출하여 제품 및 성분 저장");
+                                long llmProductStart = System.currentTimeMillis();
                                 ProductWithIngredients result = fetchAndSaveProductFromLlm(raw.getProductName(),
                                                 currentIntakeMap);
+                                log.info("[성능측정] 제품{} - 제품/성분 추출 (LLM): {}ms", productIndex,
+                                                System.currentTimeMillis() - llmProductStart);
                                 product = result.product;
                                 ingredients = result.ingredients;
                         }
 
                         // 5단계: 섭취 시간 추천 조회
                         String productName = product != null ? product.getPrdlstNm() : raw.getProductName();
+                        long intakeTimeStart = System.currentTimeMillis();
                         IntakeTimeResponse intakeTimeInfo = fetchIntakeTime(productName);
+                        log.info("[성능측정] 제품{} - 섭취시간 추천 (LLM): {}ms", productIndex,
+                                        System.currentTimeMillis() - intakeTimeStart);
 
                         // ReportProductInfo 생성
                         reportProducts.add(SupplementAnalysisResponse.ReportProductInfo.builder()
@@ -123,9 +145,13 @@ public class OcrAnalysisService {
                                         .intakeTime(intakeTimeInfo != null ? intakeTimeInfo.getIntakeTime() : null)
                                         .intakeCategory(intakeTimeInfo != null ? intakeTimeInfo.getCategory() : null)
                                         .build());
+
+                        log.info("[성능측정] 제품{} - 총 처리 시간: {}ms", productIndex,
+                                        System.currentTimeMillis() - productStart);
                 }
 
-                log.info(">>> [분석 완료] 총 {} 개 제품 처리됨", reportProducts.size());
+                log.info("[성능측정] 전체 제품 처리 완료: {}ms, {} 개 제품", System.currentTimeMillis() - methodStart,
+                                reportProducts.size());
 
                 return SupplementAnalysisResponse.builder()
                                 .reportData(SupplementAnalysisResponse.ReportData.builder()
