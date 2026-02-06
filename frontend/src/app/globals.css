@@ -6,18 +6,18 @@
   /* Card/Surface (White) */
   --bg-card: #FFFFFF;
 
-  /* Brand/Point (Vibrant Coral Orange - Shared) */
-  --color-brand: #FF6B3D;
+  /* Brand/Point (Vivid Orange - Shared) */
+  --color-brand: #FF5722;
 
   /* Text (Dark Grey/Black) */
   --text-main: #1A1A1A;
 
   /* Functional Colors */
-  --color-error: #FF453A;
-  --color-success: #32D74B;
+  --color-error: #EF4444;
+  --color-success: #4CAF50;
 
   /* Mappings for Legacy Compatibility */
-  --primary-color: var(--color-brand);
+  --primary-color: #FF5722;
   --background-color: var(--bg-base);
   --surface-1: var(--bg-card);
   --surface-2: #FFFFFF;
@@ -25,27 +25,21 @@
 
   /* Legacy Colors */
   --text-muted: #6B7280;
-  --sub-background: #E5E7EB;
-  --section-divider: #E5E7EB;
-  --highlight-color: rgba(255, 107, 61, 0.1);
-  --light-grey: #F3F4F6;
+  --sub-background: #EDF7ED;
+  --section-divider: #F6F0DC;
+  --highlight-color: #FFDAAB;
+  --light-grey: #F5F5F5;
   --white: #FFFFFF;
 
   /* Borders & Shadows */
-  --border-color: rgba(0, 0, 0, 0.06);
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.05);
-  --shadow-premium: 0 10px 30px rgba(0, 0, 0, 0.08);
+  --border-color: rgba(0, 0, 0, 0.08);
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.1);
+  --shadow-premium: 0 4px 12px rgba(0, 0, 0, 0.08);
 
   /* Shared Properties */
   --font-main: "Pretendard", -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
-  --radius-xl: 24px;
-  --radius-2xl: 32px;
-
-  /* Premium Design Tokens (Light Mode Version) */
-  --brand-gradient: linear-gradient(135deg, #FF6B3D 0%, #FF8A65 100%);
-  --glass-bg: rgba(255, 255, 255, 0.8);
-  --glass-border: rgba(255, 255, 255, 0.6);
-  --glass-blur: blur(12px);
+  --radius-xl: 16px;
+  --radius-2xl: 24px;
 }
 
 :root[data-theme='dark'] {
@@ -60,7 +54,7 @@
   --text-main: #F2F4F6;
 
   /* Mappings */
-  --primary-color: var(--color-brand);
+  --primary-color: #FF5722;
   --background-color: var(--bg-base);
   --surface-1: var(--bg-card);
   --surface-2: var(--bg-card);
@@ -72,18 +66,11 @@
   --section-divider: #2C2C2E;
   --light-grey: #3A3B45;
   --white: #FFFFFF;
-  /* Keep white for icons/text overrides if needed, but contextually use text-main */
 
-  /* Borders & Shadows (Dark Specific) */
+  /* Borders & Shadows */
   --border-color: rgba(255, 255, 255, 0.08);
-  /* Minimal border for depth */
   --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.2);
-  --shadow-premium: 0 10px 30px rgba(0, 0, 0, 0.5);
-  /* Stronger shadow for dark mode depth */
-
-  /* Premium Design Tokens (Dark Mode Version) */
-  --glass-bg: rgba(43, 44, 55, 0.7);
-  --glass-border: rgba(255, 255, 255, 0.1);
+  --shadow-premium: 0 10px 30px rgba(0, 0, 0, 0.4);
 }
 
 /* --- Global Utilities for Interaction --- */
