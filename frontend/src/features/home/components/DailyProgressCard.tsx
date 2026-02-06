@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ChevronRight, Sparkles } from "lucide-react";
+import { ChevronRight, Sparkles, Camera } from "lucide-react";
 import './progress.css';
 
 interface DailyProgressProps {
@@ -74,7 +74,10 @@ export default function DailyProgressCard({ total = 4, taken = 3 }: DailyProgres
                 </div>
                 <div className="hero-actions">
                     <Link href="/camera" className="btn btn-medium btn-primary full-width-btn scan-btn">
-                        <span>영양제 분석 촬영하기</span>
+                        <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <Camera size={18} />
+                            영양제 분석 촬영하기
+                        </span>
                         <ChevronRight size={18} />
                     </Link>
                 </div>
