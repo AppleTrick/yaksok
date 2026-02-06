@@ -102,7 +102,7 @@
 /* Camera Guide Section */
 .camera-guide-section {
     background: rgba(255, 107, 61, 0.05);
-    border-radius: var(--radius-lg);
+    border-radius: 20px;
     padding: 1.25rem;
     border: 1px dashed rgba(255, 107, 61, 0.3);
 }
@@ -163,10 +163,11 @@
 
 .scan-btn {
     background: var(--brand-gradient);
-    border-radius: 14px;
+    border-radius: 24px;
     font-weight: 700;
     transition: all 0.3s ease;
     border: none;
+    overflow: hidden;
 }
 
 .scan-btn:hover {
