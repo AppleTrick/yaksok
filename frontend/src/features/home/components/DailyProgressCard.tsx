@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, Sparkles } from "lucide-react";
 import './progress.css';
 
 interface DailyProgressProps {
@@ -62,11 +62,22 @@ export default function DailyProgressCard({ total = 4, taken = 3 }: DailyProgres
                 </div>
             </div>
 
-            <div className="hero-actions">
-                <Link href="/camera" className="btn btn-medium btn-primary full-width-btn">
-                    내 영양제 찾으러가기
-                    <ChevronRight size={18} />
-                </Link>
+            <div className="camera-guide-section">
+                <div className="guide-header">
+                    <div className="guide-icon-box">
+                        <Sparkles size={20} className="ai-sparkle" />
+                    </div>
+                    <div className="guide-text-box">
+                        <h3 className="guide-title">새로운 영양제가 있나요?</h3>
+                        <p className="guide-subtitle">AI로 찍어서 성분 분석부터 등록까지 한 번에!</p>
+                    </div>
+                </div>
+                <div className="hero-actions">
+                    <Link href="/camera" className="btn btn-medium btn-primary full-width-btn scan-btn">
+                        <span>영양제 분석 촬영하기</span>
+                        <ChevronRight size={18} />
+                    </Link>
+                </div>
             </div>
         </section>
     );
