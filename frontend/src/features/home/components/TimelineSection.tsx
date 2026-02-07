@@ -1,5 +1,5 @@
-import React from 'react';
-import { Sun, Moon, CheckCircle } from "lucide-react";
+import React, { useState } from 'react';
+import { Sun, Moon, Check, Pill } from "lucide-react";
 import { Schedule, isItemDue } from "@/features/notification/contexts/ScheduleContext";
 import '../styles.css';
 
@@ -15,8 +15,12 @@ export default function TimelineSection({ today, schedules, onToggleItem }: Time
     if (!today || activeSchedules.length === 0) {
         return (
             <section className="timeline-section">
-                <div className="empty-slot" style={{ textAlign: 'center', padding: '2rem' }}>
-                    <p>등록된 일정이 없습니다.</p>
+                <div className="empty-state-modern">
+                    <div className="empty-state-icon">
+                        <Pill size={32} />
+                    </div>
+                    <h3 className="empty-state-title">등록된 일정이 없습니다</h3>
+                    <p className="empty-state-desc">새로운 영양제를 등록하고<br />건강한 습관을 시작해보세요!</p>
                 </div>
             </section>
         );
@@ -40,30 +44,43 @@ export default function TimelineSection({ today, schedules, onToggleItem }: Time
         return (
             <div key={schedule.id} className="time-slot">
                 <div className="slot-header">
-                    <SlotIcon className={`slot-icon ${slotClass}`} size={20} />
-                    <span className="slot-title">{slotName}</span>
-                    <span className="slot-time">{schedule.time}</span>
-                    <span className="slot-label" style={{ marginLeft: '8px', fontSize: '0.8rem', color: '#9ca3af' }}>{schedule.label}</span>
+                    <div className={`slot-icon-wrapper ${slotClass}`}>
+                        <SlotIcon size={18} />
+                    </div>
+                    <div className="slot-header-text">
+                        <span className="slot-title">{slotName}</span>
+                        <span className="slot-time">{schedule.time}</span>
+                    </div>
                 </div>
 
-                {dueItems.map((item, idx) => {
-                    return (
+                <div className="med-cards-container">
+                    {dueItems.map((item, idx) => (
                         <div
-                            key={`${item.id}-${idx}`} // Force unique key to prevent re-render issues
-                            className={`med-card ${item.isTaken ? 'done' : ''}`}
+                            key={`${item.id}-${idx}`}
+                            className={`med-card-modern ${item.isTaken ? 'taken' : ''}`}
                             onClick={() => onToggleItem(schedule.id, item.id)}
                         >
-                            <div className={`med-checkbox ${item.isTaken ? 'checked' : ''}`}>
-                                {item.isTaken && <CheckCircle size={24} color="#10b981" />}
-                                {!item.isTaken && <input type="checkbox" readOnly checked={false} />}
+                            <div className="med-card-left">
+                                <div className={`med-checkbox-modern ${item.isTaken ? 'checked' : ''}`}>
+                                    {item.isTaken ? (
+                                        <Check size={16} strokeWidth={3} />
+                                    ) : (
+                                        <Pill size={16} />
+                                    )}
+                                </div>
                             </div>
-                            <div className="med-info">
-                                <h3>{item.name}</h3>
+                            <div className="med-card-content">
+                                <h3 className={item.isTaken ? 'taken' : ''}>{item.name}</h3>
                                 <p>{item.detail || '상세 정보 없음'}</p>
                             </div>
+                            <div className="med-card-action">
+                                <span className={`status-badge ${item.isTaken ? 'completed' : 'pending'}`}>
+                                    {item.isTaken ? '완료' : '대기'}
+                                </span>
+                            </div>
                         </div>
-                    );
-                })}
+                    ))}
+                </div>
             </div>
         );
     });
