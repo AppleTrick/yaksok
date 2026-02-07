@@ -28,12 +28,20 @@ public class AnalyzeService {
 
     public SupplementAnalysisResponse analyzeSupplement(MultipartFile file, Long userId) {
         log.info("이미지 분석 시작: User {}", userId);
+        long totalStart = System.currentTimeMillis();
 
         // 1. FastAPI 호출 (외부 통신)
+        long fastApiStart = System.currentTimeMillis();
         FastApiAnalysisResult aiResult = callFastApi(file);
+        log.info("[성능측정] FastAPI 호출 완료: {}ms", System.currentTimeMillis() - fastApiStart);
 
         // 2. 비즈니스 로직 위임 (업무 처리)
-        return ocrAnalysisService.processAnalysisResult(userId, aiResult);
+        long processStart = System.currentTimeMillis();
+        SupplementAnalysisResponse response = ocrAnalysisService.processAnalysisResult(userId, aiResult);
+        log.info("[성능측정] 비즈니스 로직 처리 완료: {}ms", System.currentTimeMillis() - processStart);
+
+        log.info("[성능측정] 전체 분석 완료: {}ms", System.currentTimeMillis() - totalStart);
+        return response;
     }
 
     private FastApiAnalysisResult callFastApi(MultipartFile file) {
