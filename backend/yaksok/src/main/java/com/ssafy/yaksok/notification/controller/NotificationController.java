@@ -55,6 +55,8 @@ public class NotificationController {
         return ResponseUtil.ok(notificationService.createNotification(userPrincipal.getUserId(), notificationRequest));
     }
 
+
+
     @PutMapping("/enable/toggle")
     public ResponseEntity<ApiResponse<NotificationEnableToggleResponse>> enableToggleNotification(
             @RequestBody NotificationIdRequest request, @AuthenticationPrincipal UserPrincipal userPrincipal) {
@@ -89,7 +91,7 @@ public class NotificationController {
                 userPrincipal.getUserId(), userProductId));
     }
 
-    @PutMapping("/")
+    @PutMapping("/edit")
     public ResponseEntity<ApiResponse<NotificationResponse>> editNotification(
             @RequestBody NotificationEditRequest notificationEditRequest,
             @AuthenticationPrincipal UserPrincipal userPrincipal) {
