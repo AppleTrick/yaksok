@@ -125,12 +125,21 @@
     width: 40px;
     height: 40px;
     border-radius: 12px;
-    background: var(--brand-gradient);
+    background: rgba(255, 107, 61, 0.1);
     display: flex;
     justify-content: center;
     align-items: center;
-    color: white;
-    box-shadow: 0 4px 10px rgba(255, 107, 61, 0.2);
+    color: var(--primary-color);
+    transition: all 0.25s ease;
+}
+
+/* 다크모드에서는 그라데이션 배경 + 흰색 아이콘 */
+@media (prefers-color-scheme: dark) {
+    .guide-icon-box {
+        background: var(--brand-gradient);
+        color: white;
+        box-shadow: 0 4px 10px rgba(255, 107, 61, 0.2);
+    }
 }
 
 .ai-sparkle {
