@@ -350,3 +350,44 @@
         opacity: 1;
     }
 }
+
+/* 다크모드 지원 */
+@media (prefers-color-scheme: dark) {
+    .modal-overlay {
+        background-color: rgba(0, 0, 0, 0.7);
+    }
+
+    .modal-content {
+        background-color: var(--sub-background);
+        box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    .modal-btn.cancel {
+        background-color: rgba(255, 255, 255, 0.1);
+    }
+
+    .in-app-notification-toast {
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+    }
+
+    .schedule-item {
+        background-color: rgba(255, 107, 61, 0.15);
+        border-color: rgba(255, 107, 61, 0.3);
+    }
+
+    .add-schedule-btn {
+        border-color: rgba(255, 107, 61, 0.3);
+    }
+
+    .add-schedule-btn:active {
+        background-color: rgba(255, 107, 61, 0.1);
+    }
+
+    .action-icon-btn:active {
+        background-color: rgba(255, 255, 255, 0.1);
+    }
+
+    .dnd-times {
+        border-top-color: rgba(255, 255, 255, 0.1);
+    }
+}
