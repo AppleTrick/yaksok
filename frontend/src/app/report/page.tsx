@@ -55,6 +55,9 @@ export default function ReportPage() {
     const [isRegistering, setIsRegistering] = useState(false);
     const isNavigatingRef = useRef(false);
 
+    // 상한 초과 경고 모달 상태
+    const [warningModal, setWarningModal] = useState<{ open: boolean; ingredients: string[] }>({ open: false, ingredients: [] });
+
     useEffect(() => {
         // 등록 완료 후 네비게이션 중에는 리다이렉트 하지 않음
         if (!reportData.analysisResult && !isNavigatingRef.current) {
@@ -77,6 +80,22 @@ export default function ReportPage() {
 
         if (products.length === 0) {
             alert('등록할 영양제가 없습니다.');
+            return;
+        }
+
+        // 상한 초과 성분 체크
+        const warningIngredients: string[] = [];
+        products.forEach(product => {
+            product.ingredients?.forEach(ing => {
+                if (ing.status === 'warning' && !warningIngredients.includes(ing.name)) {
+                    warningIngredients.push(ing.name);
+                }
+            });
+        });
+
+        // 상한 초과 성분이 있으면 경고 모달 표시
+        if (warningIngredients.length > 0) {
+            setWarningModal({ open: true, ingredients: warningIngredients });
             return;
         }
 
@@ -135,6 +154,13 @@ export default function ReportPage() {
         isNavigatingRef.current = true;
         clearReportData();
         router.push('/my-supplements');
+    };
+
+    const handleWarningModalClose = () => {
+        setWarningModal({ open: false, ingredients: [] });
+        isNavigatingRef.current = true;
+        clearReportData();
+        router.push('/camera');
     };
 
     const realReportData = reportData.analysisResult?.reportData;
@@ -483,6 +509,47 @@ export default function ReportPage() {
                 >
                     내 영양제 보기
                 </Button>
+            </Modal>
+
+            {/* 상한 초과 경고 Modal */}
+            <Modal
+                isOpen={warningModal.open}
+                onClose={handleWarningModalClose}
+                title="⚠️ 섭취량 주의"
+                type="alert"
+                onConfirm={handleWarningModalClose}
+                confirmText="확인"
+            >
+                <div style={{ textAlign: 'center', padding: '20px 0' }}>
+                    <AlertTriangle size={64} color="var(--cam-orange)" style={{ marginBottom: '16px' }} />
+                    <p style={{ fontSize: '1rem', marginBottom: '12px', color: 'var(--cam-black)' }}>
+                        영양제 섭취 시 다음 성분이<br />
+                        <strong style={{ color: 'var(--cam-orange)' }}>상한 섭취량을 초과</strong>했습니다.
+                    </p>
+                    <div style={{
+                        background: isDark ? '#2B2C37' : '#F8F9FA',
+                        borderRadius: '12px',
+                        padding: '12px 16px',
+                        marginBottom: '12px'
+                    }}>
+                        {warningModal.ingredients.map((name, idx) => (
+                            <div key={idx} style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '8px',
+                                padding: '6px 0',
+                                borderBottom: idx < warningModal.ingredients.length - 1 ? '1px solid var(--cam-border)' : 'none'
+                            }}>
+                                <span style={{ color: 'var(--cam-orange)', fontWeight: 700 }}>•</span>
+                                <span style={{ fontWeight: 600, color: 'var(--cam-black)' }}>{name}</span>
+                            </div>
+                        ))}
+                    </div>
+                    <p style={{ color: 'var(--cam-gray)', fontSize: '0.85rem', margin: 0 }}>
+                        과다 섭취 시 부작용이 발생할 수 있습니다.<br />
+                        섭취량을 조절해주세요.
+                    </p>
+                </div>
             </Modal>
 
             <style jsx>{`

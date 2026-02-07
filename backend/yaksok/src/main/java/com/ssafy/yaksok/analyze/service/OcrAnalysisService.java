@@ -12,6 +12,8 @@ import com.ssafy.yaksok.global.common.unit.ConversionResult;
 import com.ssafy.yaksok.global.common.unit.UnitConverter;
 import com.ssafy.yaksok.ingredient.entity.Ingredient;
 import com.ssafy.yaksok.ingredient.repository.IngredientRepository;
+import com.ssafy.yaksok.ingredient.util.IngredientNameNormalizer;
+import com.ssafy.yaksok.ingredient.util.NutrientReferenceData;
 import com.ssafy.yaksok.product.entity.Product;
 import com.ssafy.yaksok.product.entity.ProductIngredient;
 import com.ssafy.yaksok.product.repository.ProductIngredientRepository;
@@ -44,6 +46,8 @@ public class OcrAnalysisService {
         private final ProductExtractionPrompt productExtractionPrompt;
         private final ProductVerificationPrompt productVerificationPrompt;
         private final IntakeTimePrompt intakeTimePrompt;
+        private final IngredientNameNormalizer ingredientNameNormalizer;
+        private final NutrientReferenceData nutrientReferenceData;
 
         /**
          * FastAPI 분석 결과를 정제하여 최종 응답 생성 (병렬 처리)
@@ -524,7 +528,7 @@ public class OcrAnalysisService {
                         for (var ingInfo : extractionResult.getIngredients()) {
                                 BigDecimal rawAmount = ingInfo.getAmountAsBigDecimal();
                                 String rawUnit = ingInfo.getUnit();
-                                String ingName = ingInfo.getName().trim();
+                                String ingName = ingredientNameNormalizer.normalize(ingInfo.getName().trim());
 
                                 if (rawAmount.compareTo(BigDecimal.ZERO) <= 0 ||
                                                 rawUnit == null || rawUnit.contains("정보") || rawUnit.contains("없음")) {
@@ -538,15 +542,32 @@ public class OcrAnalysisService {
                                 BigDecimal finalAmount = conv.isSuccess() ? conv.getAmount() : rawAmount;
                                 String finalUnit = conv.isSuccess() ? conv.getUnit() : rawUnit;
 
-                                // Ingredient 저장 또는 조회
+                                // 권장섭취량 및 상한섭취량 결정 (LLM 응답 > 식약처 기준 > 기본값)
+                                BigDecimal minIntake = ingInfo.getRecommendedIntakeAsBigDecimal();
+                                if (minIntake == null) {
+                                        minIntake = nutrientReferenceData.getRecommendedIntake(ingName);
+                                }
+                                BigDecimal maxIntake = ingInfo.getUpperLimitAsBigDecimal();
+                                if (maxIntake == null) {
+                                        maxIntake = nutrientReferenceData.getUpperLimit(ingName);
+                                }
+
+                                final BigDecimal finalMinIntake = minIntake;
+                                final BigDecimal finalMaxIntake = maxIntake;
+                                final String finalUnitForLambda = finalUnit;
+
+                                // Ingredient 저장 또는 조회 (정규화된 이름으로 검색)
                                 Ingredient ingredient = ingredientRepository.findByIngredientName(ingName)
                                                 .orElseGet(() -> {
-                                                        log.info("    [DB 저장] 새로운 성분 등록: {}", ingName);
+                                                        log.info("    [DB 저장] 새로운 성분 등록: {} (min={}, max={})", ingName,
+                                                                        finalMinIntake, finalMaxIntake);
                                                         return ingredientRepository.save(Ingredient.builder()
                                                                         .ingredientName(ingName)
-                                                                        .displayUnit(finalUnit)
-                                                                        .minIntakeValue(BigDecimal.ZERO)
-                                                                        .maxIntakeValue(BigDecimal.valueOf(9999))
+                                                                        .displayUnit(finalUnitForLambda)
+                                                                        .minIntakeValue(finalMinIntake != null
+                                                                                        ? finalMinIntake
+                                                                                        : BigDecimal.ZERO)
+                                                                        .maxIntakeValue(finalMaxIntake)
                                                                         .build());
                                                 });
 
