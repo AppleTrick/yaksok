@@ -432,7 +432,8 @@ public class OcrAnalysisService {
                         for (var ingInfo : extractionResult.getIngredients()) {
                                 BigDecimal rawAmount = ingInfo.getAmountAsBigDecimal();
                                 String rawUnit = ingInfo.getUnit();
-                                String ingName = ingInfo.getName().trim();
+                                // 성분명 정규화 적용
+                                String ingName = ingredientNameNormalizer.normalize(ingInfo.getName().trim());
 
                                 if (rawAmount.compareTo(BigDecimal.ZERO) <= 0 ||
                                                 rawUnit == null || rawUnit.contains("정보") || rawUnit.contains("없음")) {
@@ -446,15 +447,24 @@ public class OcrAnalysisService {
                                 BigDecimal finalAmount = conv.isSuccess() ? conv.getAmount() : rawAmount;
                                 String finalUnit = conv.isSuccess() ? conv.getUnit() : rawUnit;
 
+                                // 식약처 기준 섭취량 조회
+                                BigDecimal minIntake = nutrientReferenceData.getRecommendedIntake(ingName);
+                                BigDecimal maxIntake = nutrientReferenceData.getUpperLimit(ingName);
+
+                                final BigDecimal finalMinIntake = minIntake != null ? minIntake : BigDecimal.ZERO;
+                                final BigDecimal finalMaxIntake = maxIntake;
+                                final String finalUnitForLambda = finalUnit;
+
                                 // Ingredient 저장 또는 조회
                                 Ingredient ingredient = ingredientRepository.findByIngredientName(ingName)
                                                 .orElseGet(() -> {
-                                                        log.info("    [DB 저장] 새로운 성분 등록: {}", ingName);
+                                                        log.info("    [DB 저장] 새로운 성분 등록: {} (min={}, max={})", ingName,
+                                                                        finalMinIntake, finalMaxIntake);
                                                         return ingredientRepository.save(Ingredient.builder()
                                                                         .ingredientName(ingName)
-                                                                        .displayUnit(finalUnit)
-                                                                        .minIntakeValue(BigDecimal.ZERO)
-                                                                        .maxIntakeValue(BigDecimal.valueOf(9999))
+                                                                        .displayUnit(finalUnitForLambda)
+                                                                        .minIntakeValue(finalMinIntake)
+                                                                        .maxIntakeValue(finalMaxIntake)
                                                                         .build());
                                                 });
 
