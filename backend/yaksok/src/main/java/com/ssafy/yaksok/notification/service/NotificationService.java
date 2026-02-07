@@ -14,7 +14,7 @@ import com.ssafy.yaksok.notification.infrastructure.fcm.token.UserFcmToken;
 import com.ssafy.yaksok.notification.repository.NotificationLogRepository;
 import com.ssafy.yaksok.notification.repository.NotificationRepository;
 import com.ssafy.yaksok.notification.repository.NotificationSettingRepository;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
@@ -98,6 +98,7 @@ public class NotificationService {
                 notification.getIntakeTime(), notification.getEnabled(), notification.getCategory());
     }
 
+    @Transactional
     public NotificationResponse editNotification(long userId, NotificationEditRequest request) {
         Notification notification = verifyNotification(userId, request.getNotificationId());
 
