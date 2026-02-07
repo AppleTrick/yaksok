@@ -200,3 +200,50 @@
         bottom: 70px;
     }
 }
+
+/* 다크모드 지원 */
+@media (prefers-color-scheme: dark) {
+    .fcm-permission-request {
+        background: var(--sub-background);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .fcm-request-icon {
+        background: linear-gradient(135deg, rgba(255, 87, 34, 0.2) 0%, rgba(255, 138, 101, 0.2) 100%);
+    }
+
+    .fcm-request-btn-dismiss {
+        background: rgba(255, 255, 255, 0.1);
+    }
+
+    .fcm-request-btn-dismiss:hover:not(:disabled) {
+        background: rgba(255, 255, 255, 0.15);
+    }
+
+    .fcm-denied-message {
+        background: linear-gradient(135deg, rgba(255, 152, 0, 0.15) 0%, rgba(255, 152, 0, 0.1) 100%);
+        border-left-color: #FF9800;
+    }
+
+    .fcm-denied-text h4 {
+        color: #FFB74D;
+    }
+
+    .fcm-denied-text p {
+        color: #FFCC80;
+    }
+
+    .fcm-denied-btn-reconsider {
+        background: var(--sub-background);
+        color: #FFB74D;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .fcm-denied-btn-reconsider:hover {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    .fcm-denied-btn-close:hover {
+        background: rgba(255, 183, 77, 0.15);
+    }
+}

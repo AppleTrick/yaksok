@@ -6,7 +6,7 @@
     z-index: 1000;
     max-width: 480px;
     width: calc(100% - 40px);
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, var(--primary-color) 0%, #ff8a65 100%);
     border-radius: 16px;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
     animation: slideUp 0.3s ease-out;
@@ -73,7 +73,7 @@
     font-size: 14px;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.25s ease;
     white-space: nowrap;
 }
 
@@ -84,7 +84,7 @@
 
 .fcm-permission-btn-primary {
     background: white;
-    color: #667eea;
+    color: var(--primary-color);
 }
 
 .fcm-permission-btn-primary:hover:not(:disabled) {
@@ -120,5 +120,16 @@
 
     .fcm-permission-btn {
         width: 100%;
+    }
+}
+
+/* 다크모드 지원 */
+@media (prefers-color-scheme: dark) {
+    .fcm-permission-banner {
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    }
+
+    .fcm-permission-btn-primary {
+        background: rgba(255, 255, 255, 0.95);
     }
 }
