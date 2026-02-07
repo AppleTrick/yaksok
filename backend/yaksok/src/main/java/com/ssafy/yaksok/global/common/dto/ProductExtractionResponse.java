@@ -26,6 +26,8 @@ public class ProductExtractionResponse {
         private String name;
         private String amount;
         private String unit;
+        private String recommendedIntake; // 권장섭취량
+        private String upperLimit; // 상한섭취량
 
         /**
          * amount를 BigDecimal로 변환
@@ -58,6 +60,39 @@ public class ProductExtractionResponse {
          */
         public boolean isValid() {
             return name != null && !name.trim().isEmpty();
+        }
+
+        /**
+         * recommendedIntake를 BigDecimal로 변환
+         */
+        public BigDecimal getRecommendedIntakeAsBigDecimal() {
+            return parseStringToBigDecimal(recommendedIntake);
+        }
+
+        /**
+         * upperLimit를 BigDecimal로 변환
+         */
+        public BigDecimal getUpperLimitAsBigDecimal() {
+            return parseStringToBigDecimal(upperLimit);
+        }
+
+        /**
+         * 문자열을 BigDecimal로 안전하게 변환
+         */
+        private BigDecimal parseStringToBigDecimal(String value) {
+            if (value == null || value.trim().isEmpty() ||
+                    value.contains("없음") || value.equalsIgnoreCase("null")) {
+                return null;
+            }
+            try {
+                String cleanValue = value.replaceAll("[^0-9.]", "");
+                if (cleanValue.isEmpty()) {
+                    return null;
+                }
+                return new BigDecimal(cleanValue);
+            } catch (Exception e) {
+                return null;
+            }
         }
     }
 
