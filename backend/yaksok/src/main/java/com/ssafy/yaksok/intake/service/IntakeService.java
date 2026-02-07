@@ -60,7 +60,7 @@ public class IntakeService {
             productId = up.getProduct().getId();
             productName = up.getProduct().getPrdlstNm();
         }
-        Notification no = notificationRepository.findByUserIdAndNickname(up.getUser().getId(), up.getNickname());
+        Notification no = notificationRepository.findByUserIdAndUserProductId(up.getUser().getId(), up.getId());
         if (no != null) {
             isTaken = no.isTaken();
         }
@@ -102,9 +102,9 @@ public class IntakeService {
         // 4. 연결된 Notification의 intaken도 true로 업데이트
         Notification notification = notificationRepository.findByUserIdAndUserProductId(userId, userProductId);
         if (notification != null) {
-            if(notification.getIntaken()){
+            if (notification.getIntaken()) {
                 notification.nottaken();
-            }else{
+            } else {
                 notification.taken();
             }
             log.info("알림 복용 상태 업데이트: notificationId={}, intaken={}", notification.getId(), notification.getIntaken());
