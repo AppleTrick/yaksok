@@ -1,0 +1,77 @@
+.permission-guide-content {
+    padding: 1.5rem;
+}
+
+.permission-guide-desc {
+    font-size: 1rem;
+    color: #1A1A1A;
+    margin-bottom: 1.5rem;
+    line-height: 1.5;
+}
+
+.permission-error {
+    background-color: #FEE2E2;
+    border-left: 4px solid var(--error-color);
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+}
+
+.permission-error p {
+    color: var(--error-color);
+    font-size: 0.9rem;
+    margin: 0;
+}
+
+.browser-instructions {
+    background: #F5F5F5;
+    border-radius: 12px;
+    padding: 1.25rem;
+}
+
+.browser-instructions h4 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #FF5722;
+    margin-bottom: 1rem;
+}
+
+.browser-instructions ol {
+    margin: 0;
+    padding-left: 1.5rem;
+}
+
+.browser-instructions li {
+    font-size: 0.9375rem;
+    color: #1A1A1A;
+    line-height: 1.6;
+    margin-bottom: 0.5rem;
+}
+
+.browser-instructions li:last-child {
+    margin-bottom: 0;
+}
+
+.permission-guide-footer {
+    display: flex;
+    gap: 1rem;
+    padding: 1.25rem 1.5rem;
+    border-top: none;
+    /* Removed partition line for cleaner look */
+    justify-content: space-between;
+    align-items: center;
+}
+
+.btn-text-only {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 0.5rem 1rem;
+}
+
+.btn-flex-grow {
+    flex: 1;
+}

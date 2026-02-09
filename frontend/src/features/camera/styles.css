@@ -1,0 +1,579 @@
+/* Pro-layout & Common Component Styles */
+
+:root {
+    --cam-orange: #FF6B3D;
+    /* Updated to Vibrant Coral */
+    --cam-green: #4CAF50;
+    --cam-black: #1A1A1A;
+    --cam-surface: #FFFFFF;
+    --cam-bg-soft: #F8F9FA;
+    --cam-mint: #EDF7ED;
+    --cam-gray: #9CA3AF;
+    --cam-light-gray: #F3F4F6;
+    --cam-glass: rgba(255, 255, 255, 0.7);
+    --cam-border: rgba(0, 0, 0, 0.05);
+    --header-h: 70px;
+    --footer-h: 110px;
+}
+
+:root[data-theme='dark'] {
+    --cam-orange: #FF6B3D;
+    /* Updated to Vibrant Coral */
+    --cam-green: #66BB6A;
+    --cam-black: #FFFFFF;
+    /* Text flip */
+    --cam-surface: #1E1E1E;
+    --cam-bg-soft: #121212;
+    --cam-mint: rgba(76, 175, 80, 0.15);
+    --cam-gray: #9CA3AF;
+    --cam-light-gray: #333333;
+    --cam-glass: rgba(30, 30, 30, 0.8);
+    --cam-border: rgba(255, 255, 255, 0.1);
+}
+
+/* Base Body Style */
+body {
+    background: #f0f2f5;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    height: 100vh;
+    width: 100vw;
+}
+
+/* Main Container Shell */
+.camera-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    transform: none;
+    /* Remove centering transform since we are full width/height */
+    width: 100%;
+    height: 100dvh;
+    /* Dynamic viewport height for mobile browsers */
+    /* max-width removed for full-screen web experience */
+    background: #000;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    font-family: 'Pretendard', -apple-system, sans-serif;
+    /* box-shadow removed */
+}
+
+@media (max-width: 600px) {
+    .camera-container {
+        /* max-width already removed */
+        border-radius: 0;
+    }
+}
+
+.theme-dark {
+    background: #000;
+    color: #fff;
+}
+
+.theme-light {
+    background: #fff;
+    color: #1a1a1a;
+}
+
+/* Flexible Camera Viewfinder Container */
+.camera-ratio-box {
+    position: relative;
+    width: 100%;
+    /* aspect-ratio: 3 / 4; Removed to fill screen */
+    flex: 1;
+    /* Fill remaining vertical space */
+    min-height: 0;
+    /* Allow shrinking if needed */
+    background: #111;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* box-shadow removed */
+}
+
+.camera-content-center {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 10px 0;
+    overflow: hidden;
+    /* Prevent child overflow */
+}
+
+/* Header Styles (Matching CameraHeader.tsx) */
+/* Header Styles (Matching CameraHeader.tsx) */
+.cam-header-pwa {
+    height: var(--header-h);
+    padding: 0 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: relative;
+    z-index: 100;
+    /* Add gradient for visibility against camera/dark bg */
+    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.6), transparent);
+}
+
+.cam-header-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    width: auto;
+    max-width: 60%;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    z-index: 10;
+    color: #fff;
+    /* Always white in camera flow for consistency */
+}
+
+/* Specific icon styling */
+.header-icon {
+    color: #fff;
+    stroke-width: 2.5px;
+}
+
+.cam-btn-icon-circle {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.15);
+    /* Lighter glass for buttons */
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    backdrop-filter: blur(12px);
+    transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.cam-btn-icon-circle:active {
+    transform: scale(0.92);
+    background: rgba(255, 255, 255, 0.25);
+}
+
+.cam-step-badge {
+    background: var(--cam-orange);
+    color: #fff;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 800;
+    box-shadow: 0 4px 12px rgba(255, 107, 61, 0.3);
+}
+
+/* Viewfinder Overlay */
+.guide-box {
+    position: absolute;
+    top: 35%;
+    /* Shift up for desktop as requested */
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80%;
+    height: auto;
+    aspect-ratio: 3/4;
+    /* Standard ratio for desktop */
+    max-height: calc(100dvh - 240px);
+    border: 1.5px dashed rgba(255, 255, 255, 0.6);
+    border-radius: 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+@media (max-width: 600px) {
+    .guide-box {
+        top: 45%;
+        /* Shift down for mobile focus */
+        aspect-ratio: 2/3;
+        /* Taller vertical ratio for mobile */
+    }
+}
+
+@media (min-width: 601px) and (max-width: 1024px) {
+    .guide-box {
+        top: 45%;
+        /* Shift down for tablet focus */
+    }
+}
+
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(255, 107, 61, 0.4);
+    }
+
+    70% {
+        box-shadow: 0 0 0 10px rgba(255, 107, 61, 0);
+    }
+
+    100% {
+        box-shadow: 0 0 0 0 rgba(255, 107, 61, 0);
+    }
+}
+
+.shutter-ball {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: #fff;
+    transition: transform 0.1s;
+    /* Breathing Effect */
+    animation: pulse 2s infinite;
+}
+
+/* Shutter & Lower Controls */
+.pwa-controls {
+    height: var(--footer-h);
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    padding-bottom: env(safe-area-inset-bottom);
+    position: absolute !important;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    z-index: 500;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
+}
+
+.guide-text {
+    margin-top: 0;
+    background: rgba(0, 0, 0, 0.6);
+    padding: 10px 20px;
+    border-radius: 24px;
+    color: #fff;
+    font-size: 0.95rem;
+    text-align: center;
+    backdrop-filter: blur(5px);
+    position: absolute;
+    bottom: 140px;
+    /* Above the 110px footer */
+    left: 50%;
+    transform: translateX(-50%);
+    width: max-content;
+    z-index: 400;
+    /* Above video, below controls */
+    line-height: 1.4;
+}
+
+.guide-text span {
+    color: var(--cam-orange);
+    font-weight: 700;
+}
+
+.shutter-ring:active .shutter-ball {
+    transform: scale(0.85);
+    background: #eee;
+}
+
+.glass-ctrl-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    background: none;
+    border: none;
+    color: #fff;
+    cursor: pointer;
+    opacity: 0.9;
+    width: 60px;
+    /* Fixed width for alignment */
+}
+
+.glass-ctrl-btn span {
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+/* Action Buttons (Row) */
+.cam-btn-row {
+    position: absolute !important;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    z-index: 500;
+    display: flex;
+    gap: 12px;
+    padding: 20px;
+    padding-bottom: calc(30px + env(safe-area-inset-bottom));
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.9), transparent);
+}
+
+.cam-btn-base {
+    flex: 1;
+    height: 54px;
+    border-radius: 16px;
+    font-size: 1rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    border: none;
+    transition: all 0.2s;
+}
+
+.cam-btn-primary {
+    background: var(--cam-orange);
+    color: #fff;
+    box-shadow: 0 4px 20px rgba(255, 87, 34, 0.3);
+}
+
+.cam-btn-secondary {
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid var(--cam-border);
+    color: #fff;
+}
+
+.cam-btn-outline {
+    background: #fff;
+    border: 1px solid #eee;
+    color: #1a1a1a;
+}
+
+/* Result Page Enhancements */
+.theme-light-report {
+    background: var(--cam-bg-soft);
+}
+
+.result-scroll {
+    flex: 1;
+    overflow-y: auto;
+    padding-bottom: 120px;
+    background: #000;
+    /* Match container bg */
+}
+
+.result-list-section {
+    padding: 30px 20px;
+    background: #1E1E1E;
+    /* Hardcoded Dark Surface to match Premium Dark */
+    border-top-left-radius: 32px;
+    border-top-right-radius: 32px;
+    margin-top: -30px;
+    position: relative;
+    z-index: 50;
+    box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.5);
+    /* Enhanced shadow for depth */
+    min-height: 400px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    /* Subtle highlight */
+}
+
+.report-card {
+    display: flex;
+    gap: 16px;
+    padding: 20px;
+    margin-bottom: 16px;
+    background: var(--cam-surface);
+    border: 1px solid var(--cam-border);
+    border-radius: 24px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.report-card:active {
+    transform: scale(0.98);
+}
+
+.card-idx-circle {
+    width: 36px;
+    height: 36px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 0.95rem;
+    flex-shrink: 0;
+    background: var(--cam-mint);
+    color: var(--cam-green);
+}
+
+.section-title-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 24px;
+    padding: 0 4px;
+}
+
+.count-badge {
+    font-size: 0.9rem;
+    color: var(--cam-gray);
+    font-weight: 600;
+}
+
+.card-header-line {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 8px;
+}
+
+.matching-pill {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 10px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    background: var(--cam-mint);
+    color: var(--cam-green);
+    width: fit-content;
+}
+
+.warning-pill {
+    background: #FFF9E1;
+    color: #F59E0B;
+}
+
+.btn-edit-small {
+    padding: 4px 10px;
+    border-radius: 8px;
+    background: var(--cam-light-gray);
+    border: none;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #666;
+    cursor: pointer;
+}
+
+.scan-indicator {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: var(--cam-glass);
+    color: var(--cam-black);
+    padding: 8px 14px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    z-index: 20;
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.obj-tag-v2 {
+    position: absolute;
+    width: 32px;
+    height: 32px;
+    background: var(--cam-orange);
+    color: #fff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    border: 2.5px solid #fff;
+    transform: translate(-50%, -50%);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+.cam-loading-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+    backdrop-filter: blur(4px);
+}
+
+.cam-loading-text {
+    margin-top: 24px;
+    color: #fff;
+    font-weight: 600;
+    font-size: 1rem;
+    animation: pulse-text 2s ease-in-out infinite;
+}
+
+/* 스피너 회전 애니메이션 */
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.loading-spinner {
+    animation: spin 1.2s linear infinite;
+}
+
+/* 중앙 아이콘 펄스 애니메이션 */
+@keyframes pulse-icon {
+
+    0%,
+    100% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+    }
+
+    50% {
+        transform: translate(-50%, -50%) scale(1.3);
+        opacity: 0.7;
+    }
+}
+
+.loading-center-icon {
+    animation: pulse-icon 1.5s ease-in-out infinite;
+}
+
+/* 텍스트 페이드 애니메이션 */
+@keyframes pulse-text {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.5;
+    }
+}
+
+/* 링 펄스 이펙트 */
+@keyframes ring-pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(255, 87, 34, 0.6);
+    }
+
+    70% {
+        box-shadow: 0 0 0 25px rgba(255, 87, 34, 0);
+    }
+
+    100% {
+        box-shadow: 0 0 0 0 rgba(255, 87, 34, 0);
+    }
+}
+
+.loading-ring-effect {
+    animation: ring-pulse 1.5s ease-out infinite;
+}

@@ -1,0 +1,257 @@
+.modal-content.full-sheet {
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.modal-header h2 {
+    font-size: 1.25rem;
+    font-weight: 700;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+}
+
+.modal-body {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    padding-bottom: 2rem;
+}
+
+.section-label {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    margin-bottom: 0.75rem;
+}
+
+.time-picker-container {
+    background-color: var(--sub-background);
+    border-radius: 1rem;
+    padding: 1rem;
+}
+
+.meal-category-selector {
+    display: flex;
+    gap: 0.5rem;
+    background-color: var(--sub-background);
+    padding: 0.3rem;
+    border-radius: 1rem;
+}
+
+.category-btn {
+    flex: 1;
+    padding: 0.6rem 0.5rem;
+    border: none;
+    border-radius: 0.8rem;
+    background-color: transparent;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.category-btn.active {
+    background-color: var(--white);
+    color: var(--primary-color);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* List Styles */
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+
+.add-btn-small {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.85rem;
+    color: var(--primary-color);
+    background: #E6F4F1;
+    padding: 0.4rem 0.8rem;
+    border-radius: 1rem;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.edit-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.edit-list-item-container {
+    border: 1px solid var(--border-color);
+    border-radius: 0.75rem;
+    overflow: hidden;
+    background-color: var(--white);
+    transition: all 0.2s ease;
+}
+
+.edit-list-item-container.expanded {
+    border-color: var(--primary-color);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.edit-list-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    cursor: pointer;
+    background: transparent;
+}
+
+.item-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+}
+
+.item-name {
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.item-cycle {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+.item-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.item-edit-panel {
+    padding: 0 1rem 1rem 1rem;
+    border-top: 1px dashed var(--border-color);
+    background-color: #fcfcfc;
+}
+
+.delete-btn {
+    color: var(--error-color);
+    background: none;
+    border: none;
+    opacity: 0.6;
+    padding: 0.25rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+}
+
+.delete-btn:hover {
+    opacity: 1;
+}
+
+.add-item-container {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 1rem;
+    border: 1px solid var(--border-color);
+    animation: fadeIn 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+}
+
+.add-item-row {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.add-input {
+    flex: 1;
+    padding: 0.75rem;
+    border: 1px solid var(--border-color);
+    border-radius: 0.75rem;
+    font-size: 1rem;
+    outline: none;
+}
+
+.add-input:focus {
+    border-color: var(--primary-color);
+}
+
+.add-actions {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: flex-end;
+}
+
+.cancel-add-btn {
+    padding: 0.6rem 1rem;
+    border: 1px solid var(--border-color);
+    background: white;
+    color: var(--text-muted);
+    border-radius: 0.6rem;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.confirm-add-btn {
+    padding: 0.6rem 1rem;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 0.6rem;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.empty-msg {
+    text-align: center;
+    color: var(--text-muted);
+    padding: 1rem;
+    font-size: 0.9rem;
+}
+
+.modal-footer {
+    margin-top: auto;
+    padding-top: 1rem;
+}
+
+.save-btn-full {
+    width: 100%;
+    padding: 1rem;
+    background-color: var(--primary-color);
+    color: white;
+    font-size: 1.1rem;
+    font-weight: 700;
+    border: none;
+    border-radius: 1rem;
+    cursor: pointer;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-5px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
