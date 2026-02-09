@@ -13,11 +13,12 @@ interface ManualRegistrationFormProps {
     initialData?: MedicationItem;
 }
 
-const CATEGORY_MAP: Record<string, 'EMPTY' | 'AFTERMEAL' | 'BEFORESLEEP'> = {
-    'empty_stomach': 'EMPTY',
+const CATEGORY_MAP: Record<string, 'BEFOREMEAL' | 'AFTERMEAL' | 'BEFORESLEEP'> = {
+    'empty_stomach': 'BEFOREMEAL',
     'post_meal': 'AFTERMEAL',
     'pre_sleep': 'BEFORESLEEP'
 };
+
 
 const MEAL_LABELS: Record<MealCategory, { label: string; icon: React.ReactNode }> = {
     'empty_stomach': { label: '식전', icon: <Pill size={18} /> },
@@ -57,8 +58,9 @@ export default function ManualRegistrationForm({ onClose, initialData }: ManualR
 
                 if (addedProduct) {
                     let notiCategory: NotificationCategory = 'AFTERMEAL';
-                    if (mealCategory === 'empty_stomach') notiCategory = 'EMPTY';
+                    if (mealCategory === 'empty_stomach') notiCategory = 'BEFOREMEAL';
                     else if (mealCategory === 'pre_sleep') notiCategory = 'BEFORESLEEP';
+
 
                     await createNotification({
                         userProductId: addedProduct.userProductId,

@@ -42,7 +42,10 @@ interface Product {
     name: string;
     box: number[];
     ingredients: ProductIngredient[];
+    intakeTime?: string;
+    intakeCategory?: string;
 }
+
 
 export default function ReportPage() {
     const router = useRouter();
@@ -126,9 +129,12 @@ export default function ReportPage() {
                         nickname: product.name,
                         dailyDose: 1,
                         doseAmount: 1,
-                        doseUnit: '정'
+                        doseUnit: '정',
+                        intakeTime: product.intakeTime ? product.intakeTime.substring(0, 5) : null,
+                        intakeCategory: product.intakeCategory
                     }),
                 });
+
 
                 if (!response.ok) {
                     const errorText = await response.text();
