@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect, useCallback } from 'react';
 import { MedicationItem, MealCategory } from '../types';
 import { getTodayIntakes, checkIntake, TodayIntake } from '../api/intakeApi';
+import { getNotifications } from '../api/notificationApi';
 
 // 1. Define Types
 export interface Schedule {
@@ -56,6 +57,16 @@ export const isItemDue = (item: MedicationItem, date: Date): boolean => {
     return false;
 };
 
+// Helper: 백엔드 category → 프론트 mealCategory 변환
+function getCategoryFromNotification(category: string): MealCategory {
+    switch (category) {
+        case 'EMPTY': return 'empty_stomach';
+        case 'AFTERMEAL': return 'post_meal';
+        case 'BEFORESLEEP': return 'pre_sleep';
+        default: return 'post_meal';
+    }
+}
+
 // 3. Create Context
 const ScheduleContext = createContext<ScheduleContextType | undefined>(undefined);
 
@@ -79,55 +90,119 @@ export const ScheduleProvider = ({ children }: { children: ReactNode }) => {
         localStorage.setItem('activeTab', activeTab);
     }, [activeTab]);
 
-    // Data Fetching Logic
+    // Data Fetching Logic - 수정된 부분
     const refreshSchedules = useCallback(async () => {
         setIsLoading(true);
         try {
-            // 1. Fetch Today's Intakes from Backend
-            const todayIntakes = await getTodayIntakes();
+            // 1. 백엔드에서 알림 데이터 가져오기 (각 제품별 시간 포함)
+            const notificationsResponse = await getNotifications();
+            const notifications = notificationsResponse.data.notifications;
 
-            if (!todayIntakes || todayIntakes.length === 0) {
+            if (!notifications || notifications.length === 0) {
                 setSchedules([]);
                 return;
             }
 
-            // 2. Map backend data to UI structure
-            // Since backend currently returns a flat list without time, 
-            // we create a single "Today's Intake" group.
+            // 2. 시간별로 그룹화
+            const scheduleMap = new Map<string, Schedule>();
 
-            const convertedItems: MedicationItem[] = todayIntakes.map(ti => ({
-                id: String(ti.userProductId),
-                name: ti.productName || ti.nickname || '제품명 없음', // For list display
-                productName: ti.productName || undefined,
-                nickname: ti.nickname || undefined,
-                detail: (ti.doseAmount && ti.doseUnit)
-                    ? `${ti.doseAmount}${ti.doseUnit}`
-                    : (ti.doseAmount ? `${ti.doseAmount}정` : undefined), // Fallback logic if unit is missing
-                ingredients: ti.ingredients || undefined,
-                cautions: ti.cautions || undefined,
-                isTaken: ti.taken,
-                cycle: { type: 'daily' },
-                efficacy: '',
-                category: '영양제',
-                status: 'taking'
-            }));
+            for (const notif of notifications) {
+                const rawTime = notif.intakeTime; // "14:00"
+                if (!rawTime) continue; // 시간 정보가 없으면 스킵
 
-            const todaySchedule: Schedule = {
-                id: 'today-schedule',
-                time: '오늘의 복용',
-                rawTime: '09:00', // Default
-                mealCategory: 'post_meal',
-                label: '오늘 섭취할 영양제',
-                status: 'upcoming',
-                items: convertedItems,
-                isActive: true
-            };
+                const [h, m] = rawTime.split(':').map(Number);
+                const ampm = h < 12 ? '오전' : '오후';
+                const displayHour = h === 0 ? 12 : (h > 12 ? h - 12 : h);
+                const displayTime = `${ampm} ${displayHour}:${m.toString().padStart(2, '0')}`;
 
-            setSchedules([todaySchedule]);
+                // 해당 시간의 스케줄이 없으면 생성
+                if (!scheduleMap.has(rawTime)) {
+                    scheduleMap.set(rawTime, {
+                        id: `schedule-${rawTime}`,
+                        time: displayTime,
+                        rawTime: rawTime,
+                        mealCategory: getCategoryFromNotification(notif.category),
+                        label: `${displayTime} 복용`,
+                        status: 'upcoming',
+                        items: [],
+                        isActive: notif.enabled
+                    });
+                }
+
+                // 해당 시간 스케줄에 아이템 추가
+                const schedule = scheduleMap.get(rawTime)!;
+
+                // MedicationItem 생성
+                // Note: API 응답에 nickname이 포함되어 있지만 타입에는 정의되어 있지 않음
+                const notifWithNickname = notif as any;
+                const item: MedicationItem = {
+                    id: String(notif.userProductId),
+                    name: notifWithNickname.nickname || `제품 #${notif.userProductId}`,
+                    nickname: notifWithNickname.nickname,
+                    productName: notifWithNickname.nickname,
+                    isTaken: notif.isTaken || false,
+                    cycle: { type: 'daily' },
+                    status: 'taking',
+                    efficacy: '',
+                    category: '영양제',
+                    detail: undefined,
+                    ingredients: undefined,
+                    cautions: undefined
+                };
+
+                schedule.items.push(item);
+            }
+
+            // 3. Map을 배열로 변환하고 시간순 정렬
+            const sortedSchedules = Array.from(scheduleMap.values())
+                .sort((a, b) => a.rawTime.localeCompare(b.rawTime));
+
+            setSchedules(sortedSchedules);
 
         } catch (error) {
             console.error("Failed to fetch schedules:", error);
-            // setSchedules([]); // Keep previous state on error or clear?
+
+            // 실패 시 기존 getTodayIntakes 폴백
+            try {
+                const todayIntakes = await getTodayIntakes();
+
+                if (!todayIntakes || todayIntakes.length === 0) {
+                    setSchedules([]);
+                    return;
+                }
+
+                const convertedItems: MedicationItem[] = todayIntakes.map(ti => ({
+                    id: String(ti.userProductId),
+                    name: ti.productName || ti.nickname || '제품명 없음',
+                    productName: ti.productName || undefined,
+                    nickname: ti.nickname || undefined,
+                    detail: (ti.doseAmount && ti.doseUnit)
+                        ? `${ti.doseAmount}${ti.doseUnit}`
+                        : (ti.doseAmount ? `${ti.doseAmount}정` : undefined),
+                    ingredients: ti.ingredients || undefined,
+                    cautions: ti.cautions || undefined,
+                    isTaken: ti.taken,
+                    cycle: { type: 'daily' },
+                    efficacy: '',
+                    category: '영양제',
+                    status: 'taking'
+                }));
+
+                const todaySchedule: Schedule = {
+                    id: 'today-schedule',
+                    time: '오늘의 복용',
+                    rawTime: '09:00',
+                    mealCategory: 'post_meal',
+                    label: '오늘 섭취할 영양제',
+                    status: 'upcoming',
+                    items: convertedItems,
+                    isActive: true
+                };
+
+                setSchedules([todaySchedule]);
+            } catch (fallbackError) {
+                console.error("Fallback also failed:", fallbackError);
+            }
         } finally {
             setIsLoading(false);
         }
