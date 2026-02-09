@@ -93,7 +93,7 @@ public class UserProductService {
      * 영양제 등록 (본인 것만 등록 - 가족 기능 제외)
      */
     @Transactional
-    public void registerUserProduct(Long userId, RegisterUserProductRequest request) {
+    public UserProduct registerUserProduct(Long userId, RegisterUserProductRequest request) {
         log.info("영양제 등록 시작: userId={}, productId={}", userId, request.getProductId());
 
         // 1. 사용자 검증
@@ -115,9 +115,10 @@ public class UserProductService {
                 request.getDoseUnit());
 
         // 4. 저장
-        userProductRepository.save(userProduct);
+        UserProduct saved = userProductRepository.save(userProduct);
 
-        log.info("영양제 등록 완료: userProductId={}", userProduct.getId());
+        log.info("영양제 등록 완료: userProductId={}", saved.getId());
+        return saved;
     }
 
     /**
