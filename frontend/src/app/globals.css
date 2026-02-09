@@ -1,0 +1,153 @@
+:root {
+  /* --- 🎨 Light Mode (Default) --- */
+  /* Background (Light Grey for contrast with white cards) */
+  --bg-base: #F5F6F8;
+
+  /* Card/Surface (White) */
+  --bg-card: #FFFFFF;
+
+  /* Brand/Point (Vivid Orange - Shared) */
+  --color-brand: #FF5722;
+
+  /* Text (Dark Grey/Black) */
+  --text-main: #1A1A1A;
+
+  /* Functional Colors */
+  --color-error: #EF4444;
+  --color-success: #4CAF50;
+
+  /* Mappings for Legacy Compatibility */
+  --primary-color: #FF5722;
+  --background-color: var(--bg-base);
+  --surface-1: var(--bg-card);
+  --surface-2: #FFFFFF;
+  --foreground-color: var(--text-main);
+
+  /* Legacy Colors */
+  --text-muted: #6B7280;
+  --sub-background: #EDF7ED;
+  --section-divider: #F6F0DC;
+  --highlight-color: #FFDAAB;
+  --light-grey: #F5F5F5;
+  --white: #FFFFFF;
+
+  /* Borders & Shadows */
+  --border-color: rgba(0, 0, 0, 0.08);
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.1);
+  --shadow-premium: 0 4px 12px rgba(0, 0, 0, 0.08);
+
+  /* Shared Properties */
+  --font-main: "Pretendard", -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+  --radius-xl: 16px;
+  --radius-2xl: 24px;
+}
+
+:root[data-theme='dark'] {
+  /* --- 🎨 Premium Dark Mode (The New Tone & Manner) --- */
+  /* Background (Deep Navy Black) */
+  --bg-base: #17171C;
+
+  /* Card/Surface (Soft Charcoal) */
+  --bg-card: #2B2C37;
+
+  /* Text (Off-White) */
+  --text-main: #F2F4F6;
+
+  /* Mappings */
+  --primary-color: #FF5722;
+  --background-color: var(--bg-base);
+  --surface-1: var(--bg-card);
+  --surface-2: var(--bg-card);
+  --foreground-color: var(--text-main);
+
+  /* Legacy & Utils */
+  --text-muted: rgba(242, 244, 246, 0.6);
+  --sub-background: #25262E;
+  --section-divider: #2C2C2E;
+  --light-grey: #3A3B45;
+  --white: #FFFFFF;
+
+  /* Borders & Shadows */
+  --border-color: rgba(255, 255, 255, 0.08);
+  --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.2);
+  --shadow-premium: 0 10px 30px rgba(0, 0, 0, 0.4);
+}
+
+/* --- Global Utilities for Interaction --- */
+/* Tangibility: Click Feedback */
+.btn:active,
+button:active,
+.interactive-card:active {
+  transform: scale(0.96);
+  transition: transform 0.1s ease-in-out;
+}
+
+/* Page Transition */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+main {
+  animation: fadeIn 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+html,
+body {
+  max-width: 100vw;
+  overflow-x: hidden;
+  background-color: var(--background-color);
+  color: var(--foreground-color);
+  font-family: var(--font-main);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* --- Responsive App Simulator Layout --- */
+
+/* --- Responsive Full-Width Layout --- */
+
+/* Base Wrapper */
+.app-wrapper {
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  background-color: var(--background-color);
+}
+
+/* App Content */
+.app-content {
+  width: 100%;
+  min-height: 100vh;
+  background-color: var(--background-color);
+  position: relative;
+  z-index: 1;
+  /* Establish base stacking context below floating elements */
+}
+
+/* Desktop/Tablet Adjustments if needed (e.g. max content width for readability) */
+@media (min-width: 1024px) {
+  /* Optional: You can constrain the inner content max-width here if you want 
+     the content to not be too stretched, but the user asked for "Full Screen".
+     We will handle layout inside the pages (Grid). 
+     For now, let's keep the wrapper full. */
+}
