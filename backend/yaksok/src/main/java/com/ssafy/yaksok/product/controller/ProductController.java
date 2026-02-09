@@ -40,12 +40,12 @@ public class ProductController {
     /**
      * 영양제 상세 조회
      * GET /api/v1/products/{productId}
-                */
-        @GetMapping("/{productId}")
-        public ResponseEntity<ApiResponse<ProductDetailResponse>> getProductDetail(
-                @PathVariable Long productId) {
-            log.info("영양제 상세 조회: productId={}", productId);
-            ProductDetailResponse response = productService.getProductDetail(productId);
+     */
+    @GetMapping("/{productId}")
+    public ResponseEntity<ApiResponse<ProductDetailResponse>> getProductDetail(
+            @PathVariable Long productId) {
+        log.info("영양제 상세 조회: productId={}", productId);
+        ProductDetailResponse response = productService.getProductDetail(productId);
         return ResponseUtil.ok(response);
     }
 
@@ -58,8 +58,7 @@ public class ProductController {
     public ResponseEntity<ApiResponse<List<UserProductResponse>>> getUserProducts(
             @AuthenticationPrincipal UserPrincipal principal) {
         log.info("사용자 영양제 목록 조회: userId={}", principal.getUserId());
-        List<UserProductResponse> userProducts =
-                userProductService.getUserProducts(principal.getUserId());
+        List<UserProductResponse> userProducts = userProductService.getUserProducts(principal.getUserId());
         return ResponseUtil.ok(userProducts);
     }
 
@@ -75,7 +74,7 @@ public class ProductController {
         log.info("영양제 등록 요청: userId={}, productId={}",
                 principal.getUserId(), request.getProductId());
 
-        userProductService.registerUserProduct(principal.getUserId(), request);
+        userProductNotificationService.registerUserProductWithNotification(principal.getUserId(), request);
 
         return ResponseUtil.ok();
     }
