@@ -47,9 +47,10 @@ export const getUserProducts = async () => {
 
 export interface UserProductCreateRequest {
     nickname: string;
-    category: 'EMPTY' | 'AFTERMEAL' | 'BEFORESLEEP';
+    category: 'BEFOREMEAL' | 'AFTERMEAL' | 'BEFORESLEEP';
     time: string;
 }
+
 
 /**
  * 사용자 복용 약 추가 (수동 등록)

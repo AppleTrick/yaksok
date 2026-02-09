@@ -4,7 +4,8 @@ const API_BASE = '/api/v1/notification';
 
 // --- Types (DTOs based on API Spec) ---
 
-export type NotificationCategory = 'EMPTY' | 'AFTERMEAL' | 'BEFORESLEEP';
+export type NotificationCategory = 'BEFOREMEAL' | 'AFTERMEAL' | 'BEFORESLEEP';
+
 
 // 1. 알림 생성 / 수정 Request
 export interface NotificationRequest {

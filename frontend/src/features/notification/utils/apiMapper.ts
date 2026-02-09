@@ -7,9 +7,9 @@ import { MealCategory } from '../types';
  */
 export const mealCategoryToApiCategory = (
     category: MealCategory
-): 'EMPTY' | 'AFTERMEAL' | 'BEFORESLEEP' => {
-    const mapping: Record<MealCategory, 'EMPTY' | 'AFTERMEAL' | 'BEFORESLEEP'> = {
-        'empty_stomach': 'EMPTY',
+): 'BEFOREMEAL' | 'AFTERMEAL' | 'BEFORESLEEP' => {
+    const mapping: Record<MealCategory, 'BEFOREMEAL' | 'AFTERMEAL' | 'BEFORESLEEP'> = {
+        'empty_stomach': 'BEFOREMEAL',
         'post_meal': 'AFTERMEAL',
         'pre_sleep': 'BEFORESLEEP'
     };
@@ -22,12 +22,13 @@ export const mealCategoryToApiCategory = (
  * @returns 프론트엔드 카테고리
  */
 export const apiCategoryToMealCategory = (
-    category: 'EMPTY' | 'AFTERMEAL' | 'BEFORESLEEP'
+    category: 'BEFOREMEAL' | 'AFTERMEAL' | 'BEFORESLEEP'
 ): MealCategory => {
     const mapping: Record<string, MealCategory> = {
-        'EMPTY': 'empty_stomach',
+        'BEFOREMEAL': 'empty_stomach',
         'AFTERMEAL': 'post_meal',
         'BEFORESLEEP': 'pre_sleep'
     };
     return mapping[category];
 };
+
