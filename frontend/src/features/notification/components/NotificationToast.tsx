@@ -2,7 +2,6 @@
 
 import React, { useEffect } from 'react';
 import Image from 'next/image';
-import { useTheme } from '@/contexts/ThemeContext';
 
 interface NotificationToastProps {
     data: {
@@ -17,9 +16,6 @@ interface NotificationToastProps {
 }
 
 export default function NotificationToast({ data, onConfirm, onSnooze, onClose }: NotificationToastProps) {
-    const { theme } = useTheme();
-    const isDark = theme === 'dark';
-
     // 15초 후 자동 닫기
     useEffect(() => {
         const timer = setTimeout(onClose, 15000);
@@ -92,11 +88,11 @@ export default function NotificationToast({ data, onConfirm, onSnooze, onClose }
                 }
 
                 .notification-toast {
-                    background: ${isDark ? '#1f1f1f' : '#ffffff'};
+                    background: #ffffff;
                     border-radius: 20px;
-                    box-shadow: 0 15px 40px ${isDark ? 'rgba(0, 0, 0, 0.5)' : 'rgba(0, 0, 0, 0.2)'};
+                    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
                     padding: 18px;
-                    border: 1px solid ${isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.08)'};
+                    border: 1px solid rgba(0, 0, 0, 0.08);
                 }
 
                 @keyframes toastBounceInTop {
@@ -125,18 +121,18 @@ export default function NotificationToast({ data, onConfirm, onSnooze, onClose }
                 .toast-app-name {
                     font-size: 11px;
                     font-weight: 700;
-                    color: ${isDark ? '#999' : '#888'};
+                    color: #888;
                     letter-spacing: -0.02em;
                 }
 
                 .toast-close-btn {
-                    background: ${isDark ? '#2a2a2a' : '#f0f0f0'};
+                    background: #f0f0f0;
                     border: none;
                     width: 24px;
                     height: 24px;
                     border-radius: 50%;
                     font-size: 16px;
-                    color: ${isDark ? '#aaa' : '#666'};
+                    color: #666;
                     cursor: pointer;
                     display: flex;
                     align-items: center;
@@ -151,13 +147,13 @@ export default function NotificationToast({ data, onConfirm, onSnooze, onClose }
                     margin: 0 0 2px 0;
                     font-size: 16px;
                     font-weight: 800;
-                    color: ${isDark ? '#fff' : '#000'};
+                    color: #000;
                 }
 
                 .toast-content {
                     margin: 0;
                     font-size: 14px;
-                    color: ${isDark ? '#ccc' : '#333'};
+                    color: #333;
                     line-height: 1.4;
                 }
 
@@ -178,13 +174,13 @@ export default function NotificationToast({ data, onConfirm, onSnooze, onClose }
                 }
 
                 .toast-btn.snooze {
-                    background: ${isDark ? '#2a2a2a' : '#f5f5f5'};
-                    color: ${isDark ? '#ccc' : '#555'};
+                    background: #f5f5f5;
+                    color: #555;
                 }
 
                 .toast-btn.confirm {
-                    background: ${isDark ? '#fff' : '#000'};
-                    color: ${isDark ? '#000' : '#fff'};
+                    background: #000;
+                    color: white;
                 }
 
                 .toast-btn:active {
