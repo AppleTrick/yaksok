@@ -6,6 +6,7 @@ import Modal from '@/components/Modal';
 import NutrientProgress from './NutrientProgress';
 import TimePicker from '@/components/TimePicker';
 import { useScheduleContext } from '@/features/notification/contexts/ScheduleContext';
+import { updateNotification, NotificationEditRequest } from '@/features/notification/api/notificationApi';
 import { COLORS } from '@/constants/colors';
 import '../styles.css';
 
@@ -20,6 +21,16 @@ interface SupplementDetailModalProps {
     onSave?: () => void;
 }
 
+// 헬퍼 함수: 프론트 mealCategory → 백엔드 category 변환
+function getBackendCategory(mealCategory: MealCategory): 'EMPTY' | 'AFTERMEAL' | 'BEFORESLEEP' {
+    switch (mealCategory) {
+        case 'empty_stomach': return 'EMPTY';
+        case 'post_meal': return 'AFTERMEAL';
+        case 'pre_sleep': return 'BEFORESLEEP';
+        default: return 'AFTERMEAL';
+    }
+}
+
 const SupplementDetailModal: React.FC<SupplementDetailModalProps> = ({
     isOpen,
     onClose,
@@ -28,7 +39,7 @@ const SupplementDetailModal: React.FC<SupplementDetailModalProps> = ({
     onToggleStatus,
     onSave
 }) => {
-    const { schedules, updateSchedule, addMedication } = useScheduleContext();
+    const { schedules, updateSchedule, addMedication, refreshSchedules } = useScheduleContext();
 
     const [mealCategory, setMealCategory] = useState<MealCategory>('post_meal');
     const [time, setTime] = useState('09:00');
@@ -59,27 +70,47 @@ const SupplementDetailModal: React.FC<SupplementDetailModalProps> = ({
         }
     }, [isOpen, item, schedules]);
 
-    const handleSave = () => {
-        const newCycle: Cycle = { type: 'weekly', daysOfWeek: selectedDays };
-        const updatedItem: MedicationItem = { ...item, nickname: name, ingredients, cautions, cycle: newCycle };
+    const handleSave = async () => {
+        try {
+            const newCycle: Cycle = { type: 'weekly', daysOfWeek: selectedDays };
+            const updatedItem: MedicationItem = {
+                ...item,
+                nickname: name,
+                ingredients,
+                cautions,
+                cycle: newCycle
+            };
 
-        if (!targetScheduleId) {
-            addMedication(updatedItem, time, mealCategory);
-        } else {
-            const oldSchedule = schedules.find(s => s.id === targetScheduleId);
-            if (oldSchedule) {
-                if (oldSchedule.rawTime !== time || oldSchedule.mealCategory !== mealCategory) {
-                    const newItemsForOld = oldSchedule.items.filter(i => i.id !== item.id);
-                    updateSchedule(oldSchedule.id, oldSchedule.rawTime, oldSchedule.mealCategory, newItemsForOld);
-                    addMedication(updatedItem, time, mealCategory);
-                } else {
-                    const updatedItems = oldSchedule.items.map(i => i.id === item.id ? updatedItem : i);
-                    updateSchedule(oldSchedule.id, time, mealCategory, updatedItems);
+            // 백엔드 API 호출 추가
+            if (targetScheduleId) {
+                const oldSchedule = schedules.find(s => s.id === targetScheduleId);
+                if (oldSchedule) {
+                    // 백엔드 알림 수정 API 호출
+                    const apiData: NotificationEditRequest = {
+                        notificationId: Number(item.id),
+                        userProductId: Number(item.id),
+                        intakeTime: time, // "14:00"
+                        category: getBackendCategory(mealCategory)
+                    };
+
+                    console.log('🔄 백엔드 알림 수정 요청:', apiData);
+                    await updateNotification(apiData);
+                    console.log('✅ 백엔드 알림 수정 완료');
+
+                    // 백엔드 업데이트 성공 후 최신 데이터 다시 가져오기
+                    await refreshSchedules();
                 }
+            } else {
+                addMedication(updatedItem, time, mealCategory);
             }
+
+            setIsEditing(false);
+            onSave?.() || onClose();
+
+        } catch (error) {
+            console.error('❌ 백엔드 알림 수정 실패:', error);
+            alert('알림 수정에 실패했습니다. 다시 시도해주세요.');
         }
-        setIsEditing(false);
-        onSave?.() || onClose();
     };
 
     const parseIngredients = (text: string) => {
