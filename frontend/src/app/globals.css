@@ -40,9 +40,6 @@
   --font-main: "Pretendard", -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
   --radius-xl: 16px;
   --radius-2xl: 24px;
-
-  /* Brand Gradient */
-  --brand-gradient: linear-gradient(135deg, #FF7B51 0%, #FF5722 100%);
 }
 
 :root[data-theme='dark'] {
