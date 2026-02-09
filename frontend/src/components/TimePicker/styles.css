@@ -1,0 +1,145 @@
+/* Modern TimePicker - Premium Redesign */
+.time-picker-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    user-select: none;
+    background: var(--bg-card);
+    border-radius: 32px;
+    padding: 1rem;
+    box-shadow: var(--shadow-premium);
+    /* Match globals.css */
+}
+
+
+.time-picker-label {
+    font-size: clamp(0.85rem, 1.5vw, 1rem);
+    font-weight: 700;
+    color: var(--text-muted);
+    margin-bottom: 1.5rem;
+    letter-spacing: -0.01em;
+}
+
+.picker-columns {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 180px;
+    width: 100%;
+    max-width: 320px;
+    /* Reduced max-width to keep it compact */
+    margin: 0 auto;
+    overflow: hidden;
+    /* Smooth fading masks */
+    mask-image: linear-gradient(to bottom,
+            transparent,
+            black 35%,
+            black 65%,
+            transparent);
+    -webkit-mask-image: linear-gradient(to bottom,
+            transparent,
+            black 35%,
+            black 65%,
+            transparent);
+}
+
+.picker-highlight {
+    position: absolute;
+    top: 50%;
+    left: 4px;
+    right: 4px;
+    height: 52px;
+    transform: translateY(-50%);
+    background-color: var(--bg-base);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    z-index: 0;
+    pointer-events: none;
+}
+
+.picker-column {
+    flex: 1;
+    height: 100%;
+    overflow-y: auto;
+    scroll-snap-type: y mandatory;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    /* Prevent column from being too wide */
+    min-width: 0;
+}
+
+/* Give AM/PM column more space but smaller font */
+.picker-column:first-child {
+    flex: 1.2;
+}
+
+.picker-column::-webkit-scrollbar {
+    display: none;
+}
+
+.picker-item {
+    height: 52px;
+    min-height: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    font-size: clamp(1rem, 4vw, 1.25rem);
+    /* Scaled down for better fit */
+    color: var(--text-muted);
+    scroll-snap-align: center;
+    scroll-snap-stop: always;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.2, 1, 0.3, 1);
+    font-weight: 500;
+    opacity: 0.4;
+    white-space: nowrap;
+}
+
+.picker-item.selected {
+    color: var(--color-brand);
+    font-weight: 800;
+    font-size: clamp(1.2rem, 5vw, 1.5rem);
+    /* Scaled down */
+    opacity: 1;
+    transform: scale(1.05);
+}
+
+.picker-spacer {
+    height: 64px;
+    /* Dynamic spacer based on (ColumnsHeight - ItemHeight)/2 */
+    flex-shrink: 0;
+}
+
+.picker-separator {
+    font-size: clamp(1rem, 4vw, 1.25rem);
+    font-weight: 800;
+    color: var(--color-brand);
+    padding: 0 4px;
+    /* Reduced padding */
+    z-index: 1;
+    opacity: 0.8;
+}
+
+.time-picker-wrapper.disabled {
+    opacity: 0.5;
+    filter: grayscale(1);
+    pointer-events: none;
+}
+
+/* Dark Mode Specific Adjustments */
+[data-theme='dark'] .picker-highlight {
+    background-color: rgba(255, 255, 255, 0.03);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme='dark'] .picker-item.selected {
+    color: var(--color-brand);
+    text-shadow: 0 0 15px rgba(255, 107, 61, 0.4);
+}

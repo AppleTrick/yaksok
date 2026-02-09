@@ -1,0 +1,519 @@
+.home-container {
+    padding: 1.5rem;
+    padding-top: 1rem;
+    min-height: 100vh;
+    background-color: var(--background-color);
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* Base Layout (Mobile First) */
+.dashboard-content {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+/* Desktop Grid Layout (> Large Desktop) */
+@media (min-width: 1280px) {
+    .dashboard-content {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2rem;
+        align-items: start;
+    }
+
+    .left-column {
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+        /* Cards handle own margins, but we should remove bottom margins from cards inside grid if we use gap here. 
+                   Current cards have margin-bottom. Let's start with 0 gap or rely on card margins. */
+    }
+
+    /* Remove bottom margin from card inside left column except last one potentially, 
+       but action-card has margin-bottom: 2rem. DailyProgressCard isn't shown in CSS but component likely has styles. 
+       Let's leave it natural for now. */
+
+}
+
+.home-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 2rem;
+}
+
+.greeting-sub {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    /* Soften the sub-greeting */
+}
+
+.greeting-main {
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: var(--text-main);
+    /* Off-White instead of Orange */
+    margin: 0.25rem 0 0.5rem 0;
+}
+
+.greeting-desc {
+    font-size: 0.95rem;
+    color: var(--text-muted);
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.notification-btn {
+    color: var(--foreground-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.2s;
+}
+
+.notification-btn:active {
+    opacity: 0.7;
+}
+
+.profile-placeholder {
+    width: 40px;
+    height: 40px;
+    background-color: var(--highlight-color);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.profile-icon:hover {
+    background-color: #e2e8f0;
+}
+
+/* Action Card */
+.action-card {
+    background-color: var(--sub-background);
+    border-radius: var(--radius-xl);
+    padding: 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 2rem;
+}
+
+.action-text h2 {
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+    color: var(--foreground-color);
+}
+
+.action-text p {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.action-button {
+    background-color: var(--primary-color);
+    color: var(--white);
+    padding: 0.75rem 1rem;
+    border-radius: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-decoration: none;
+    box-shadow: 0 4px 6px rgba(255, 87, 34, 0.2);
+    transition: transform 0.1s;
+}
+
+.action-button:active {
+    transform: scale(0.95);
+}
+
+/* Timeline Section - Modern Design */
+.time-slot {
+    margin-bottom: 2rem;
+}
+
+.slot-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.slot-icon-wrapper {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.slot-icon-wrapper.morning {
+    background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+    color: white;
+    box-shadow: 0 4px 12px rgba(251, 191, 36, 0.3);
+}
+
+.slot-icon-wrapper.lunch {
+    background: linear-gradient(135deg, #fb923c 0%, #f97316 100%);
+    color: white;
+    box-shadow: 0 4px 12px rgba(249, 115, 22, 0.3);
+}
+
+.slot-icon-wrapper.dinner {
+    background: linear-gradient(135deg, #818cf8 0%, #6366f1 100%);
+    color: white;
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+}
+
+.slot-header-text {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+}
+
+.slot-title {
+    font-weight: 700;
+    font-size: 1rem;
+    color: var(--foreground-color);
+}
+
+.slot-time {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+/* Modern Med Cards */
+.med-cards-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.med-card-modern {
+    background: var(--sub-background);
+    border: 1px solid var(--border-color, rgba(0, 0, 0, 0.06));
+    border-radius: 16px;
+    padding: 1rem 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.med-card-modern::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background: var(--primary-color);
+    opacity: 0;
+    transition: opacity 0.25s ease;
+}
+
+.med-card-modern:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+    border-color: var(--primary-color);
+}
+
+.med-card-modern:hover::before {
+    opacity: 1;
+}
+
+.med-card-modern:active {
+    transform: translateY(0) scale(0.98);
+    transition: transform 0.1s ease;
+}
+
+.med-card-modern.taken {
+    background: var(--background-color);
+    border-color: rgba(16, 185, 129, 0.2);
+}
+
+.med-card-modern.taken::before {
+    background: #10b981;
+    opacity: 1;
+}
+
+.med-card-modern.taken:hover {
+    border-color: rgba(16, 185, 129, 0.4);
+}
+
+/* Checkbox Modern */
+.med-card-left {
+    flex-shrink: 0;
+}
+
+.med-checkbox-modern {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--light-grey);
+    color: var(--text-muted);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.med-checkbox-modern.checked {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+    animation: checkPop 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes checkPop {
+    0% {
+        transform: scale(0.8);
+    }
+
+    50% {
+        transform: scale(1.1);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+/* Card Content */
+.med-card-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.med-card-content h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--foreground-color);
+    margin: 0 0 0.25rem 0;
+    transition: color 0.25s ease;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.med-card-content h3.taken {
+    color: var(--text-muted);
+    text-decoration: line-through;
+    text-decoration-color: rgba(16, 185, 129, 0.5);
+}
+
+.med-card-content p {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin: 0;
+}
+
+/* Status Badge */
+.med-card-action {
+    flex-shrink: 0;
+}
+
+.status-badge {
+    padding: 0.375rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    transition: all 0.25s ease;
+}
+
+.status-badge.pending {
+    background: rgba(251, 146, 60, 0.15);
+    color: #f97316;
+}
+
+.status-badge.completed {
+    background: rgba(16, 185, 129, 0.15);
+    color: #10b981;
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+    .med-card-modern {
+        border-color: rgba(255, 255, 255, 0.1);
+    }
+
+    .med-card-modern:hover {
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+    }
+
+    .med-checkbox-modern {
+        background: rgba(255, 255, 255, 0.1);
+    }
+
+    .status-badge.pending {
+        background: rgba(251, 146, 60, 0.2);
+    }
+
+    .status-badge.completed {
+        background: rgba(16, 185, 129, 0.2);
+    }
+}
+
+/* Legacy styles kept for backwards compatibility */
+.med-card {
+    background-color: var(--light-grey);
+    padding: 1rem;
+    border-radius: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 0.75rem;
+    box-shadow: var(--shadow-sm);
+}
+
+.med-card.done {
+    opacity: 0.6;
+    background-color: var(--sub-background);
+}
+
+.med-checkbox {
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.med-checkbox input {
+    width: 20px;
+    height: 20px;
+    accent-color: var(--primary-color);
+}
+
+.med-info h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--foreground-color);
+}
+
+.med-info p {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-top: 0.25rem;
+}
+
+/* Empty State Modern */
+.empty-state-modern {
+    background: var(--sub-background);
+    border: 1px dashed var(--border-color, rgba(0, 0, 0, 0.1));
+    border-radius: 20px;
+    padding: 3rem 2rem;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    transition: all 0.25s ease;
+}
+
+.empty-state-icon {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary-color) 0%, #ff8a65 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    box-shadow: 0 8px 24px rgba(255, 87, 34, 0.25);
+    animation: floatIcon 3s ease-in-out infinite;
+}
+
+@keyframes floatIcon {
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-8px);
+    }
+}
+
+.empty-state-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--foreground-color);
+    margin: 0;
+}
+
+.empty-state-desc {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    margin: 0;
+    line-height: 1.6;
+}
+
+/* Dark Mode */
+@media (prefers-color-scheme: dark) {
+    .empty-state-modern {
+        border-color: rgba(255, 255, 255, 0.1);
+    }
+
+    .empty-state-icon {
+        box-shadow: 0 8px 24px rgba(255, 87, 34, 0.15);
+    }
+}
+
+/* Legacy Empty Slot */
+.empty-slot {
+    background-color: var(--section-divider);
+    border: 2px dashed var(--highlight-color);
+    border-radius: 1.5rem;
+    padding: 2rem;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: var(--text-muted);
+}
+
+
+/* Skeleton Loader */
+@keyframes shimmer {
+    0% {
+        background-position: -200% 0;
+    }
+
+    100% {
+        background-position: 200% 0;
+    }
+}
+
+.skeleton-loader {
+    display: inline-block;
+    height: 1.5em;
+    /* 텍스트 높이에 맞춤 */
+    width: 120px;
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: 4px;
+    vertical-align: middle;
+}

@@ -1,0 +1,40 @@
+.input-form-container {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+    margin-bottom: 1rem;
+}
+
+.input-label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--foreground-color);
+}
+
+.input-field {
+    width: 100%;
+    padding: 12px 16px;
+    border-radius: 10px;
+    border: 1px solid var(--light-grey);
+    background-color: var(--background-color);
+    font-size: 1rem;
+    transition: border-color 0.2s;
+    color: var(--foreground-color);
+}
+
+.input-field:focus {
+    outline: none;
+    border-color: var(--color-brand);
+    box-shadow: 0 0 0 4px rgba(255, 107, 61, 0.1);
+    /* Conversational Glow */
+}
+
+.input-field.input-error {
+    border-color: var(--error-color);
+}
+
+.error-message {
+    font-size: 0.8rem;
+    color: var(--error-color);
+}

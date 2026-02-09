@@ -1,0 +1,53 @@
+frontend/package-lock.json
+
+frontend/package-lock.json
+/.metadata/
+# DataPipeLine - Data & Datasets
+/DataPipeLine/01_collection/huseong/
+/DataPipeLine/01_collection/negative_samples/
+/DataPipeLine/03_datasets/Version*
+/DataPipeLine/04_training/*.zip
+/DataPipeLine/04_training/*.pt
+/DataPipeLine/01_collection/huseong/trash/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.classpath
+.project
+/Retrospective
+
+# PWA 서비스 워커 파일 제외
+public/sw.js
+public/sw.js.map
+public/workbox-*.js
+public/workbox-*.js.map
+public/swe-worker-*.js
+public/swe-worker-*.js.map
+.settings/
+
+# Environment
+backend/yaksok/.env
+.env.local
+.env.*
+
+# Build artifacts
+*.class
+bin/
+build/
+.gradle/
+
+/OCRLearning
+
+
+# Firebase service account key
+serviceAccountKey.json
+firebase.json
+
+
+# ignore File
+/Memo
+/OCRLearning
+OCRLearning.zip
+.DS_Store

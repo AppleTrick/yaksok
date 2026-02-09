@@ -1,0 +1,135 @@
+.fcm-permission-banner {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+    max-width: 480px;
+    width: calc(100% - 40px);
+    background: linear-gradient(135deg, var(--primary-color) 0%, #ff8a65 100%);
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+}
+
+.fcm-permission-content {
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    color: white;
+}
+
+.fcm-permission-icon {
+    font-size: 32px;
+    flex-shrink: 0;
+}
+
+.fcm-permission-text {
+    flex: 1;
+}
+
+.fcm-permission-text h3 {
+    margin: 0 0 4px 0;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.fcm-permission-text p {
+    margin: 0;
+    font-size: 14px;
+    opacity: 0.9;
+}
+
+.fcm-permission-error {
+    color: #ffcccc;
+    font-size: 12px;
+    margin-top: 4px;
+}
+
+.fcm-permission-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.fcm-permission-btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    white-space: nowrap;
+}
+
+.fcm-permission-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.fcm-permission-btn-primary {
+    background: white;
+    color: var(--primary-color);
+}
+
+.fcm-permission-btn-primary:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 255, 255, 0.3);
+}
+
+.fcm-permission-btn-secondary {
+    background: transparent;
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+.fcm-permission-btn-secondary:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+/* 모바일 대응 */
+@media (max-width: 600px) {
+    .fcm-permission-banner {
+        bottom: 10px;
+        width: calc(100% - 20px);
+    }
+
+    .fcm-permission-content {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .fcm-permission-actions {
+        width: 100%;
+    }
+
+    .fcm-permission-btn {
+        width: 100%;
+    }
+}
+
+/* 다크모드 지원 */
+@media (prefers-color-scheme: dark) {
+    .fcm-permission-banner {
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    }
+
+    .fcm-permission-btn-primary {
+        background: rgba(255, 255, 255, 0.95);
+    }
+}

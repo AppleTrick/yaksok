@@ -1,0 +1,62 @@
+.find-password-container {
+    padding: 1.5rem;
+    min-height: 100vh;
+    background-color: var(--background-color);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.find-password-header {
+    margin-bottom: 2.5rem;
+    text-align: center;
+}
+
+.find-password-title {
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: var(--primary-color);
+    margin-bottom: 0.5rem;
+}
+
+.find-password-subtitle {
+    font-size: 1rem;
+    color: var(--text-muted);
+}
+
+.find-password-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.find-password-actions {
+    margin-top: 1.5rem;
+    display: flex;
+    justify-content: center;
+    font-size: 0.9rem;
+}
+
+.find-password-link {
+    color: var(--text-muted);
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.success-message {
+    text-align: center;
+    padding: 2rem;
+    background-color: var(--sub-background);
+    border-radius: var(--radius-xl);
+    margin-bottom: 1rem;
+}
+
+.success-message h3 {
+    color: var(--success-color);
+    margin-bottom: 0.5rem;
+}
+
+.success-message p {
+    color: var(--foreground-color);
+    font-size: 0.9rem;
+}
