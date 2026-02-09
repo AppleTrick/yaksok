@@ -1,0 +1,120 @@
+/* Common Modal Styles */
+.cm-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 1000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 1.5rem;
+    animation: fadeInOverlay 0.3s ease-out;
+}
+
+.cm-modal-content {
+    background: var(--surface-1);
+    width: 90vw;
+    max-width: clamp(340px, 90vw, 600px);
+    border-radius: var(--radius-2xl);
+    max-height: 85vh;
+
+    @media (min-width: 768px) {
+        width: 100%;
+        max-width: 500px;
+    }
+
+    @media (min-width: 1024px) {
+        max-width: 600px;
+    }
+
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    margin: 0 auto;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    border: 1px solid var(--border-color);
+    animation: contentScaleUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes fadeInOverlay {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes contentScaleUp {
+    from {
+        opacity: 0;
+        transform: scale(0.9) translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+/* Internal Layout */
+.cm-modal-header {
+    flex-shrink: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 2rem 2rem 1rem 2rem;
+}
+
+.cm-modal-title {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: var(--foreground-color);
+    letter-spacing: -0.025em;
+}
+
+.cm-close-btn {
+    background: var(--light-grey);
+    border: none;
+    cursor: pointer;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    color: var(--text-muted);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.cm-close-btn:hover {
+    background-color: var(--border-color);
+    color: var(--foreground-color);
+    transform: rotate(90deg);
+}
+
+.cm-close-btn:active {
+    transform: rotate(90deg) scale(0.9);
+}
+
+.cm-modal-body {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    min-height: 0;
+    overscroll-behavior: contain;
+    padding: 0 2rem 2rem 2rem;
+}
+
+.cm-modal-footer {
+    flex-shrink: 0;
+    padding: 1.5rem 2rem;
+    border-top: 1px solid var(--border-color);
+    background-color: var(--surface-2);
+}
