@@ -1,0 +1,54 @@
+.bottom-tab-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    /* margin: 0 auto; Removed to ensure full viewport width attachment */
+    /* Center the fixed element */
+    height: 80px;
+    background-color: var(--surface-1);
+    /* Explicitly white to avoid transparency issues */
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    border-top: 1px solid var(--border-color);
+    box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.05);
+    border-top-left-radius: 20px;
+    border-top-right-radius: 20px;
+    z-index: 99999 !important;
+    display: flex !important;
+    padding-bottom: env(safe-area-inset-bottom);
+    width: 100%;
+}
+
+/* Full width tab bar (or constrained if you prefer, but usually full width for full screen apps) */
+.bottom-tab-bar {
+    width: 100%;
+    max-width: 100%;
+}
+
+.tab-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    gap: 4px;
+    transition: all 0.2s;
+    position: relative;
+}
+
+.tab-item:hover,
+.tab-item.active {
+    color: var(--primary-color);
+}
+
+.active-indicator {
+    width: 4px;
+    height: 4px;
+    background-color: var(--primary-color);
+    border-radius: 50%;
+    margin-top: 2px;
+}
