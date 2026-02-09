@@ -14,27 +14,18 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "약속 (Yaksok)",
-  description: "영양제 복용 알림 서비스",
+  title: "yaksok",
+  description: "Premium appointment scheduling app",
   manifest: "/manifest.json",
-  icons: {
-    icon: [
-      { url: "/icons/logo.png", sizes: "any", type: "image/png" },
-      { url: "/icons/icon-192x192.png", sizes: "192x192", type: "image/png" },
-    ],
-    apple: [
-      { url: "/icons/logo.png", sizes: "any", type: "image/png" },
-    ],
-  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "약속",
+    title: "yaksok",
   },
 };
 
 export const viewport: Viewport = {
-  themeColor: "#FF5722",
+  themeColor: "#000000",
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
@@ -60,9 +51,8 @@ export default function RootLayout({
   return (
     <html lang="ko">
       <head>
-        <link rel="icon" href="/icons/logo.png" type="image/png" sizes="any" />
         <link rel="manifest" href="/manifest.json" />
-        <link rel="apple-touch-icon" href="/icons/logo.png" />
+        <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
       </head>
       <body
