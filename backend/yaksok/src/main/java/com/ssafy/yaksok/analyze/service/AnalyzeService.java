@@ -2,6 +2,7 @@ package com.ssafy.yaksok.analyze.service;
 
 import com.ssafy.yaksok.analyze.dto.FastApiAnalysisResult;
 import com.ssafy.yaksok.analyze.dto.SupplementAnalysisResponse;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -14,6 +15,7 @@ import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import java.io.IOException;
+import java.util.Collections;
 
 @Slf4j
 @Service
@@ -26,6 +28,7 @@ public class AnalyzeService {
     @Value("${fastapi.url}")
     private String fastApiUrl;
 
+    @CircuitBreaker(name = "fastApiServer", fallbackMethod = "fallbackAnalyzeSupplement")
     public SupplementAnalysisResponse analyzeSupplement(MultipartFile file, Long userId) {
         log.info("이미지 분석 시작: User {}", userId);
         long totalStart = System.currentTimeMillis();
@@ -42,6 +45,19 @@ public class AnalyzeService {
 
         log.info("[성능측정] 전체 분석 완료: {}ms", System.currentTimeMillis() - totalStart);
         return response;
+    }
+
+    /**
+     * 서킷 브레이커 OPEN 시 fallback 처리
+     * AI 서버 장애가 감지되면 빈 분석 결과를 반환해 메인 서버 스레드 고갈 방지
+     */
+    public SupplementAnalysisResponse fallbackAnalyzeSupplement(MultipartFile file, Long userId, Exception e) {
+        log.warn("[서킷브레이커] AI 서버 장애 감지, fallback 응답 반환. userId={}, error={}", userId, e.getMessage());
+        return SupplementAnalysisResponse.builder()
+                .reportData(SupplementAnalysisResponse.ReportData.builder()
+                        .products(Collections.emptyList())
+                        .build())
+                .build();
     }
 
     private FastApiAnalysisResult callFastApi(MultipartFile file) {

@@ -20,17 +20,18 @@ import java.util.concurrent.ThreadPoolExecutor;
 public class AsyncConfig {
 
     /**
-     * LLM 처리 전용 ThreadPool
+     * LLM 처리 + 영양제 병렬 분석 전용 ThreadPool
      *
      * - corePoolSize: 기본 스레드 수 (2개)
-     * - maxPoolSize: 최대 스레드 수 (5개)
+     * - maxPoolSize: 최대 스레드 수 (8개)
+     *   → OcrAnalysisService에서 CompletableFuture 병렬 처리 시 최대 8개 영양제 동시 처리
      * - queueCapacity: 대기 큐 크기 (10개)
      * - threadNamePrefix: 스레드 이름 접두사
      *
      * 동작:
      * 1. 2개 스레드가 항상 대기
-     * 2. 요청이 많으면 최대 5개까지 증가
-     * 3. 5개 모두 사용 중이면 큐에 10개까지 대기
+     * 2. 요청이 많으면 최대 8개까지 증가
+     * 3. 8개 모두 사용 중이면 큐에 10개까지 대기
      * 4. 큐도 꽉 차면 CallerRunsPolicy로 메인 스레드에서 실행
      */
     @Bean(name = "llmTaskExecutor")
@@ -40,8 +41,8 @@ public class AsyncConfig {
         // 기본 스레드 수
         executor.setCorePoolSize(2);
 
-        // 최대 스레드 수
-        executor.setMaxPoolSize(5);
+        // 최대 스레드 수: 영양제 병렬 처리 최대 8개 동시 실행 지원
+        executor.setMaxPoolSize(8);
 
         // 대기 큐 크기
         executor.setQueueCapacity(10);

@@ -20,6 +20,8 @@ import com.ssafy.yaksok.product.repository.ProductIngredientRepository;
 import com.ssafy.yaksok.product.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,8 +29,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -40,6 +41,10 @@ public class OcrAnalysisService {
         private final IngredientRepository ingredientRepository;
         private final ProductIngredientRepository productIngredientRepository;
         private final OverdoseRepository overdoseRepository;
+
+        @Autowired
+        @Qualifier("llmTaskExecutor")
+        private Executor taskExecutor;
 
         private final UnitConverter unitConverter;
         private final LLMServiceFacade llmServiceFacade;
@@ -79,50 +84,43 @@ public class OcrAnalysisService {
                                         .build();
                 }
 
-                // 병렬 처리를 위한 ExecutorService 생성 (제품 수 만큼 스레드 풀)
-                int threadPoolSize = Math.min(totalProducts, 8); // 최대 8개 스레드
-                ExecutorService executor = Executors.newFixedThreadPool(threadPoolSize);
-                log.info("[병렬처리] 스레드 풀 생성: {} 스레드", threadPoolSize);
+                // ThreadPoolTaskExecutor 빈을 주입받아 재사용 (요청마다 스레드풀 생성/파괴 방지)
+                log.info("[병렬처리] ThreadPoolTaskExecutor(llmTaskExecutor) 사용: 최대 {}개 제품 동시 처리", totalProducts);
 
-                try {
-                        // 각 제품을 병렬로 처리
-                        List<CompletableFuture<SupplementAnalysisResponse.ReportProductInfo>> futures = new ArrayList<>();
+                // 각 제품을 병렬로 처리
+                List<CompletableFuture<SupplementAnalysisResponse.ReportProductInfo>> futures = new ArrayList<>();
 
-                        for (int i = 0; i < aiResult.getAnalysisResults().size(); i++) {
-                                final FastApiAnalysisResult.RawAnalysisResult raw = aiResult.getAnalysisResults()
-                                                .get(i);
-                                final int productIndex = i + 1;
+                for (int i = 0; i < aiResult.getAnalysisResults().size(); i++) {
+                        final FastApiAnalysisResult.RawAnalysisResult raw = aiResult.getAnalysisResults().get(i);
+                        final int productIndex = i + 1;
 
-                                CompletableFuture<SupplementAnalysisResponse.ReportProductInfo> future = CompletableFuture
-                                                .supplyAsync(
-                                                                () -> processSingleProduct(raw, productIndex,
-                                                                                totalProducts, currentIntakeMap),
-                                                                executor);
-                                futures.add(future);
-                        }
-
-                        // 모든 병렬 작업 완료 대기
-                        long parallelStart = System.currentTimeMillis();
-                        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
-                        log.info("[성능측정] 병렬 처리 완료 대기: {}ms", System.currentTimeMillis() - parallelStart);
-
-                        // 결과 수집 (null 제외 - 검증 실패한 제품)
-                        List<SupplementAnalysisResponse.ReportProductInfo> reportProducts = futures.stream()
-                                        .map(CompletableFuture::join)
-                                        .filter(Objects::nonNull)
-                                        .collect(Collectors.toList());
-
-                        log.info("[성능측정] 전체 제품 처리 완료: {}ms, {} 개 제품 (병렬)",
-                                        System.currentTimeMillis() - methodStart, reportProducts.size());
-
-                        return SupplementAnalysisResponse.builder()
-                                        .reportData(SupplementAnalysisResponse.ReportData.builder()
-                                                        .products(reportProducts)
-                                                        .build())
-                                        .build();
-                } finally {
-                        executor.shutdown();
+                        CompletableFuture<SupplementAnalysisResponse.ReportProductInfo> future = CompletableFuture
+                                        .supplyAsync(
+                                                        () -> processSingleProduct(raw, productIndex,
+                                                                        totalProducts, currentIntakeMap),
+                                                        taskExecutor);
+                        futures.add(future);
                 }
+
+                // 모든 병렬 작업 완료 대기
+                long parallelStart = System.currentTimeMillis();
+                CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+                log.info("[성능측정] 병렬 처리 완료 대기: {}ms", System.currentTimeMillis() - parallelStart);
+
+                // 결과 수집 (null 제외 - 검증 실패한 제품)
+                List<SupplementAnalysisResponse.ReportProductInfo> reportProducts = futures.stream()
+                                .map(CompletableFuture::join)
+                                .filter(Objects::nonNull)
+                                .collect(Collectors.toList());
+
+                log.info("[성능측정] 전체 제품 처리 완료: {}ms, {} 개 제품 (병렬)",
+                                System.currentTimeMillis() - methodStart, reportProducts.size());
+
+                return SupplementAnalysisResponse.builder()
+                                .reportData(SupplementAnalysisResponse.ReportData.builder()
+                                                .products(reportProducts)
+                                                .build())
+                                .build();
         }
 
         /**
