@@ -447,7 +447,7 @@ export default function ResultStep({ imageSrc, result, onRetake, onRegister }: R
 
             <footer className="sticky-footer" style={{ borderTop: '1px solid var(--cam-border)' }}>
                 <div className="cam-btn-row" style={{ padding: '16px 20px', width: '100%', background: 'none' }}>
-                    <ActionButton onClick={onRetake} variant="secondary">
+                    <ActionButton onClick={onRetake} variant="outline">
                         <RotateCcw size={18} />
                         <span>다시 촬영</span>
                     </ActionButton>
