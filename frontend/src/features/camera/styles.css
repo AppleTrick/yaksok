@@ -340,9 +340,9 @@ body {
 }
 
 .cam-btn-outline {
-    background: #fff;
-    border: 1px solid #eee;
-    color: #1a1a1a;
+    background: var(--cam-surface);
+    border: 1px solid var(--cam-border);
+    color: var(--cam-black);
 }
 
 /* Result Page Enhancements */

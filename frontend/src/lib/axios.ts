@@ -17,7 +17,7 @@ axiosInstance.interceptors.response.use(
         // 401 (Unauthorized) 또는 전역 에러를 여기서 처리
         if (error.response && error.response.status === 401) {
             // console.log('미인증 - 로그인 페이지로 리다이렉트 가능');
-            if (window.location.pathname !== '/login') {
+            if (typeof window !== 'undefined' && window.location.pathname !== '/login') {
                 window.location.href = '/login';
             }
         }
