@@ -92,7 +92,7 @@ S14P11A505/
 - Python 3.8+
 - Docker (Optional)
 
-### Installation
+### Installation (로컬 개발)
 
 1. **Frontend**
    ```bash
@@ -111,8 +111,14 @@ S14P11A505/
    ```bash
    cd fastapi
    pip install -r requirements.txt
-   uvicorn main:app --reload
+   uvicorn app.main:app --reload
    ```
+
+---
+
+## 🌐 배포 (Production)
+
+https://yaksok.changhee.dev
 
 ---
 
