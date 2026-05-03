@@ -14,6 +14,7 @@ const withPWA = withPWAInit({
 });
 
 const nextConfig: NextConfig = {
+  output: "standalone",
   // Silence Turbopack warning when using Webpack-based PWA plugins
   turbopack: {},
   // 분석 API가 1분 이상 소요될 수 있으므로 프록시 타임아웃을 180초로 설정
