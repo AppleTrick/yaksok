@@ -4,7 +4,14 @@ pipeline {
     stages {
         stage('Pull') {
             steps {
-                sh 'cd /home/ubuntu/project/apps/yaksok && git pull origin master'
+                withCredentials([usernamePassword(credentialsId: 'github-credentials', usernameVariable: 'GIT_USER', passwordVariable: 'GIT_TOKEN')]) {
+                    sh '''
+                        cd /home/ubuntu/project/apps/yaksok
+                        git remote set-url origin https://${GIT_USER}:${GIT_TOKEN}@github.com/AppleTrick/yaksok.git
+                        git pull origin master
+                        git remote set-url origin https://github.com/AppleTrick/yaksok.git
+                    '''
+                }
             }
         }
         stage('Deploy') {
