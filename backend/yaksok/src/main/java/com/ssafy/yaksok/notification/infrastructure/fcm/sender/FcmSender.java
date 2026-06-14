@@ -18,6 +18,10 @@ public class FcmSender {
          */
         public void sendWeb(String token, String title, String body, List<Long> notificationIds,
                         List<Long> userProductIds) {
+                if (com.google.firebase.FirebaseApp.getApps().isEmpty()) {
+                        log.warn("FCM 비활성화 상태 - 푸시 알림 전송 건너뜀 (notificationIds={})", notificationIds);
+                        return;
+                }
                 String idsStr = notificationIds.stream().map(String::valueOf).collect(Collectors.joining(","));
                 String productIdsStr = userProductIds.stream().map(String::valueOf).collect(Collectors.joining(","));
 
@@ -42,6 +46,10 @@ public class FcmSender {
         }
 
         public void sendAndroid(String token, String title, String body) {
+                if (com.google.firebase.FirebaseApp.getApps().isEmpty()) {
+                        log.warn("FCM 비활성화 상태 - Android 푸시 알림 전송 건너뜀");
+                        return;
+                }
                 Message message = Message.builder()
                                 .setToken(token)
                                 .setNotification(Notification.builder()
