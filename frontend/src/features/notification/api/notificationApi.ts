@@ -1,4 +1,4 @@
-import axiosInstance from 'axios';
+import axiosInstance from '@/lib/axios';
 
 const API_BASE = '/api/v1/notification';
 

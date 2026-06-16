@@ -8,6 +8,7 @@
 
   /* Brand/Point (Vivid Orange - Shared) */
   --color-brand: #FF5722;
+  --brand-gradient: linear-gradient(135deg, #FF8A65 0%, #FF5722 100%);
 
   /* Text (Dark Grey/Black) */
   --text-main: #1A1A1A;
