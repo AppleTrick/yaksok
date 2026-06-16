@@ -193,6 +193,7 @@ public class NotificationService {
     }
 
     @Async("notificationExecutor")
+    @Transactional
     public void processNotifications() {
         LocalTime now = LocalTime.now();
         log.info("🔔 알람 전송 프로세스 시작 [현재 시각: {}]", now);
@@ -245,6 +246,7 @@ public class NotificationService {
                 log.info("SSE 알람 번들 전송 (활성 연결 감지): userId={}, count={}", userId, userNotifications.size());
                 sseService.sendNotification(userId,
                         new SseNotificationResponse(notificationIds, userProductIds, body, "MEDICATION"));
+                rescheduleAfterSend(userNotifications);
                 continue;
             }
 
@@ -255,9 +257,17 @@ public class NotificationService {
                 for (UserFcmToken token : tokens) {
                     fcmSender.sendWeb(token.getToken(), "💊 복약 알림", body, notificationIds, userProductIds);
                 }
+                rescheduleAfterSend(userNotifications);
             }
         }
         log.info("알람 전송 프로세스 종료");
+    }
+
+    // 발송 직후에도 next_notify가 갱신되지 않으면 같은 알림이 매분 배치마다
+    // 계속 재발송되므로(intaken=false인 동안 무한 반복), 발송 후 쿨다운을 둔다.
+    private void rescheduleAfterSend(List<Notification> sentNotifications) {
+        sentNotifications.forEach(Notification::snoozeTime);
+        notificationRepository.saveAll(sentNotifications);
     }
 
     private boolean isQuietTime(Long userId, LocalTime now) {

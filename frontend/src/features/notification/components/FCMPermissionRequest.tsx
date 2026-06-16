@@ -32,17 +32,19 @@ export default function FCMPermissionRequest() {
 
         const browserPermission = Notification.permission;
         const localGranted = localStorage.getItem('fcm_permission_granted') === 'true';
+        const locallyDismissed = localStorage.getItem('fcm_permission_dismissed') === 'true';
 
         console.log('[FCMPermissionRequest] Check:', {
             isSettingsLoading,
             pushEnabled: settings.pushEnabled, // 서버 설정
             browserPermission,
             localGranted,
-            isDismissed
+            isDismissed,
+            locallyDismissed
         });
 
         // 1. 이미 차단되었거나, 사용자가 '나중에'를 눌렀다면 노출 X (단, 차단 시 다른 UI가 필요할 수도 있음)
-        if (isDismissed) {
+        if (isDismissed || locallyDismissed) {
             setShowBanner(false);
             setIsLoadingCheck(false);
             return;
@@ -91,7 +93,8 @@ export default function FCMPermissionRequest() {
     };
 
     const handleDismiss = () => {
-        // "나중에" -> 이번 세션(또는 앱 다시 켜기 전까지) 숨김
+        // "나중에" -> 새로고침/재방문해도 다시 뜨지 않도록 localStorage에 저장
+        localStorage.setItem('fcm_permission_dismissed', 'true');
         setIsDismissed(true);
         setShowBanner(false);
 

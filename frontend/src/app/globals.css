@@ -26,7 +26,7 @@
 
   /* Legacy Colors */
   --text-muted: #6B7280;
-  --sub-background: #EDF7ED;
+  --sub-background: #FFF3E0;
   --section-divider: #F6F0DC;
   --highlight-color: #FFDAAB;
   --light-grey: #F5F5F5;
@@ -124,9 +124,7 @@ a {
 
 /* --- Responsive App Simulator Layout --- */
 
-/* --- Responsive Full-Width Layout --- */
-
-/* Base Wrapper */
+/* Base Wrapper: centers the app frame and provides a desktop backdrop */
 .app-wrapper {
   min-height: 100vh;
   width: 100%;
@@ -135,20 +133,28 @@ a {
   background-color: var(--background-color);
 }
 
-/* App Content */
+/* App Content: capped to a mobile-app width so wide browser windows
+   render a centered card instead of a stretched layout. Also acts as
+   the containing block for descendant `position: fixed` elements
+   (FABs, toasts, modals) so they stay anchored to the app frame
+   instead of the full browser viewport on desktop. */
 .app-content {
   width: 100%;
+  max-width: 480px;
   min-height: 100vh;
   background-color: var(--background-color);
   position: relative;
   z-index: 1;
-  /* Establish base stacking context below floating elements */
+  transform: translateZ(0);
 }
 
-/* Desktop/Tablet Adjustments if needed (e.g. max content width for readability) */
-@media (min-width: 1024px) {
-  /* Optional: You can constrain the inner content max-width here if you want 
-     the content to not be too stretched, but the user asked for "Full Screen".
-     We will handle layout inside the pages (Grid). 
-     For now, let's keep the wrapper full. */
+/* Desktop/Tablet: visually separate the app frame from the page backdrop */
+@media (min-width: 481px) {
+  .app-wrapper {
+    background-color: var(--bg-base);
+  }
+
+  .app-content {
+    box-shadow: 0 0 60px rgba(0, 0, 0, 0.1);
+  }
 }
