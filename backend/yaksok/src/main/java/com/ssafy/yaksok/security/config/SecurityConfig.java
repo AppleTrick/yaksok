@@ -63,7 +63,7 @@ public class SecurityConfig {
 
                 config.setAllowedOrigins(List.of(
                                 "http://localhost:3000",
-                                "https://i14a505.p.ssafy.io"));
+                                "https://yaksok.changhee.dev"));
                 config.setAllowedMethods(List.of(
                                 "GET", "POST", "PUT", "DELETE", "OPTIONS"));
                 config.setAllowedHeaders(List.of("*"));
