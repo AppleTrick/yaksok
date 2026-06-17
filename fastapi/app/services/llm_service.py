@@ -15,20 +15,20 @@ else:
     load_dotenv()
     print(f"[LLM Service] ⚠️ .env 파일을 찾을 수 없어 기본 설정을 시도합니다: {ENV_PATH}")
 
-# GMS API 설정
+# Google AI API 설정 (SSAFY GMS 프록시 미사용, 직접 호출)
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
 # 직접 모델명 변경할 수 있도록 변수화
-# 사용 가능한 모델: gemini-2.0-flash-lite, gemini-1.5-flash 등
-GEMINI_MODEL_NAME = "gemini-2.0-flash-lite"
+# 사용 가능한 모델: gemini-2.5-flash, gemini-2.5-flash-lite 등
+GEMINI_MODEL_NAME = "gemini-2.5-flash-lite"
 
-# 제공해주신 SSAFY GMS 엔드포인트 구조 (모델명을 변수로 삽입)
-GMS_ENDPOINT_TEMPLATE = "https://gms.ssafy.io/gmsapi/generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent"
-GMS_ENDPOINT = GMS_ENDPOINT_TEMPLATE.format(model_name=GEMINI_MODEL_NAME)
+# Google Generative Language API 엔드포인트 (모델명을 변수로 삽입)
+GEMINI_ENDPOINT_TEMPLATE = "https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent"
+GEMINI_ENDPOINT = GEMINI_ENDPOINT_TEMPLATE.format(model_name=GEMINI_MODEL_NAME)
 
 async def extract_product_name_with_llm(ocr_text: str) -> str:
     """
-    SSAFY GMS Gemini API를 사용하여 OCR 텍스트에서 정확한 제품명을 추출합니다.
+    Google Gemini API를 사용하여 OCR 텍스트에서 정확한 제품명을 추출합니다.
     """
     if not GEMINI_API_KEY or not ocr_text.strip():
         return ""
@@ -66,13 +66,13 @@ async def extract_product_name_with_llm(ocr_text: str) -> str:
     }
 
     try:
-        print(f"\n[GMS Service] === 정제 작업 시작 ===")
-        print(f"[GMS Service] 입력 OCR 텍스트: {ocr_text[:100]}...") # 너무 길면 잘라서 출력
-        print(f"[GMS Service] GMS API 호출 중... (모델: {GEMINI_MODEL_NAME})")
+        print(f"\n[Gemini Service] === 정제 작업 시작 ===")
+        print(f"[Gemini Service] 입력 OCR 텍스트: {ocr_text[:100]}...") # 너무 길면 잘라서 출력
+        print(f"[Gemini Service] Gemini API 호출 중... (모델: {GEMINI_MODEL_NAME})")
         
         async with httpx.AsyncClient() as client:
             response = await client.post(
-                GMS_ENDPOINT,
+                GEMINI_ENDPOINT,
                 headers=headers,
                 json=payload,
                 timeout=15.0
@@ -80,23 +80,23 @@ async def extract_product_name_with_llm(ocr_text: str) -> str:
             
             if response.status_code == 200:
                 result = response.json()
-                print(f"[GMS Service] ✅ 응답 수신 성공 (Status: 200)")
+                print(f"[Gemini Service] ✅ 응답 수신 성공 (Status: 200)")
                 # Gemini API 응답 구조에서 텍스트 추출
                 try:
                     product_name = result['candidates'][0]['content']['parts'][0]['text'].strip()
                     # 가끔 LLM이 따옴표를 포함하는 경우가 있어 제거
                     product_name = product_name.replace('"', '').replace("'", "")
-                    print(f"[GMS Service] 추출된 제품명: {product_name}")
-                    print(f"[GMS Service] === 정제 작업 완료 ===\n")
+                    print(f"[Gemini Service] 추출된 제품명: {product_name}")
+                    print(f"[Gemini Service] === 정제 작업 완료 ===\n")
                     return product_name
                 except (KeyError, IndexError) as e:
-                    print(f"[GMS Service Parse Error] 응답 구조가 예상과 다릅니다: {e}")
+                    print(f"[Gemini Service Parse Error] 응답 구조가 예상과 다릅니다: {e}")
                     return ""
             else:
-                print(f"[GMS Service API Error] ❌ 요청 실패 (Status: {response.status_code})")
-                print(f"[GMS Service API Error] Body: {response.text}")
+                print(f"[Gemini Service API Error] ❌ 요청 실패 (Status: {response.status_code})")
+                print(f"[Gemini Service API Error] Body: {response.text}")
                 return ""
                 
     except Exception as e:
-        print(f"[GMS Service Connection Error] ❌ 연결 오류: {e}")
+        print(f"[Gemini Service Connection Error] ❌ 연결 오류: {e}")
         return ""
