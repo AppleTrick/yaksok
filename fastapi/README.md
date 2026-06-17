@@ -84,20 +84,25 @@ uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 `/analyze2` 엔드포인트를 사용하기 위해서는 Google Cloud 서비스 계정 키가 필요합니다.
 
 1. Google Cloud Console에서 서비스 계정을 생성하고 키(JSON)를 다운로드합니다.
-2. 환경 변수 `GOOGLE_APPLICATION_CREDENTIALS`에 키 파일 경로를 설정합니다.
+2. `fastapi/` 디렉토리에 키 파일을 두고, `.env`의 `GOOGLE_APPLICATION_CREDENTIALS`에
+   파일명(또는 경로)을 설정합니다.
 
-```bash
-# macOS/Linux
-export GOOGLE_APPLICATION_CREDENTIALS="/path/to/your/service-account-file.json"
-
-# Windows (PowerShell)
-$env:GOOGLE_APPLICATION_CREDENTIALS="C:\path\to\your\service-account-file.json"
+```env
+# fastapi/.env
+GOOGLE_APPLICATION_CREDENTIALS=visionkey.json
+GEMINI_API_KEY=your_google_ai_studio_api_key
 ```
+
+- `GOOGLE_APPLICATION_CREDENTIALS`: Vision API(객체 탐지 + OCR)용 서비스 계정 키 경로
+- `GEMINI_API_KEY`: Vision API OCR 결과에서 정확한 제품명을 추출하는 LLM 정제 단계용 키.
+  **SSAFY GMS 키가 아닌 Google AI Studio에서 발급한 개인 키**를 사용합니다
+  (`llm_service.py`가 `generativelanguage.googleapis.com`을 직접 호출하며,
+  현재 모델은 `gemini-2.5-flash-lite`).
 
 ### [POST] `/analyze2`
 Google Cloud Vision API를 활용하여 정밀하게 영양제를 분석합니다.
 
-- **기능**: Object Localization → Cropping → Individual OCR → Heuristic Extraction
+- **기능**: Object Localization → Cropping → Individual OCR → Gemini 기반 제품명 정제
 - **Request Body**: `multipart/form-data`
-  - `file`: 이미지 파일
+  - `file`: 이미지 파일 (JPEG, PNG 등 — 투명 채널이 있는 PNG도 지원)
 - **Response**: `application/json` (List[Dict])
