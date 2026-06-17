@@ -275,8 +275,15 @@ def analyze_logic(image_content: bytes) -> List[Dict[str, Any]]:
         raise ValueError(f"Invalid image format: {e}")
         
     width, height = pil_image.size
-    
+
     # 2. 정규화된 이미지를 바이트로 재인코딩 (Vision API 전송용)
+    # JPEG는 알파 채널을 지원하지 않으므로 RGBA/팔레트 이미지는 흰 배경에 합성하여 RGB로 변환
+    if pil_image.mode != "RGB":
+        rgba_image = pil_image.convert("RGBA")
+        rgb_image = Image.new("RGB", rgba_image.size, (255, 255, 255))
+        rgb_image.paste(rgba_image, mask=rgba_image.split()[-1])
+        pil_image = rgb_image
+
     normalized_buffer = io.BytesIO()
     pil_image.save(normalized_buffer, format='JPEG', quality=95)
     normalized_content = normalized_buffer.getvalue()
