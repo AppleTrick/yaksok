@@ -1,33 +1,45 @@
-# 약속 (Yaksok) AI Server
+# 약속 (Yak-Sok) AI Server
 
-이 디렉토리는 약/영양제 객체 탐지 및 성분 분석을 위한 **FastAPI** 기반의 AI 서버입니다.
-분석 파이프라인(YOLO 객체탐지 → 바코드 인식 → OCR 텍스트 추출)을 통해 사용자에게 정확한 정보를 제공합니다.
+약/영양제 객체 탐지 및 성분 분석을 위한 **FastAPI** 기반 AI 서버입니다.
 
-## 🚀 1. 핵심 기술 및 모델
-- **Framework**: `FastAPI` (High Performance Async Framework)
-- **AI Model**: `YOLO11` (Ultralytics YOLOv11 Nano/Medium)
-    - 최신 객체 탐지 모델로 이미지 속 물체를 실시간으로 인식합니다.
-- **Analysis Pipeline**:
-    - **YOLO11**: 영양제 형태(Bottle, Box 등) 탐지
-    - **PyZbar**: 바코드 추출 및 상품 데이터 매칭
-    - **OCR (PaddleOCR)**: 제품명 및 성분 텍스트 추출
-- **Libraries**: `ultralytics`, `opencv-python-headless`, `paddleocr`, `pyzbar`
+- **전체 서비스 문서**: 상위 [../README.md](../README.md) · [OCR 파이프라인 기술 리포트](../docs/report/OCR_PIPELINE_TECHNICAL_REPORT.md) · [데이터 파이프라인 리포트](../DataPipeLine/PROJECT_REPORT.md)
+
+## 🚀 1. 분석 경로: 두 가지
+
+| 경로 | 파이프라인 | 상태 |
+|---|---|---|
+| **`/ai/v1/analyze2`** (권장) | YOLO11 → Google Vision(Object Localization + OCR) → Gemini 제품명 정제 | 운영 사용 |
+| `/ai/v1/analyze` (레거시) | YOLO11 → 자체 PaddleOCR | OCR 실패 시 빈 값 반환하는 안전 상태로 유지 |
+
+레거시 경로는 ARM 환경에서 PaddleOCR 추론 세그폴트 위험이 있어 버전 핀 없이 무력화 상태로 둡니다. 상세 분석은 [OCR 파이프라인 기술 리포트](../docs/report/OCR_PIPELINE_TECHNICAL_REPORT.md) 참고.
+
+## 핵심 기술
+
+- **Framework**: FastAPI (async)
+- **탐지 모델**: YOLOv11m — `DataPipeLine/`에서 Negative Sampling·라벨 검수로 학습 (V3: mAP@50 0.814)
+- **OCR/정제**: Google Cloud Vision API + Gemini(`gemini-2.5-flash-lite`)
+- **Libraries**: `ultralytics`, `opencv-python-headless`, `google-cloud-vision`, `paddleocr`(레거시 경로)
 
 ## 📂 2. 프로젝트 구조
 ```bash
 fastapi/
 ├── app/
 │   ├── api/
-│   │   └── endpoints.py     # API 라우터 (실제 요청 처리)
+│   │   └── endpoints.py         # API 라우터 (/analyze, /analyze2)
 │   ├── services/
-│   │   ├── yolo_service.py   # YOLO11 모델 로직
-│   │   ├── ocr_service.py    # PaddleOCR 텍스트 추출 로직
-│   │   └── analysis_service.py # 전체 통합 분석 파이프라인
-│   └── main.py              # 서버 실행 및 앱 설정
-├── venv/                    # 가상환경 (배포 환경)
-├── requirements.txt         # 종속성 목록
-└── README.md                # 분석 서버 가이드
+│   │   ├── yolo_service.py      # YOLO11 객체 탐지
+│   │   ├── vision_service.py    # Google Vision API 분석 (analyze2)
+│   │   ├── llm_service.py       # Gemini 제품명 정제
+│   │   ├── ocr_service.py       # PaddleOCR (레거시 analyze)
+│   │   └── analysis_service.py  # 통합 분석 파이프라인
+│   ├── utils.py
+│   └── main.py                  # 서버 실행 및 앱 설정
+├── model/                       # 학습된 YOLO 가중치(.pt)
+├── requirements.txt
+└── README.md
 ```
+
+> ⚠️ `venv/`는 커밋·빌드 컨텍스트에 포함하지 마세요. `.dockerignore`에 `venv/`, `__pycache__/` 등을 추가해야 합니다(과거 빌드 컨텍스트 6.56GB 비대화 원인).
 
 ## 🛠️ 3. 설치 및 실행 (Setup & Run)
 
@@ -53,23 +65,11 @@ uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 
 ## 🔌 4. API 명세 (API Specification)
 
-### [POST] `/ai/v1/analyze`
-프론트엔드에서 업로드한 이미지를 분석하여 결과를 반환합니다.
+### [POST] `/ai/v1/analyze` (레거시)
+YOLO + 자체 PaddleOCR 경로. OCR 실패 시 빈 값을 반환하는 안전 상태로 유지됩니다.
 
-- **Request Body**: `multipart/form-data`
-  - `file`: 이미지 파일 (JPEG, PNG 등)
+- **Request Body**: `multipart/form-data` — `file`: 이미지 (JPEG, PNG 등)
 - **Response**: `application/json`
-  ```json
-  {
-    "status": "success",
-    "result": {
-      "is_supplement": true,
-      "detected_objects": [...],
-      "ocr_text": "타이레놀 500mg",
-      "barcode": "8806418001234"
-    }
-  }
-  ```
 
 ### [GET] `/test`
 - 브라우저에서 직접 이미지를 업로드하고 결과를 확인할 수 있는 테스트 페이지를 제공합니다.
