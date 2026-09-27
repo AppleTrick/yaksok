@@ -65,6 +65,35 @@ firebase:
   credentials:
     path: ${FIREBASE_CREDENTIALS_PATH:classpath:serviceAccountKey.json}
 
+# 관측성 — 관리 포트 8081은 Traefik이 라우팅하지 않아 외부 비공개
+management:
+  server:
+    port: 8081
+  endpoints:
+    web:
+      exposure:
+        include: health,prometheus
+  health:
+    redis:
+      enabled: false          # data-redis 의존성만 있고 Redis를 쓰는 코드·서버가 없음 → 켜두면 health가 항상 DOWN
+  metrics:
+    tags:
+      project: yaksok
+      service: back
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+  tracing:
+    enabled: false            # 로컬·개발은 끔, 운영(prod 프로필)에서만 Tempo로 전송
+    sampling:
+      probability: 1.0
+
+# JDBC 쿼리 스팬: 쿼리만, 파라미터 값(사용자 입력) 제외
+jdbc:
+  includes: QUERY
+  datasource-proxy:
+    include-parameter-values: false
+
 resilience4j:
   circuitbreaker:
     instances:
@@ -75,3 +104,38 @@ resilience4j:
         permittedNumberOfCallsInHalfOpenState: 3
         minimumNumberOfCalls: 5
         registerHealthIndicator: true
+
+---
+# 운영 프로필 (docker-compose의 SPRING_PROFILES_ACTIVE=prod)
+spring:
+  config:
+    activate:
+      on-profile: prod
+  jpa:
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+
+logging:
+  level:
+    org.springframework.security: INFO
+    com.ssafy.yaksok: INFO
+  structured:
+    format:
+      console: ecs            # JSON 로그 → Loki에서 레벨·traceId로 검색
+    ecs:
+      service:
+        name: yaksok-back
+
+management:
+  tracing:
+    enabled: true
+  opentelemetry:
+    resource-attributes:
+      service.name: yaksok-back   # 기본값은 spring.application.name(yaksok) — FastAPI(yaksok-fastapi)와 구분
+      project: yaksok
+  otlp:
+    tracing:
+      endpoint: http://tempo:4318/v1/traces
+

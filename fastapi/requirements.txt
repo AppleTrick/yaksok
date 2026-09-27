@@ -13,3 +13,8 @@ Pillow
 python-dotenv
 google-generativeai
 httpx
+# 관측성 (메트릭, 분산 트레이싱) — 운영 컨테이너 환경에서 기존 패키지를 바꾸지 않는 것을 확인한 버전
+prometheus-fastapi-instrumentator==7.1.0
+opentelemetry-sdk==1.45.0
+opentelemetry-exporter-otlp-proto-http==1.45.0
+opentelemetry-instrumentation-fastapi==0.66b0

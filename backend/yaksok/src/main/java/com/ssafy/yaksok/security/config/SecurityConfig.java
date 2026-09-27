@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -54,6 +55,12 @@ public class SecurityConfig {
                                                 UsernamePasswordAuthenticationFilter.class);
 
                 return http.build();
+        }
+
+        // Actuator는 관리 포트(8081)에만 열리고 Traefik이 라우팅하지 않아 외부 비공개 → 인증 필터에서 제외 (Prometheus 수집용)
+        @Bean
+        public WebSecurityCustomizer actuatorSecurityCustomizer() {
+                return web -> web.ignoring().requestMatchers("/actuator/**");
         }
 
         // CORS 설정 Bean

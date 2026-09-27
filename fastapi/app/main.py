@@ -13,6 +13,7 @@ from app.api.endpoints import router as api_router
 from app.services.analysis_service import analyze_supplement
 import asyncio
 from app.utils import clean_save_image_directory
+from app.observability import setup_observability
 
 # ============================================================
 # FastAPI 앱 초기화
@@ -23,6 +24,9 @@ app = FastAPI(
     description="영양제 이미지 분석 API (YOLO + OCR)",
     version="2.0.0"
 )
+
+# 메트릭(/metrics)과 분산 트레이싱 (app/observability.py)
+setup_observability(app)
 
 # CORS 미들웨어 설정 (프론트엔드 연동용)
 app.add_middleware(

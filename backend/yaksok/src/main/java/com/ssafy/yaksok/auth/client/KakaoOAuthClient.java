@@ -5,7 +5,6 @@ import com.ssafy.yaksok.auth.dto.KakaoUserInfo;
 import com.ssafy.yaksok.auth.dto.KakaoUserResponse;
 import com.ssafy.yaksok.global.exception.BusinessException;
 import com.ssafy.yaksok.global.exception.ErrorCode;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -14,7 +13,6 @@ import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 
 @Component
-@RequiredArgsConstructor
 public class KakaoOAuthClient {
 
     @Value("${kakao.client-id}")
@@ -26,7 +24,12 @@ public class KakaoOAuthClient {
     @Value("${kakao.redirect-uri}")
     private String redirectUri;
 
-    private final WebClient webClient = WebClient.builder().build();
+    private final WebClient webClient;
+
+    /** Spring Boot의 WebClient.Builder를 받아야 계측(메트릭, 트레이스)이 붙는다 */
+    public KakaoOAuthClient(WebClient.Builder webClientBuilder) {
+        this.webClient = webClientBuilder.build();
+    }
 
     // code → accessToken
 

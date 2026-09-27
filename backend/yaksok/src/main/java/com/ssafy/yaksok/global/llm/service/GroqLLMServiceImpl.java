@@ -6,6 +6,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
+import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.PostConstruct;
@@ -33,8 +35,16 @@ public class GroqLLMServiceImpl implements LLMService {
     @Value("${groq.api.url:https://api.groq.com/openai/v1/chat/completions}")
     private String apiUrl;
 
-    private final RestTemplate restTemplate = new RestTemplate();
+    private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper = new ObjectMapper();
+
+    /**
+     * RestTemplateBuilder로 만들어야 Spring Boot 계측(http.client.requests 메트릭, 트레이스 스팬)이 붙는다.
+     * HTTP 클라이언트는 기존 new RestTemplate()과 같은 SimpleClientHttpRequestFactory를 유지한다.
+     */
+    public GroqLLMServiceImpl(RestTemplateBuilder restTemplateBuilder) {
+        this.restTemplate = restTemplateBuilder.requestFactory(SimpleClientHttpRequestFactory::new).build();
+    }
 
     /**
      * [진단] 서버 시작 시 API Key 상태를 확인합니다.
