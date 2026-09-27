@@ -3,6 +3,7 @@ package com.ssafy.yaksok.global.config;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.task.support.ContextPropagatingTaskDecorator;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
@@ -53,6 +54,9 @@ public class AsyncConfig {
         // 거부 정책: 큐가 꽉 차면 호출한 스레드에서 직접 실행
         executor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
 
+        // 요청 스레드의 트레이스 문맥을 작업 스레드로 전달 (없으면 비동기 LLM 호출이 별도 트레이스로 끊긴다)
+        executor.setTaskDecorator(new ContextPropagatingTaskDecorator());
+
         // 스레드 초기화
         executor.initialize();
 
@@ -75,6 +79,7 @@ public class AsyncConfig {
         executor.setQueueCapacity(50);
         executor.setThreadNamePrefix("Async-");
         executor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
+        executor.setTaskDecorator(new ContextPropagatingTaskDecorator());
         executor.initialize();
 
         log.info("일반 비동기 ThreadPool 초기화 완료");
