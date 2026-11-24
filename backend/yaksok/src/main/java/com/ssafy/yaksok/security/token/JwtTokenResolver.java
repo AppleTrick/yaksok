@@ -25,12 +25,7 @@ public class JwtTokenResolver {
             log.debug("쿠키가 null입니다.");
         }
 
-        // 2. 쿼리 파라미터에서 추출 시도 (SSE 등 쿠키 전송이 제한적인 경우 대비)
-        String token = request.getParameter("token");
-        if (token != null && !token.isEmpty()) {
-            return token;
-        }
-
+        // 주소(쿼리)로는 받지 않는다: 접속 로그와 방문 기록에 토큰이 남는다
         return null;
     }
 }

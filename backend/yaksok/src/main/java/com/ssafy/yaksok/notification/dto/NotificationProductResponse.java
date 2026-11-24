@@ -17,4 +17,5 @@ public class NotificationProductResponse {
     private LocalTime intakeTime;
     private Boolean enabled;
     private NotificationEnums.Category category;
+    private java.util.List<Integer> daysOfWeek;
 }

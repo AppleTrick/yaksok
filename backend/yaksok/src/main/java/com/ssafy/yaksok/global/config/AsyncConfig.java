@@ -40,13 +40,13 @@ public class AsyncConfig {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
 
         // 기본 스레드 수
-        executor.setCorePoolSize(2);
+        executor.setCorePoolSize(8);
 
         // 최대 스레드 수: 영양제 병렬 처리 최대 8개 동시 실행 지원
         executor.setMaxPoolSize(8);
 
         // 대기 큐 크기
-        executor.setQueueCapacity(10);
+        executor.setQueueCapacity(0);
 
         // 스레드 이름 접두사
         executor.setThreadNamePrefix("LLM-Async-");

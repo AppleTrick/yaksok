@@ -16,11 +16,11 @@ public class FcmSender {
         /**
          * 웹용 FCM 발송 (Bundling 지원 및 Data-only)
          */
-        public void sendWeb(String token, String title, String body, List<Long> notificationIds,
+        public boolean sendWeb(String token, String title, String body, List<Long> notificationIds,
                         List<Long> userProductIds) {
                 if (com.google.firebase.FirebaseApp.getApps().isEmpty()) {
                         log.warn("FCM 비활성화 상태 - 푸시 알림 전송 건너뜀 (notificationIds={})", notificationIds);
-                        return;
+                        return false;
                 }
                 String idsStr = notificationIds.stream().map(String::valueOf).collect(Collectors.joining(","));
                 String productIdsStr = userProductIds.stream().map(String::valueOf).collect(Collectors.joining(","));
@@ -41,8 +41,9 @@ public class FcmSender {
                                                 .build())
                                 .build();
 
-                log.info("FCM 웹 푸시(Bundling) 전송 시도: ids={}, token={}", idsStr, token);
+                log.info("FCM 웹 푸시(Bundling) 전송 시도: ids={}", idsStr);
                 addCallback(FirebaseMessaging.getInstance().sendAsync(message), token, "Web", notificationIds.get(0));
+                return true;
         }
 
         public void sendAndroid(String token, String title, String body) {
@@ -69,15 +70,15 @@ public class FcmSender {
                 future.addListener(() -> {
                         try {
                                 String messageId = future.get();
-                                log.info("FCM {} 전송 성공: messageId={}, firstNotificationId={}, token={}", platform,
+                                log.info("FCM {} 전송 성공: messageId={}, firstNotificationId={}", platform,
                                                 messageId,
-                                                firstId, token);
+                                                firstId);
                         } catch (Exception e) {
                                 log.error("FCM {} 전송 실패: firstNotificationId={}, error={}", platform, firstId,
                                                 e.getMessage());
-                                if (e.getMessage().contains("registration-token-not-registered") ||
-                                                e.getMessage().contains("not-found") ||
-                                                e.getMessage().contains("invalid-registration-token")) {
+                                if (e.getCause() instanceof FirebaseMessagingException fme
+                                                && (fme.getMessagingErrorCode() == MessagingErrorCode.UNREGISTERED
+                                                || fme.getMessagingErrorCode() == MessagingErrorCode.INVALID_ARGUMENT)) {
                                         fcmTokenService.deactivateToken(token);
                                 }
                         }

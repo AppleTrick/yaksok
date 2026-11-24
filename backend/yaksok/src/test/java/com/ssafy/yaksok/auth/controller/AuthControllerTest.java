@@ -53,6 +53,9 @@ class AuthControllerTest {
     private CookieUtil cookieUtil;
 
     // === 테스트 대상 Controller ===
+    @Mock
+    private com.ssafy.yaksok.global.ratelimit.RateLimiter rateLimiter;
+
     @InjectMocks
     private AuthController authController;
 

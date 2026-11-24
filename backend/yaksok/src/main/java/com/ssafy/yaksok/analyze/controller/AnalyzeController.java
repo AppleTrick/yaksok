@@ -2,6 +2,8 @@ package com.ssafy.yaksok.analyze.controller;
 
 import com.ssafy.yaksok.global.dto.ApiResponse;
 import com.ssafy.yaksok.global.util.ResponseUtil;
+import com.ssafy.yaksok.global.ratelimit.RateLimiter;
+import java.time.Duration;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -25,6 +27,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 public class AnalyzeController {
 
     private final AnalyzeService analyzeService;
+    private final RateLimiter rateLimiter;
 
     /**
      * 영양제 이미지 분석 및 통합 리포트 생성
@@ -38,13 +41,14 @@ public class AnalyzeController {
             @RequestParam("file") MultipartFile file,
             @AuthenticationPrincipal UserPrincipal principal) {
         Long userId = principal.getUserId();
+        rateLimiter.check("analyze", userId, 5, Duration.ofSeconds(10));
         log.info("영양제 분석 API 호출 시작: User ID={}, File={}", userId, file.getOriginalFilename());
         long startTime = System.currentTimeMillis();
 
         SupplementAnalysisResponse response = analyzeService.analyzeSupplement(file, userId);
 
         long duration = System.currentTimeMillis() - startTime;
-        log.info("영양제 분석 API 호출 완료: User ID={}, 소요 시간={}ms, Response={}", userId, duration, response);
+        log.info("영양제 분석 API 호출 완료: User ID={}, 소요 시간={}ms", userId, duration);
 
         return ResponseUtil.ok(response);
     }

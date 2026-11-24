@@ -4,6 +4,15 @@ import com.ssafy.yaksok.global.dto.ErrorResponse;
 import com.ssafy.yaksok.global.exception.BusinessException;
 import com.ssafy.yaksok.global.exception.ErrorCode;
 import com.ssafy.yaksok.global.util.ResponseUtil;
+import com.ssafy.yaksok.global.ratelimit.TooManyRequestsException;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
+import org.springframework.web.method.annotation.HandlerMethodValidationException;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.multipart.support.MissingServletRequestPartException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
@@ -21,6 +30,26 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleBusiness(BusinessException e) {
         log.error(e.getMessage());
         return ResponseUtil.error(e.getErrorCode());
+    }
+
+    @ExceptionHandler(TooManyRequestsException.class)
+    public ResponseEntity<ErrorResponse> handleTooMany(TooManyRequestsException e) {
+        return ResponseEntity.status(ErrorCode.TOO_MANY_REQUESTS.getStatus())
+                .header(HttpHeaders.RETRY_AFTER, String.valueOf(e.getRetryAfterSeconds()))
+                .body(ErrorResponse.of(ErrorCode.TOO_MANY_REQUESTS));
+    }
+
+    // 잘못 보낸 요청까지 500으로 답하고 스택을 남기던 것을 400으로 나눈다
+    @ExceptionHandler({HttpMessageNotReadableException.class, MethodArgumentNotValidException.class,
+            HandlerMethodValidationException.class, MissingServletRequestParameterException.class,
+            MissingServletRequestPartException.class, MethodArgumentTypeMismatchException.class})
+    public ResponseEntity<ErrorResponse> handleBadRequest(Exception e) {
+        return ResponseUtil.error(ErrorCode.INVALID_REQUEST);
+    }
+
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<Void> handleNotFound(NoResourceFoundException e) {
+        return ResponseEntity.notFound().build();
     }
 
     @ExceptionHandler(Exception.class)

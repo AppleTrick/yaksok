@@ -23,12 +23,18 @@ public class JwtTokenProvider {
     private static final long ACCESS_TOKEN_EXPIRE_TIME = 1000L * 60 * 60; //60분
     private static final long REFRESH_TOKEN_EXPIRE_TIME = 1000L * 60 * 60 * 24; //24시간
 
+    /** 예전 기본값. 저장소에 공개돼 있어 이 값으로 서명하면 누구나 토큰을 만들 수 있다 */
+    private static final String PUBLISHED_SECRET = "this-is-a-very-long-jwt-secret-key-32bytes!!";
+
     private final Key key;
     private final UserDetailsService userDetailsService;
 
     public JwtTokenProvider(UserDetailsService userDetailsService, @Value("${jwt.secret}") String secret
     ) {
         this.userDetailsService = userDetailsService;
+        if (PUBLISHED_SECRET.equals(secret)) {
+            throw new IllegalStateException("JWT_SECRET이 공개 저장소에 올라간 값입니다. 새 값으로 바꿔 주세요");
+        }
         this.key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
     }
 
@@ -66,7 +72,7 @@ public class JwtTokenProvider {
                     .build()
                     .parseClaimsJws(token); // 검증 수행
 
-            return true;    } catch (SecurityException e) {
+            return true;    } catch (io.jsonwebtoken.security.SecurityException e) {   // java.lang 쪽을 잡아 위조 토큰이 500으로 새던 것을 고침
             // 서명 불일치
             throw new BusinessException(ErrorCode.AUTH_TOKEN_INVALID);
 

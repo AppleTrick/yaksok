@@ -139,8 +139,8 @@ CREATE TABLE IF NOT EXISTS notification_log (
 CREATE TABLE IF NOT EXISTS notification_setting (
                                             id BIGINT AUTO_INCREMENT PRIMARY KEY,
                                             user_id BIGINT NOT NULL,
-                                            quiet_start DATETIME NOT NULL,
-                                            quiet_end DATETIME NOT NULL,
+                                            quiet_start TIME NOT NULL,
+                                            quiet_end TIME NOT NULL,
                                             enabled BOOLEAN,
 
                                             CONSTRAINT fk_ns_user FOREIGN KEY (user_id) REFERENCES `user`(id)

@@ -14,4 +14,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     @EntityGraph(attributePaths = { "productIngredients", "productIngredients.ingredient" })
     List<Product> findByPrdlstNmContaining(String prdlstNm);
+
+    @EntityGraph(attributePaths = { "productIngredients", "productIngredients.ingredient" })
+    List<Product> findAllByPrdlstNmIn(java.util.Collection<String> names);
 }

@@ -73,7 +73,7 @@ public class FcmTokenService {
     public void deactivateToken(String token) {
         fcmTokenRepository.findByToken(token)
                 .ifPresent(t -> {
-                    log.info("유효하지 않은 FCM 토큰 비활성화 처리: token={}", token);
+                    log.info("유효하지 않은 FCM 토큰 비활성화 처리: userId={}", t.getUserId());
                     t.changeActive(false);
                 });
     }

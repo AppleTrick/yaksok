@@ -11,11 +11,14 @@ import com.ssafy.yaksok.security.token.JwtTokenProvider;
 import com.ssafy.yaksok.user.entity.User;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import com.ssafy.yaksok.global.ratelimit.RateLimiter;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.time.Duration;
 
 @Slf4j
 @RestController
@@ -27,6 +30,10 @@ public class AuthController {
     private final AuthService authService;
     private final JwtTokenProvider jwtTokenProvider;
     private final CookieUtil cookieUtil;
+    private final RateLimiter rateLimiter;
+
+    @Value("${app.frontend-url}")
+    private String frontendUrl;
 
     // 회원가입
     @PostMapping("/signup")
@@ -55,6 +62,7 @@ public class AuthController {
     public ResponseEntity<ApiResponse<LoginResponse>> login(
             @RequestBody LoginRequest request
     ) {
+        rateLimiter.check("login", request.getEmail(), 10, Duration.ofSeconds(30));
         User user = authService.login(request);
         String accessToken = jwtTokenProvider.createAccessToken(user.getId());
 
@@ -75,7 +83,7 @@ public class AuthController {
         User user = authService.KakaoLogin(userInfo);
         String accessToken = jwtTokenProvider.createAccessToken(user.getId());
 
-        return OAuthResponseUtil.redirectWithCookies("http://localhost:3000/", cookieUtil.createAccessToken(accessToken));
+        return OAuthResponseUtil.redirectWithCookies(frontendUrl, cookieUtil.createAccessToken(accessToken));
     }
 
     // 로그아웃
@@ -84,16 +92,5 @@ public class AuthController {
         return ResponseUtil.okWithCookies(
                 cookieUtil.deleteAccessToken()
         );
-    }
-
-    @GetMapping("/test/login")
-    public ResponseEntity<ApiResponse<LoginResponse>> testLogin(){
-        User user = authService.getTestUser();
-
-        String accessToken = jwtTokenProvider.createAccessToken(user.getId());
-
-        return ResponseUtil.okWithCookies(
-                new LoginResponse(user.getName()),
-                cookieUtil.createAccessToken(accessToken));
     }
 }

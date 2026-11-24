@@ -17,12 +17,16 @@ import com.ssafy.yaksok.notification.repository.NotificationSettingRepository;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
+import java.time.DayOfWeek;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -37,6 +41,7 @@ public class NotificationService {
     private final FcmSender fcmSender;
     private final SseService sseService;
 
+    @Transactional
     public NotificationEnableToggleResponse enableToggleNotification(long userId, long notificationId) {
         Notification notification = verifyNotification(userId, notificationId);
 
@@ -65,7 +70,7 @@ public class NotificationService {
     @Transactional
     public void snoozeNotification(long userId, long notificationId) {
         Notification notification = verifyNotification(userId, notificationId);
-        notification.snoozeTime();
+        notification.snooze(LocalDateTime.now());
     }
 
     @Transactional
@@ -95,7 +100,8 @@ public class NotificationService {
 
         return new NotificationProductResponse(notification.getId(), notification.getUserId(),
                 notification.getUserProductId(),
-                notification.getIntakeTime(), notification.getEnabled(), notification.getCategory());
+                notification.getIntakeTime(), notification.getEnabled(), notification.getCategory(),
+                notification.days().stream().map(DayOfWeek::getValue).sorted().toList());
     }
 
     @Transactional
@@ -104,20 +110,32 @@ public class NotificationService {
 
         notification.setCategory(request.getCategory());
         notification.setTime(request.getIntakeTime());
+        if (request.getDaysOfWeek() != null) {
+            notification.changeDays(toDays(request.getDaysOfWeek()));
+        }
 
         return new NotificationResponse(request.getNotificationId(), notification.getEnabled());
     }
 
-    public void editNotificationSetting(long userId, NotificationSettingEditRequest request) {
-        NotificationSetting notificationSetting = verifyNotificationSetting(userId, request.getNotificationId());
+    @Transactional(readOnly = true)
+    public NotificationSettingResponse getNotificationSetting(long userId) {
+        return notificationSettingRepository.findByUserId(userId)
+                .map(NotificationSettingResponse::from)
+                .orElseGet(NotificationSettingResponse::off);
+    }
 
-        if (request.isEnabled()) {
-            notificationSetting.enable();
-        } else {
-            notificationSetting.disable();
-        }
+    /** 방해금지 시간은 사용자마다 하나. 없으면 만들고 있으면 고친다. */
+    @Transactional
+    public NotificationSettingResponse saveNotificationSetting(long userId, LocalTime start, LocalTime end, boolean enabled) {
+        NotificationSetting setting = notificationSettingRepository.findByUserId(userId)
+                .orElseGet(() -> NotificationSetting.create(userId, start, end, enabled));
+        setting.changeQuietTime(start, end);
+        if (enabled) setting.enable(); else setting.disable();
+        return NotificationSettingResponse.from(notificationSettingRepository.save(setting));
+    }
 
-        notificationSetting.changeQuietTime(request.getQuietStart(), request.getQuietEnd());
+    private static Set<DayOfWeek> toDays(List<Integer> days) {
+        return days.stream().map(DayOfWeek::of).collect(Collectors.toSet());
     }
 
     public Notification verifyNotification(long userId, long notificationId) {
@@ -129,17 +147,6 @@ public class NotificationService {
         }
 
         return notification;
-    }
-
-    public NotificationSetting verifyNotificationSetting(long userId, long notificationSettingId) {
-        NotificationSetting notificationSetting = notificationSettingRepository.findById(notificationSettingId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.NOTIFICATION_SETTING_NOT_FOUND));
-
-        if (notificationSetting.getUserId() != userId) {
-            throw new BusinessException(ErrorCode.NOTIFICATION_LOG_NOT_FOUND);
-        }
-
-        return notificationSetting;
     }
 
     public NotificationLog verifyNotificationLog(long userId, long notificationLogId) {
@@ -185,89 +192,47 @@ public class NotificationService {
                 java.util.Arrays.asList(1L));
     }
 
-    @org.springframework.transaction.annotation.Transactional
-    public void resetDailyNotifications() {
-        log.info("데일리 알림 상태 초기화 시작");
-        notificationRepository.resetAllIntakenStatus();
-        log.info("데일리 알림 상태 초기화 완료");
-    }
-
-    @Async("notificationExecutor")
+    /**
+     * 매분 한 번. @Async를 떼어 ShedLock이 실제 처리가 끝날 때까지 잠기게 했다
+     * (비동기일 때는 큐에 넣자마자 잠금이 풀려 여러 서버가 중복 발송할 수 있었다).
+     */
     @Transactional
-    public void processNotifications() {
-        LocalTime now = LocalTime.now();
-        log.info("🔔 알람 전송 프로세스 시작 [현재 시각: {}]", now);
+    public void processNotifications(LocalDateTime now) {
+        notificationRepository.fillMissingStateDate(now.toLocalDate());
+        notificationRepository.startNewDay(now.toLocalDate());
 
-        long totalPendingCount = notificationRepository.countByEnabledTrueAndIntakenFalse();
-        List<Notification> notifications = notificationRepository.findSendableNotifications(now);
+        Map<Long, List<Notification>> dueByUser = notificationRepository
+                .findAllByEnabledTrueAndIntakenFalseAndIntakeTimeLessThanEqual(now.toLocalTime()).stream()
+                .filter(n -> n.isDue(now))
+                .collect(Collectors.groupingBy(Notification::getUserId));
 
-        log.info("📊 알람 현황: 전체 미복용 알림={}건, 현재 발송 대상={}건", totalPendingCount, notifications.size());
-
-        // 사용자별로 알림 그룹화 (Bundling)
-        java.util.Map<Long, java.util.List<Notification>> groupedByUserId = notifications.stream()
-                .collect(java.util.stream.Collectors.groupingBy(Notification::getUserId));
-
-        for (java.util.Map.Entry<Long, java.util.List<Notification>> entry : groupedByUserId.entrySet()) {
-            Long userId = entry.getKey();
-            java.util.List<Notification> userNotifications = entry.getValue();
-
-            if (isQuietTime(userId, now)) {
-                log.info("알람 전송 스킵: 방해금지 시간 설정됨 - userId={}", userId);
-                continue;
+        dueByUser.forEach((userId, due) -> {
+            if (isQuietTime(userId, now.toLocalTime())) return;   // 방해금지가 끝나면 그때 울린다
+            if (deliver(userId, due)) {
+                due.forEach(n -> n.markSent(now));
+                notificationRepository.saveAll(due);
+            } else {
+                // 보낼 길이 없으면 보낸 것으로 치지 않는다. 접속하거나 알림을 허용하면 그때 울린다.
+                log.info("알림을 보낼 경로가 없음: userId={}, count={}", userId, due.size());
             }
-
-            // 메시지 구성 (예: "비타민C, 오메가3 드실 시간입니다.")
-            String nicknames = userNotifications.stream()
-                    .map(Notification::getNickname)
-                    .collect(java.util.stream.Collectors.groupingBy(java.util.function.Function.identity(),
-                            java.util.stream.Collectors.counting()))
-                    .keySet()
-                    .stream()
-                    .collect(java.util.stream.Collectors.joining(", "));
-            String body = nicknames + "을(를) 복용할 시간입니다.";
-
-            java.util.List<Long> notificationIds = userNotifications.stream()
-                    .map(Notification::getId)
-                    .collect(java.util.stream.Collectors.toList());
-            java.util.List<Long> userProductIds = userNotifications.stream()
-                    .map(Notification::getUserProductId)
-                    .collect(java.util.stream.Collectors.toList());
-
-            List<UserFcmToken> tokens = fcmTokenService.findAllByUserIdAndActiveTrue(userId);
-            boolean isSseConnected = sseService.isUserConnected(userId);
-
-            if (!isSseConnected && tokens.isEmpty()) {
-                log.info("알람 전송 스킵: SSE 연결 없음 및 FCM 토큰 없음 - userId={}", userId);
-                continue;
-            }
-
-            // 1. SSE 우선 발송 시도
-            if (isSseConnected) {
-                log.info("SSE 알람 번들 전송 (활성 연결 감지): userId={}, count={}", userId, userNotifications.size());
-                sseService.sendNotification(userId,
-                        new SseNotificationResponse(notificationIds, userProductIds, body, "MEDICATION"));
-                rescheduleAfterSend(userNotifications);
-                continue;
-            }
-
-            // 2. SSE 연결이 없는 경우에만 FCM 발송
-            if (!tokens.isEmpty()) {
-                log.info("FCM 알람 번들 전송 (비활성/백그라운드 대응): userId={}, tokens={}, count={}",
-                        userId, tokens.size(), userNotifications.size());
-                for (UserFcmToken token : tokens) {
-                    fcmSender.sendWeb(token.getToken(), "💊 복약 알림", body, notificationIds, userProductIds);
-                }
-                rescheduleAfterSend(userNotifications);
-            }
-        }
-        log.info("알람 전송 프로세스 종료");
+        });
     }
 
-    // 발송 직후에도 next_notify가 갱신되지 않으면 같은 알림이 매분 배치마다
-    // 계속 재발송되므로(intaken=false인 동안 무한 반복), 발송 후 쿨다운을 둔다.
-    private void rescheduleAfterSend(List<Notification> sentNotifications) {
-        sentNotifications.forEach(Notification::snoozeTime);
-        notificationRepository.saveAll(sentNotifications);
+    /** 앱이 열려 있으면 SSE, 아니면 푸시. 하나라도 실제로 나갔을 때만 true */
+    private boolean deliver(Long userId, List<Notification> due) {
+        String body = due.stream().map(Notification::getNickname).distinct().collect(Collectors.joining(", "))
+                + " 드실 시간이에요.";
+        List<Long> ids = due.stream().map(Notification::getId).toList();
+        List<Long> userProductIds = due.stream().map(Notification::getUserProductId).toList();
+
+        if (sseService.sendNotification(userId, new SseNotificationResponse(ids, userProductIds, body, "MEDICATION"))) {
+            return true;
+        }
+        boolean sent = false;
+        for (UserFcmToken token : fcmTokenService.findAllByUserIdAndActiveTrue(userId)) {
+            sent |= fcmSender.sendWeb(token.getToken(), "💊 복약 알림", body, ids, userProductIds);
+        }
+        return sent;
     }
 
     private boolean isQuietTime(Long userId, LocalTime now) {
@@ -286,13 +251,6 @@ public class NotificationService {
         return !now.isBefore(start) || !now.isAfter(end);
     }
 
-    private void sendByPlatform(UserFcmToken token, Notification notification) {
-        String body = notification.getNickname() + "을 복용할 시간입니다.";
-        fcmSender.sendWeb(token.getToken(), "💊 복약 알림", body,
-                java.util.Arrays.asList(notification.getId()),
-                java.util.Arrays.asList(notification.getUserProductId()));
-    }
-
     public Optional<UserFcmToken> findByUserIdAndPlatform(long userId, NotificationEnums.Platform platform) {
         return fcmTokenService.findByUserIdAndPlatform(userId, platform);
     }
@@ -302,7 +260,7 @@ public class NotificationService {
 
         Notification notification = Notification.create(userId, notificationRequest.getUserProductId(),
                 notificationRequest.getNickname(),
-                notificationRequest.getIntakeTime(), LocalTime.now(), notificationRequest.getCategory(),
+                notificationRequest.getIntakeTime(), notificationRequest.getCategory(),
                 true, false);
 
         notification = notificationRepository.save(notification);
@@ -312,14 +270,9 @@ public class NotificationService {
 
     public void createNotification(long userId, long userProductId, String nickName, LocalTime inTakeTime,
             NotificationEnums.Category category) {
-        Notification notification = Notification.create(userId, userProductId, nickName, inTakeTime, LocalTime.now(),
+        Notification notification = Notification.create(userId, userProductId, nickName, inTakeTime,
                 category, true, false);
         notificationRepository.save(notification);
-    }
-
-    public void createNotificationSetting(long userId, NotificationSettingRequest request) {
-        NotificationSetting notificationSetting = NotificationSetting.create(userId, request.getQuietStart(),
-                request.getQuietEnd(), true);
     }
 
     public List<Notification> findAllByUserId(long userId) {
@@ -330,7 +283,8 @@ public class NotificationService {
         return notificationRepository.findByUserIdAndUserProductId(userId, productId);
     }
 
-    public void deleteNotification(long notificationId) {
-        notificationRepository.deleteById(notificationId);
+    @Transactional
+    public void deleteNotification(long userId, long notificationId) {
+        notificationRepository.delete(verifyNotification(userId, notificationId));
     }
 }

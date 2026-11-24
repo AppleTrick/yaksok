@@ -16,6 +16,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import jakarta.servlet.DispatcherType;
 import java.util.List;
 
 @Configuration
@@ -44,7 +45,8 @@ public class SecurityConfig {
                                 // 3. 인가 정책
                                 .authorizeHttpRequests(auth -> auth
                                                 .requestMatchers(SecurityUrls.PUBLIC).permitAll()
-                                                .requestMatchers("/api/v1/notification/subscribe").permitAll()
+                                                // 로그인 확인은 처음 요청에서 끝났다. SSE가 끊길 때의 후속 처리까지 막지 않는다
+                                                .dispatcherTypeMatchers(DispatcherType.ASYNC, DispatcherType.ERROR).permitAll()
                                                 .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**")
                                                 .permitAll()
                                                 .anyRequest().authenticated())
