@@ -1,51 +1,31 @@
 "use client";
 
-
 import Link from 'next/link';
-import { Home, Pill, Settings, Bell, User } from 'lucide-react';
+import { Bell, Camera, Home, Pill, Settings } from 'lucide-react';
 import { usePathname } from 'next/navigation';
-import { motion } from 'framer-motion';
 import './styles.css';
+
+const HIDDEN = ['/camera', '/report', '/login', '/signup', '/find-password'];
+const ITEMS = [
+    { href: '/', icon: Home, label: '홈' },
+    { href: '/my-supplements', icon: Pill, label: '내 영양제' },
+    { href: '/camera', icon: Camera, label: '찍기', main: true },
+    { href: '/reminders', icon: Bell, label: '알림' },
+    { href: '/settings', icon: Settings, label: '설정' },
+];
 
 export default function BottomTabBar() {
     const pathname = usePathname();
-
-    // Hide tab bar on camera and report page to allow full screen UI
-    // Hide tab bar on camera, report, and auth pages (login/signup)
-    if (pathname === '/camera' || pathname === '/report' || pathname === '/login' || pathname === '/signup' || pathname === '/find-password') {
-        return null;
-    }
-
-
-    const navItems = [
-        { href: '/', icon: Home, label: '홈' },
-        { href: '/my-supplements', icon: Pill, label: '내 영양제' },
-        { href: '/settings', icon: Settings, label: '설정' },
-    ];
+    if (HIDDEN.includes(pathname)) return null;
 
     return (
-        <nav className="bottom-tab-bar">
-            {navItems.map((item) => {
-                const isActive = pathname === item.href;
+        <nav className="bottom-tab-bar" aria-label="주요 메뉴">
+            {ITEMS.map(({ href, icon: Icon, label, main }) => {
+                const active = pathname === href;
                 return (
-                    <Link key={item.href} href={item.href} className={`tab-item ${isActive ? 'active' : ''}`}>
-                        <motion.div
-                            className="tab-item-content"
-                            whileTap={{ scale: 0.9 }}
-                            whileHover={{ y: -2 }}
-                            style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}
-                        >
-                            <item.icon size={24} />
-                            <span>{item.label}</span>
-                            {isActive && (
-                                <motion.div
-                                    layoutId="activeTab"
-                                    className="active-indicator"
-                                    initial={false}
-                                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                                />
-                            )}
-                        </motion.div>
+                    <Link key={href} href={href} aria-current={active ? 'page' : undefined} className={`tab-item ${active ? 'active' : ''} ${main ? 'main' : ''}`}>
+                        <span className="tab-icon"><Icon size={main ? 26 : 23} /></span>
+                        <span>{label}</span>
                     </Link>
                 );
             })}

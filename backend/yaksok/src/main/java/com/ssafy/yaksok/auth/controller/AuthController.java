@@ -38,7 +38,7 @@ public class AuthController {
     // 회원가입
     @PostMapping("/signup")
     public ResponseEntity<ApiResponse<Void>> signup(
-            @RequestBody SignupRequest request
+            @jakarta.validation.Valid @RequestBody SignupRequest request
     ) {
 
         authService.signUp(request);

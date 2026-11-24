@@ -18,9 +18,7 @@ export async function saveFCMToken(token: string, deviceType: 'web' | 'android' 
     };
 
     try {
-        console.log('📤 FCM 토큰 전송 Payload:', payload);
         const response = await axiosInstance.post('/api/v1/notification/token', payload);
-        console.log('FCM 토큰 저장 완료:', token);
         return response.data;
     } catch (error: any) {
         // [임시 조치] 백엔드 수정 전까지 중복 키 에러(500) 또는 Conflict(409) 무시

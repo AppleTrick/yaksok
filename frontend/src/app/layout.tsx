@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "yaksok",
-  description: "Premium appointment scheduling app",
+  title: "약속",
+  description: "영양제를 찍으면 성분을 확인하고 제때 알려 드려요",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
@@ -25,15 +25,13 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#000000",
+  themeColor: "#F5F6F8",
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
 };
 
 import BottomTabBar from "../layout/BottomTabBar";
 import NotificationManagerEnhanced from "@/features/notification/components/NotificationManagerEnhanced";
-import { FCMPermissionRequest } from "@/features/notification";
 import { ScheduleProvider } from "@/features/notification/contexts/ScheduleContext";
 import { ReportProvider } from "@/features/report/contexts/ReportContext";
 import PageTransition from "@/components/common/PageTransition";
@@ -70,7 +68,6 @@ export default function RootLayout({
                 <React.Suspense fallback={null}>
                   <NotificationManagerEnhanced />
                 </React.Suspense>
-                <FCMPermissionRequest />
               </AppContainer>
               <BottomTabBar />
             </ReportProvider>

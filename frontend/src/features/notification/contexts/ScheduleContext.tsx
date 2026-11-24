@@ -2,7 +2,8 @@
 
 import React, { createContext, useContext, useState, ReactNode, useEffect, useCallback } from 'react';
 import { MedicationItem, MealCategory } from '../types';
-import { getTodayIntakes, checkIntake, TodayIntake } from '../api/intakeApi';
+import { getTodayIntakes, checkIntake } from '../api/intakeApi';
+import { Alarm, fetchAlarms, formatTime, parseDays } from '@/features/alarms/api';
 
 // 1. Define Types
 export interface Schedule {
@@ -72,7 +73,7 @@ export const ScheduleProvider = ({ children }: { children: ReactNode }) => {
         if (savedTab) setActiveTab(savedTab as 'daily' | 'weekly');
 
         // Initial fetch
-        refreshSchedules();
+        if (!['/login', '/signup', '/find-password'].includes(window.location.pathname)) refreshSchedules();
     }, []);
 
     useEffect(() => {
@@ -84,7 +85,8 @@ export const ScheduleProvider = ({ children }: { children: ReactNode }) => {
         setIsLoading(true);
         try {
             // 1. Fetch Today's Intakes from Backend
-            const todayIntakes = await getTodayIntakes();
+            const [todayIntakes, alarms] = await Promise.all([getTodayIntakes(), fetchAlarms()]);
+            const alarmOf = new Map<number, Alarm>(alarms.map(a => [a.userProductId, a]));
 
             if (!todayIntakes || todayIntakes.length === 0) {
                 setSchedules([]);
@@ -112,18 +114,27 @@ export const ScheduleProvider = ({ children }: { children: ReactNode }) => {
                 status: 'taking'
             }));
 
-            const todaySchedule: Schedule = {
-                id: 'today-schedule',
-                time: '오늘의 복용',
-                rawTime: '09:00', // Default
-                mealCategory: 'post_meal',
-                label: '오늘 섭취할 영양제',
-                status: 'upcoming',
-                items: convertedItems,
-                isActive: true
-            };
+            // 같은 시각의 약끼리 묶는다. 알림이 없는 약은 "시간 없음"으로 맨 뒤에 둔다.
+            const groups = new Map<string, MedicationItem[]>();
+            convertedItems.forEach(item => {
+                const alarm = alarmOf.get(Number(item.id));
+                const key = alarm?.intakeTime?.slice(0, 5) ?? '';
+                if (alarm) item.cycle = { type: 'weekly', daysOfWeek: parseDays(alarm.daysOfWeek).map(d => d % 7) };
+                groups.set(key, [...(groups.get(key) ?? []), item]);
+            });
+            setSchedules([...groups.entries()]
+                .sort(([a], [b]) => (a || '99').localeCompare(b || '99'))
+                .map(([time, items]) => ({
+                    id: time || 'no-time',
+                    time: time ? formatTime(time) : '시간 없음',
+                    rawTime: time || '09:00',
+                    mealCategory: 'post_meal' as MealCategory,
+                    label: '오늘 섭취할 영양제',
+                    status: 'upcoming' as const,
+                    items,
+                    isActive: true
+                })));
 
-            setSchedules([todaySchedule]);
 
         } catch (error) {
             console.error("Failed to fetch schedules:", error);
