@@ -3,7 +3,7 @@ import asyncio
 import pytest
 
 from app.admission import AdmissionGate, Overloaded
-from app.scan.onnx_pipeline import InvalidImage, confirmed_name, decode
+from app.scan.onnx_pipeline import InvalidImage, confirmed_name, decode, usable
 from app.scan.product_matcher import Line, ProductMatcher
 
 
@@ -52,3 +52,8 @@ def test_close_second_candidate_is_never_confirmed():
     assert confirmed_name([{"name": "공스킨 비타민D", "score": .936}, {"name": "공스킨 비타민C", "score": .934}]) == ""
     assert confirmed_name([{"name": "일양비타민C&D1000", "score": .758}, {"name": "다른 제품", "score": .462}]) == "일양비타민C&D1000"
     assert confirmed_name([{"name": "낮은 점수", "score": .4}]) == ""
+
+
+def test_unreadable_label_gives_no_candidates():
+    assert usable([{"name": "12종혼합유산균", "score": .295}]) == []
+    assert len(usable([{"name": "메가도스C", "score": .45}, {"name": "다른 제품", "score": .2}])) == 1

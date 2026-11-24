@@ -143,7 +143,7 @@ export default function CaptureStep({ onCapture, onFileUpload }: CaptureStepProp
                     </div>
                 </RatioBox>
                 <p className="guide-text">
-                    {cameraError ? <>카메라를 쓸 수 없어요<br /><span>갤러리에서 사진을 골라 주세요</span></> : <>제품 이름이 보이는 앞면을<br /><span>여러 개도 한 번에 찍을 수 있어요</span></>}
+                    {cameraError ? <>카메라를 쓸 수 없어요<br /><span>갤러리에서 사진을 골라 주세요</span></> : <>이름이 보이는 병 앞면을<br /><span>여러 개도 한 번에 찍을 수 있어요</span></>}
                 </p>
             </div>
 

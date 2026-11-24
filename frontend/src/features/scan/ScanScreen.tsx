@@ -7,7 +7,7 @@ import { Candidate, ScanError, ScanResult, analyze, register } from './types';
 import './scan.css';
 
 const STEPS: { key: string; label: string; icon: React.ReactNode; phases: Phase[] }[] = [
-    { key: 'detect', label: '약 찾기', icon: <ScanLine size={16} />, phases: ['detect', 'read', 'done'] },
+    { key: 'detect', label: '병 찾기', icon: <ScanLine size={16} />, phases: ['detect', 'read', 'done'] },
     { key: 'ocr', label: '글자 읽기', icon: <ScanText size={16} />, phases: ['read', 'done'] },
     { key: 'match', label: '제품 찾기', icon: <Search size={16} />, phases: ['done'] },
 ];
@@ -77,7 +77,7 @@ export default function ScanScreen({ src, onRetake, onDone }: { src: string; onR
             {phase === 'done' && result && (
                 <section className="sc-result">
                     {result.products.length === 0 ? (
-                        <div className="sc-empty"><CircleHelp size={28} /><strong>영양제를 찾지 못했어요</strong><p>제품 이름이 보이는 앞면을 밝은 곳에서 찍어 주세요.</p></div>
+                        <div className="sc-empty"><CircleHelp size={28} /><strong>영양제 병이나 상자를 찾지 못했어요</strong><p>알약만으로는 제품을 알 수 없어요. 이름이 보이는 병 앞면을 찍어 주세요.</p></div>
                     ) : (
                         <>
                             <p className="sc-summary" role="status">
@@ -117,7 +117,7 @@ function Picker({ candidates, sure, onSaved }: { candidates: Candidate[]; sure: 
     const c = candidates.find((x) => x.name === picked);
 
     if (!candidates.length) {
-        return <div className="sc-empty"><CircleHelp size={28} /><strong>제품 이름을 찾지 못했어요</strong><p>알약만 찍혔거나 글자가 작을 수 있어요.</p></div>;
+        return <div className="sc-empty"><CircleHelp size={28} /><strong>이 사진으로는 제품을 알 수 없어요</strong><p>병이나 상자에서 이름을 읽지 못했어요. 이름이 크게 보이게 다시 찍어 주세요.</p></div>;
     }
 
     const save = async () => {

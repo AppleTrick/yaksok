@@ -1,12 +1,15 @@
 """YOLO(ONNX) → RapidOCR(PP-OCRv5 한국어 ONNX) → 제품명 맞추기.
 
+YOLO가 찾는 것은 알약이 아니라 영양제 병·상자다. 찾은 것 안의 글자만 읽는다.
+병을 못 찾거나 이름을 읽을 수 없으면 추측하지 않고 판별 불가로 답한다.
+
 PyTorch도 Paddle도 올라오지 않는다. 실행기는 onnxruntime 하나라서
 두 프레임워크가 OpenMP DLL을 두고 충돌하던 문제가 생기지 않는다.
 """
 import io
 import os
 import time
-from typing import List, Optional, Tuple
+from typing import List, Tuple
 
 import cv2
 import numpy as np
@@ -26,6 +29,8 @@ MIN_OCR_SCORE = 0.5
 # "공스킨 비타민D"(0.936 대 0.934)로 확정하는 일이 생겼다. 나머지는 사용자가 후보에서 고른다.
 CONFIRM_SCORE = 0.6
 CONFIRM_MARGIN = 0.1
+# 이보다 낮으면 읽은 글자로는 제품을 알 수 없다고 보고 후보를 내지 않는다 (알약·블리스터 뒷면 등)
+MIN_CANDIDATE_SCORE = 0.35
 ALLOWED_FORMATS = {"JPEG", "MPO", "PNG", "WEBP"}   # MPO: 휴대폰이 JPEG 확장자로 저장하는 형식
 
 Image.MAX_IMAGE_PIXELS = MAX_PIXELS
@@ -33,6 +38,10 @@ Image.MAX_IMAGE_PIXELS = MAX_PIXELS
 
 class InvalidImage(ValueError):
     pass
+
+
+def usable(candidates: list) -> list:
+    return [c for c in candidates if c["score"] >= MIN_CANDIDATE_SCORE]
 
 
 def confirmed_name(candidates: list) -> str:
@@ -146,12 +155,12 @@ class OnnxPipeline:
 
         results, ocr_s, match_s = [], 0.0, 0.0
 
-        def add(box: Optional[tuple], conf: float, items, dx: int, dy: int):
+        def add(box: tuple, conf: float, items, dx: int, dy: int):
             nonlocal match_s
             t = time.perf_counter()
-            candidates = self.matcher.match([line for line, _ in items])
+            candidates = usable(self.matcher.match([line for line, _ in items]))
             match_s += time.perf_counter() - t
-            x0, y0, x1, y1 = box or (0, 0, w, h)
+            x0, y0, x1, y1 = box
             results.append({
                 "box": [x0 / w, y0 / h, x1 / w, y1 / h],
                 "confidence": round(conf, 3),
@@ -170,19 +179,10 @@ class OnnxPipeline:
             ocr_s += time.perf_counter() - t
             add(box, conf, items, x0, y0)
 
-        # 탐지를 놓쳤거나 글자를 거의 못 읽었으면 사진 전체를 한 번 읽는다
-        if not detections or all(len(r["ocr_text"]) < 8 for r in results):
-            t = time.perf_counter()
-            items = self._read(img)
-            ocr_s += time.perf_counter() - t
-            if items:
-                results = [r for r in results if r["ocr_text"]]
-                add(None, 0.0, items, 0, 0)
-
         ms = lambda s: round(s * 1000)
         return {
             "success": True,
-            "message": "ok" if results else "영양제를 찾지 못했습니다",
+            "message": "ok" if results else "영양제 병이나 상자를 찾지 못했습니다",
             "step": "ONNX",
             "analysis_results": results,
             "timings_ms": {"decode": ms(t1 - t0), "detect": ms(t2 - t1), "ocr": ms(ocr_s), "match": ms(match_s),
