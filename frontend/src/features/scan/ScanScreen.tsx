@@ -47,7 +47,7 @@ export default function ScanScreen({ src, onRetake, onDone }: { src: string; onR
         <div className="sc-page">
             <header className="sc-top">
                 <button aria-label="닫기" onClick={onRetake}><X size={22} /></button>
-                <strong>{phase === 'done' && result?.products.length ? '이 제품이 맞나요?' : 'AI 스캔'}</strong>
+                <strong>{phase === 'done' && found?.candidates.length && !saved[selected] ? '이 제품이 맞나요?' : 'AI 스캔'}</strong>
                 <span />
             </header>
 
@@ -59,7 +59,7 @@ export default function ScanScreen({ src, onRetake, onDone }: { src: string; onR
                     return (
                         <li key={s.key} className={on ? 'on' : analyzing ? 'wait' : ''}>
                             {s.icon}<span>{s.label}</span>
-                            <b>{on && result ? sec(result.timings[s.key] ?? 0) : '–'}</b>
+                            <b>{!on || !result ? '–' : s.key in result.timings ? sec(result.timings[s.key]) : '완료'}</b>
                         </li>
                     );
                 })}
@@ -81,7 +81,7 @@ export default function ScanScreen({ src, onRetake, onDone }: { src: string; onR
                     ) : (
                         <>
                             <p className="sc-summary" role="status">
-                                {result.products.length}개를 찾고 글자 {result.products.reduce((n, p) => n + p.texts.length, 0)}줄을 읽었어요 · 전체 {sec(result.totalMs)}
+                                {result.products.length}개를 찾{result.legacy ? '았어요' : `고 글자 ${result.products.reduce((n, p) => n + p.texts.length, 0)}줄을 읽었어요`} · 전체 {sec(result.totalMs)}
                             </p>
                             {result.products.length > 1 && (
                                 <div className="sc-tabs" role="tablist">
@@ -94,7 +94,7 @@ export default function ScanScreen({ src, onRetake, onDone }: { src: string; onR
                             )}
                             {found && (saved[selected]
                                 ? <div className="sc-saved"><Check size={20} /> {saved[selected]} 등록했어요</div>
-                                : <Picker key={selected} candidates={found.candidates} sure={found.name} onSaved={(name) => setSaved((s) => ({ ...s, [selected]: name }))} />)}
+                                : <Picker key={selected} candidates={found.candidates} sure={found.name} legacy={result.legacy} onSaved={(name) => setSaved((s) => ({ ...s, [selected]: name }))} />)}
                         </>
                     )}
                     <div className="sc-actions">
@@ -108,7 +108,7 @@ export default function ScanScreen({ src, onRetake, onDone }: { src: string; onR
 }
 
 /** 사람이 고르기 전에는 아무것도 등록하지 않는다 */
-function Picker({ candidates, sure, onSaved }: { candidates: Candidate[]; sure: string | null; onSaved: (name: string) => void }) {
+function Picker({ candidates, sure, legacy, onSaved }: { candidates: Candidate[]; sure: string | null; legacy: boolean; onSaved: (name: string) => void }) {
     const [picked, setPicked] = useState<string | null>(null);
     const [time, setTime] = useState('09:00');
     const [category, setCategory] = useState('AFTERMEAL');
@@ -142,12 +142,12 @@ function Picker({ candidates, sure, onSaved }: { candidates: Candidate[]; sure: 
                         <button aria-pressed={picked === x.name} onClick={() => setPicked(x.name)}>
                             <span className="sc-radio">{picked === x.name && <Check size={14} />}</span>
                             <span className="sc-cand-name">{x.name}{sure === x.name && <em>유력</em>}</span>
-                            <span className="sc-score">{Math.round(x.score * 100)}</span>
+                            {x.score !== null && <span className="sc-score">{Math.round(x.score * 100)}</span>}
                         </button>
                     </li>
                 ))}
             </ul>
-            <p className="sc-hint">숫자는 사진의 글자와 겹치는 정도예요. 포장의 이름과 함량을 꼭 비교해 주세요.</p>
+            <p className="sc-hint">{legacy ? '성분은 AI가 추정한 값일 수 있어요. ' : '숫자는 사진의 글자와 겹치는 정도예요. '}포장의 이름과 함량을 꼭 비교해 주세요.</p>
             {c && (
                 <div className="sc-detail">
                     {c.ingredients.length ? (
