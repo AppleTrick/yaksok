@@ -86,7 +86,7 @@ class UserServiceTest {
             // when & then
             assertThatThrownBy(() -> userService.authenticate(TEST_EMAIL, TEST_PASSWORD))
                     .isInstanceOf(BusinessException.class)
-                    .hasFieldOrPropertyWithValue("errorCode", ErrorCode.AUTH_LOGIN_FAIL);
+                    .hasFieldOrPropertyWithValue("errorCode", ErrorCode.USER_NOT_FOUND);
 
             verify(userRepository).findByEmail(TEST_EMAIL);
             verify(passwordEncoder, never()).matches(anyString(), anyString());
@@ -164,7 +164,8 @@ class UserServiceTest {
             signupRequest.setEmail(TEST_EMAIL);
             signupRequest.setPassword(TEST_PASSWORD);
             signupRequest.setName(TEST_NAME);
-            signupRequest.setGender("M");
+            signupRequest.setGender(UserEnums.Gender.MALE.name());
+            signupRequest.setAgeGroup(UserEnums.AgeGroup.TWENTY.name());
 
             given(userRepository.existsByEmail(TEST_EMAIL)).willReturn(false);
             given(passwordEncoder.encode(TEST_PASSWORD)).willReturn(TEST_ENCODED_PASSWORD);
