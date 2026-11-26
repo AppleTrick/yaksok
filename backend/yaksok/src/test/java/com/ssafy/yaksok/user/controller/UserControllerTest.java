@@ -103,7 +103,7 @@ class UserControllerTest {
         Disease allDisease = Disease.builder().id(20L).sickName("감기").build();
 
         ProductIngredientResponse ingredient = new ProductIngredientResponse(
-                300L, 400L, "비타민C", new BigDecimal("500.00"), "mg");
+                300L, 400L, "비타민C", new BigDecimal("500.00"), "mg", null);
 
         UserProductResponse userProduct = new UserProductResponse(
                 100L, 200L, "멀티비타민", "매일먹는비타민", 1,
@@ -116,7 +116,7 @@ class UserControllerTest {
                 List.of(allDisease),
                 List.of(userProduct));
 
-        given(userService.getUserInfoRespone(anyLong())).willReturn(response);
+        given(userService.getUserInfoResponse(anyLong())).willReturn(response);
 
         // when & then
         mockMvc.perform(get("/api/v1/user/info"))
@@ -147,7 +147,7 @@ class UserControllerTest {
     void getUserInfo_NotFound() throws Exception {
         // given
         authenticate();
-        given(userService.getUserInfoRespone(anyLong()))
+        given(userService.getUserInfoResponse(anyLong()))
                 .willThrow(new BusinessException(ErrorCode.USER_NOT_FOUND));
 
         // when & then
@@ -163,7 +163,7 @@ class UserControllerTest {
     void getUserInfo_InternalError() throws Exception {
         // given
         authenticate();
-        given(userService.getUserInfoRespone(anyLong()))
+        given(userService.getUserInfoResponse(anyLong()))
                 .willThrow(new RuntimeException("Unexpected error"));
 
         // when & then
