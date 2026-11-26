@@ -16,7 +16,7 @@ import java.util.Map;
 
 /**
  * Groq LLM 서비스 구현체 (OpenAI 호환 API)
- * - 기본 모델(groq/compound) 호출이 실패하면 폴백 모델(qwen/qwen3.6-27b)로 자동 전환
+ * - 기본 모델(openai/gpt-oss-120b) 호출이 실패하면 폴백 모델(openai/gpt-oss-20b)로 자동 전환
  * - 401 에러 자동 보정 (따옴표 제거, 공백 제거)
  */
 @Slf4j
@@ -26,10 +26,10 @@ public class GroqLLMServiceImpl implements LLMService {
     @Value("${groq.api.key}")
     private String apiKey;
 
-    @Value("${groq.model.primary:groq/compound}")
+    @Value("${groq.model.primary:openai/gpt-oss-120b}")
     private String primaryModel;
 
-    @Value("${groq.model.fallback:qwen/qwen3.6-27b}")
+    @Value("${groq.model.fallback:openai/gpt-oss-20b}")
     private String fallbackModel;
 
     @Value("${groq.api.url:https://api.groq.com/openai/v1/chat/completions}")

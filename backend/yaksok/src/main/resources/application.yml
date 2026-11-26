@@ -58,8 +58,9 @@ groq:
     key: ${GROQ_API_KEY}
     url: ${GROQ_API_URL:https://api.groq.com/openai/v1/chat/completions}
   model:
-    primary: ${GROQ_MODEL_PRIMARY:groq/compound}
-    fallback: ${GROQ_MODEL_FALLBACK:qwen/qwen3.6-27b}
+    # groq/compound(2026-09-21), qwen/qwen3.6-27b(2026-09-14)는 Groq 서비스 종료로 404
+    primary: ${GROQ_MODEL_PRIMARY:openai/gpt-oss-120b}
+    fallback: ${GROQ_MODEL_FALLBACK:openai/gpt-oss-20b}
 
 fastapi:
   url: ${FASTAPI_URL:http://localhost:8000/ai/v1/analyze2}
