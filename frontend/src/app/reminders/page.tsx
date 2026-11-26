@@ -1,5 +1,5 @@
-import RemindersFeature from '@/features/reminders';
+import AlarmsScreen from '@/features/alarms/AlarmsScreen';
 
 export default function RemindersPage() {
-    return <RemindersFeature />;
+    return <AlarmsScreen />;
 }

@@ -339,6 +339,12 @@ public class OcrAnalysisService {
          * ProductIngredient 리스트를 기반으로 응답용 IngredientInfo 생성
          * 과다섭취 판정 포함
          */
+        /** DB에 있는 성분만. 없으면 빈 목록 (지어내지 않는다) */
+        public List<SupplementAnalysisResponse.ProductIngredientInfo> ingredientsOf(Long userId, Product product) {
+                List<ProductIngredient> list = product.getProductIngredients();
+                return list == null || list.isEmpty() ? List.of() : buildIngredientInfoList(list, getCurrentUserIntake(userId));
+        }
+
         private List<SupplementAnalysisResponse.ProductIngredientInfo> buildIngredientInfoList(
                         List<ProductIngredient> productIngredients,
                         Map<String, IngredientIntakeInfo> currentIntakeMap) {
@@ -362,7 +368,7 @@ public class OcrAnalysisService {
                         BigDecimal totalAmount = myAmount.add(amount);
 
                         // status 판정 (maxIntakeValue 초과 시 warning)
-                        String status = "safe";
+                        String status = maxIntake == null ? "unknown" : "safe";   // 상한을 모르면 안전하다고 말하지 않는다
                         if (maxIntake != null && totalAmount.compareTo(maxIntake) > 0) {
                                 status = "warning";
                         }
@@ -625,7 +631,7 @@ public class OcrAnalysisService {
 
                 BigDecimal totalAmount = myAmount.add(amountDecimal);
 
-                String status = "safe";
+                String status = maxIntake == null ? "unknown" : "safe";   // 상한을 모르면 안전하다고 말하지 않는다
                 if (maxIntake != null && totalAmount.compareTo(maxIntake) > 0) {
                         status = "warning";
                 }

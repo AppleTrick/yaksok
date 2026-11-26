@@ -125,3 +125,11 @@
         font-size: 1.1rem;
     }
 }
+
+.login-error {
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: rgba(220, 38, 38, 0.1);
+    color: #B91C1C;
+    font-size: 0.9rem;
+}

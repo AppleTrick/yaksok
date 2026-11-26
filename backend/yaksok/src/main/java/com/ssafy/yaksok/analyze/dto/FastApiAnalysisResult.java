@@ -17,6 +17,23 @@ public class FastApiAnalysisResult {
     /**
      * AI 분석 결과 목록 (객체별 좌표, 제품명, OCR 텍스트, 바코드)
      */
+    @JsonProperty("timings_ms")
+    private java.util.Map<String, Integer> timings;
+
+    @Data
+    public static class Candidate {
+        private String name;
+        private double score;
+    }
+
+    /** 읽은 글자 한 줄과 사진 위 위치 (0~1) */
+    @Data
+    public static class TextLine {
+        private String text;
+        private double score;
+        private List<List<Double>> quad;
+    }
+
     @JsonProperty("analysis_results")
     private List<RawAnalysisResult> analysisResults;
 
@@ -56,5 +73,12 @@ public class FastApiAnalysisResult {
          * null 또는 빈 문자열일 수 있음
          */
         private String barcode;
+
+        private List<Candidate> candidates;
+        private List<TextLine> texts;
+
+        public List<Candidate> candidatesOrEmpty() {
+            return candidates == null ? List.of() : candidates;
+        }
     }
 }

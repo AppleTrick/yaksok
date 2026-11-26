@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useCallback, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 
 interface SseData {
     notificationId: number;
@@ -15,7 +15,7 @@ interface SseData {
  * 시스템 알림 발생 로직을 제거하고, NotificationManager에게 위임함.
  */
 export function useSSE(onNotification?: (data: SseData) => void) {
-    const searchParams = useSearchParams();
+    const isAuthPage = ['/login', '/signup', '/find-password'].includes(usePathname());
     const [isConnected, setIsConnected] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -29,7 +29,7 @@ export function useSSE(onNotification?: (data: SseData) => void) {
     }, [onNotification]);
 
     useEffect(() => {
-        if (typeof window === 'undefined') return;
+        if (typeof window === 'undefined' || isAuthPage) return;
 
         const baseUrl = process.env.NODE_ENV === 'development'
             ? 'http://localhost:8080'
@@ -73,7 +73,7 @@ export function useSSE(onNotification?: (data: SseData) => void) {
             console.log('🔌 [useSSE] SSE 연결 해제');
             setIsConnected(false);
         };
-    }, [processNotification]);
+    }, [processNotification, isAuthPage]);
 
     return { isConnected, error };
 }

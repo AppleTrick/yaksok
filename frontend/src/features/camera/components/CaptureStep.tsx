@@ -20,6 +20,7 @@ export default function CaptureStep({ onCapture, onFileUpload }: CaptureStepProp
     const guideBoxRef = useRef<HTMLDivElement>(null);
     const streamRef = useRef<MediaStream | null>(null);
     const [isStreaming, setIsStreaming] = useState(false);
+    const [cameraError, setCameraError] = useState(false);
 
     useEffect(() => {
         startCamera();
@@ -45,7 +46,7 @@ export default function CaptureStep({ onCapture, onFileUpload }: CaptureStepProp
             }
         } catch (err) {
             console.error("Camera access error:", err);
-            alert("카메라 권한이 필요합니다.");
+            setCameraError(true);   // 카메라가 없어도 갤러리 사진으로 계속할 수 있다
         }
     };
 
@@ -122,7 +123,7 @@ export default function CaptureStep({ onCapture, onFileUpload }: CaptureStepProp
         <div className="camera-container theme-dark">
             <CameraHeader
                 title="영양제 촬영"
-                stepInfo="Step 1/3"
+                stepInfo=""
                 onClose={() => router.push('/')}
             />
 
@@ -142,8 +143,7 @@ export default function CaptureStep({ onCapture, onFileUpload }: CaptureStepProp
                     </div>
                 </RatioBox>
                 <p className="guide-text">
-                    영양제가 잘 보이도록<br />
-                    <span>카메라에 비춰주세요</span>
+                    {cameraError ? <>카메라를 쓸 수 없어요<br /><span>갤러리에서 사진을 골라 주세요</span></> : <>이름이 보이는 병 앞면을<br /><span>여러 개도 한 번에 찍을 수 있어요</span></>}
                 </p>
             </div>
 
@@ -153,14 +153,11 @@ export default function CaptureStep({ onCapture, onFileUpload }: CaptureStepProp
                     <span>갤러리</span>
                 </button>
 
-                <div className="shutter-ring" onClick={handleCapture}>
+                <button type="button" aria-label="사진 찍기" className="shutter-ring" onClick={handleCapture} disabled={!isStreaming}>
                     <div className="shutter-ball"></div>
-                </div>
+                </button>
 
-                <div className="glass-ctrl-btn">
-                    <HelpCircle size={28} />
-                    <span>도움말</span>
-                </div>
+                <span className="glass-ctrl-btn" aria-hidden style={{ visibility: "hidden" }}><HelpCircle size={28} /></span>
             </footer>
 
             <input

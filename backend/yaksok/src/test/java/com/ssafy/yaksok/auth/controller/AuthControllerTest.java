@@ -54,6 +54,9 @@ class AuthControllerTest {
     private CookieUtil cookieUtil;
 
     // === 테스트 대상 Controller ===
+    @Mock
+    private com.ssafy.yaksok.global.ratelimit.RateLimiter rateLimiter;
+
     @InjectMocks
     private AuthController authController;
 
@@ -170,8 +173,8 @@ class AuthControllerTest {
         request.setEmail(TEST_EMAIL);
         request.setPassword(TEST_PASSWORD);
         request.setName(TEST_NAME);
-        request.setAgeGroup("20대");
-        request.setGender("M");
+        request.setAgeGroup("TWENTY");   // 화면이 보내는 값
+        request.setGender("MALE");
         return request;
     }
 }

@@ -65,7 +65,7 @@ public class UserService {
         log.debug("로컬 로그인 시도: email={}", email);
 
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+                .orElseThrow(() -> new BusinessException(ErrorCode.AUTH_LOGIN_FAIL)); // 가입 여부를 알려 주지 않는다
 
         if (!passwordEncoder.matches(rawPassword, user.getPassword())) {
             log.warn("로그인 실패: 비밀번호 불일치, email={}", email);

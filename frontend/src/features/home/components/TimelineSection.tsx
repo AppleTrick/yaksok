@@ -71,11 +71,11 @@ export default function TimelineSection({ today, schedules, onToggleItem }: Time
                             </div>
                             <div className="med-card-content">
                                 <h3 className={item.isTaken ? 'taken' : ''}>{item.name}</h3>
-                                <p>{item.detail || '상세 정보 없음'}</p>
+                                {item.detail && <p>{item.detail}</p>}
                             </div>
                             <div className="med-card-action">
                                 <span className={`status-badge ${item.isTaken ? 'completed' : 'pending'}`}>
-                                    {item.isTaken ? '완료' : '대기'}
+                                    {item.isTaken ? '먹었어요' : '먹기'}
                                 </span>
                             </div>
                         </div>

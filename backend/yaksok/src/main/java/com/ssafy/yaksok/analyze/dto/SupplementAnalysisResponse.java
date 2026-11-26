@@ -18,6 +18,7 @@ import java.util.List;
 public class SupplementAnalysisResponse {
 
     private ReportData reportData;
+    private java.util.Map<String, Integer> timings; // 단계별 시간(ms): detect, ocr, match
 
     @Data
     @Builder
@@ -35,9 +36,23 @@ public class SupplementAnalysisResponse {
         private Long productId;
         private String name;
         private List<Double> box;
+        private Double confidence;
+        private List<CandidateInfo> candidates;
+        private List<FastApiAnalysisResult.TextLine> texts;
         private List<ProductIngredientInfo> ingredients;
         private String intakeTime; // HH:mm:ss 형식 (예: "08:00:00")
         private String intakeCategory; // AFTERMEAL, BEFOREMEAL, BEFORESLEEP
+    }
+
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class CandidateInfo {
+        private Long productId;
+        private String name;
+        private double score;
+        private List<ProductIngredientInfo> ingredients;
     }
 
     @Data

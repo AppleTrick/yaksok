@@ -66,7 +66,8 @@ public class SseService {
         return emitter;
     }
 
-    public void sendNotification(Long userId, Object data) {
+    /** @return 실제로 전송했으면 true */
+    public boolean sendNotification(Long userId, Object data) {
         SseEmitter emitter = emitters.get(userId);
         if (emitter != null) {
             int emitterHash = emitter.hashCode();
@@ -74,14 +75,15 @@ public class SseService {
                 emitter.send(SseEmitter.event()
                         .data(data));
                 log.info("SSE 알림 전송 완료: userId={}, hash={}", userId, emitterHash);
-            } catch (IOException e) {
+                return true;
+            } catch (IOException | IllegalStateException e) {
                 log.error("SSE 알림 전송 실패: userId={}, hash={}, error={}", userId, emitterHash, e.getMessage());
                 emitters.remove(userId, emitter);
             }
         } else {
             log.warn("SSE 알림 전송 스킵: 연결된 클라이언트 없음 - userId={}", userId);
-            log.debug("현재 연결된 사용자들: {}", emitters.keySet());
         }
+        return false;
     }
 
     /**
@@ -100,7 +102,7 @@ public class SseService {
                         .name("heartbeat")
                         .data("ping"));
                 log.debug("SSE 하트비트 전송 성공: userId={}, hash={}", userId, emitterHash);
-            } catch (IOException e) {
+            } catch (IOException | IllegalStateException e) {
                 log.debug("SSE 하트비트 전송 실패 (정상 종료로 간주): userId={}, hash={}", userId, emitterHash);
                 emitters.remove(userId, emitter);
             }

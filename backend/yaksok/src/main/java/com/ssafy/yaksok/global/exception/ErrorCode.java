@@ -47,7 +47,14 @@ public enum ErrorCode {
     // DISEASE
     DISEASE_NOT_FOUND("DISEASE_404", "질병 정보를 찾을 수 없습니다", HttpStatus.NOT_FOUND),
 
+    // ANALYZE
+    ANALYZE_INVALID_IMAGE("ANALYZE_400", "JPEG, PNG, WebP 사진만 분석할 수 있습니다", HttpStatus.BAD_REQUEST),
+    ANALYZE_BUSY("ANALYZE_503", "지금 분석 요청이 많아요. 잠시 뒤 다시 시도해 주세요", HttpStatus.SERVICE_UNAVAILABLE),
+    ANALYZE_UNAVAILABLE("ANALYZE_502", "분석 서버에 연결할 수 없어요. 잠시 뒤 다시 시도해 주세요", HttpStatus.BAD_GATEWAY),
+
     // COMMON
+    TOO_MANY_REQUESTS("COMMON_429", "요청이 너무 많아요. 잠시 뒤 다시 시도해 주세요", HttpStatus.TOO_MANY_REQUESTS),
+    INVALID_REQUEST("COMMON_400", "요청 형식이 올바르지 않습니다", HttpStatus.BAD_REQUEST),
     INTERNAL_SERVER_ERROR("COMMON_500", "서버 오류가 발생했습니다", HttpStatus.INTERNAL_SERVER_ERROR);
 
     private final String code;

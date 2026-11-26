@@ -1,22 +1,25 @@
 import { initializeApp, getApps, FirebaseApp } from 'firebase/app';
 import { getMessaging, getToken, onMessage, Messaging, isSupported } from 'firebase/messaging';
 
+/**
+ * 웹용 Firebase 값은 브라우저에 그대로 내려가는 공개 식별자다 (비밀이 아님).
+ * 운영 빌드에 값이 전달되지 않아 모든 화면에서 초기화가 실패했으므로,
+ * 서비스 워커(public/firebase-messaging-sw.js)가 쓰는 것과 같은 값을 기본으로 둔다.
+ */
 const firebaseConfig = {
-    apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-    authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-    projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-    storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-    messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-    appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
-    measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
+    apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY || 'AIzaSyCw_pPWGmQn7HvAHOjU33TS4a17C8IZhOM',
+    authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN || 'yak-sok-2724e.firebaseapp.com',
+    projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || 'yak-sok-2724e',
+    storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || 'yak-sok-2724e.firebasestorage.app',
+    messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || '260429494',
+    appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID || '1:260429494:web:c5079f51b0ed2cbfb9b817',
 };
 
-// Firebase 앱 초기화 (중복 방지)
-let app: FirebaseApp;
+/** 토큰을 받으려면 VAPID 공개 키가 꼭 필요하다. 빌드할 때 NEXT_PUBLIC_FIREBASE_VAPID_KEY로 넣는다. */
+export const pushConfigured = Boolean(process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY);
 
-if (typeof window !== 'undefined') {
-    app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
-}
+let app: FirebaseApp | undefined;
+const firebaseApp = () => (app ??= getApps()[0] ?? initializeApp(firebaseConfig));
 
 /**
  * Firebase Messaging 인스턴스를 가져옵니다.
@@ -27,10 +30,7 @@ if (typeof window !== 'undefined') {
  * 브라우저 환경에서만 동작하며, FCM을 지원하지 않는 환경에서는 null을 반환합니다.
  */
 export const getFirebaseMessaging = async (): Promise<Messaging | null> => {
-    if (typeof window === 'undefined') {
-        console.warn('Firebase Messaging은 브라우저 환경에서만 사용 가능합니다.');
-        return null;
-    }
+    if (typeof window === 'undefined' || !pushConfigured) return null;
 
     try {
         const supported = await isSupported();
@@ -53,7 +53,7 @@ export const getFirebaseMessaging = async (): Promise<Messaging | null> => {
             }
         }
 
-        return getMessaging(app);
+        return getMessaging(firebaseApp());
     } catch (error) {
         console.error('Firebase Messaging 초기화 오류:', error);
         return null;

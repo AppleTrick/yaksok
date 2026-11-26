@@ -3,23 +3,15 @@
     bottom: 0;
     left: 50%;
     transform: translateX(-50%);
-    /* Centered to match .app-content's max-width so it stays attached
-       to the app frame instead of the full browser viewport on desktop */
     width: 100%;
     max-width: 480px;
-    height: 80px;
-    background-color: var(--surface-1);
-    /* Explicitly white to avoid transparency issues */
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
+    height: calc(72px + env(safe-area-inset-bottom));
+    padding: 0 6px env(safe-area-inset-bottom);
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    background: var(--surface-1);
     border-top: 1px solid var(--border-color);
-    box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.05);
-    border-top-left-radius: 20px;
-    border-top-right-radius: 20px;
-    z-index: 99999 !important;
-    display: flex !important;
-    padding-bottom: env(safe-area-inset-bottom);
+    z-index: 100; /* 모달과 시트(1000)보다 아래 */
 }
 
 .tab-item {
@@ -27,23 +19,21 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    text-decoration: none;
+    gap: 3px;
     color: var(--text-muted);
-    font-size: 0.75rem;
-    gap: 4px;
-    transition: all 0.2s;
-    position: relative;
+    font-size: 0.72rem;
+    font-weight: 600;
 }
 
-.tab-item:hover,
-.tab-item.active {
-    color: var(--primary-color);
-}
+.tab-item.active { color: var(--primary-color); }
+.tab-icon { display: grid; place-items: center; }
 
-.active-indicator {
-    width: 4px;
-    height: 4px;
-    background-color: var(--primary-color);
+.tab-item.main .tab-icon {
+    width: 52px;
+    height: 52px;
+    margin-top: -24px;
     border-radius: 50%;
-    margin-top: 2px;
+    color: #fff;
+    background: linear-gradient(135deg, #FF7A45, #D83A08);
+    box-shadow: 0 6px 16px rgba(216, 58, 8, 0.35);
 }

@@ -86,7 +86,7 @@ class UserServiceTest {
             // when & then
             assertThatThrownBy(() -> userService.authenticate(TEST_EMAIL, TEST_PASSWORD))
                     .isInstanceOf(BusinessException.class)
-                    .hasFieldOrPropertyWithValue("errorCode", ErrorCode.USER_NOT_FOUND);
+                    .hasFieldOrPropertyWithValue("errorCode", ErrorCode.AUTH_LOGIN_FAIL); // 가입 여부를 알려 주지 않는다
 
             verify(userRepository).findByEmail(TEST_EMAIL);
             verify(passwordEncoder, never()).matches(anyString(), anyString());

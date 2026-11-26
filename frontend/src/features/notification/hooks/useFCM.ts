@@ -82,8 +82,7 @@ export function useFCM(onNotification?: (data: any) => void): UseFCMReturn {
         if (!messaging) return;
 
         const unsubscribe = onMessage(messaging, (payload) => {
-            console.warn('📨 [useFCM] 메시지 수신:', payload);
-
+            
             const data = payload.data || {};
             const title = data.title || payload.notification?.title || '💊 복약 알림';
             const body = data.body || payload.notification?.body || '영양제 드실 시간입니다.';
@@ -96,9 +95,7 @@ export function useFCM(onNotification?: (data: any) => void): UseFCMReturn {
             }
         });
 
-        return () => {
-            // cleanup if provided by library
-        };
+        return unsubscribe;
     }, [messaging, onNotification]);
 
     const requestPermission = useCallback(async (): Promise<boolean> => {

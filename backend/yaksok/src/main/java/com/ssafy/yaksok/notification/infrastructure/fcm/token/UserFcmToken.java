@@ -22,7 +22,7 @@ public class UserFcmToken {
     @Column(name="user_id", nullable = false)
     private Long userId;
 
-    @Column(name="token", nullable = false)
+    @Column(name="token", nullable = false, length = 512)
     private String token;
 
     @Enumerated(EnumType.STRING)
@@ -56,7 +56,12 @@ public class UserFcmToken {
 
     public void changeUpdateAt(LocalDateTime time){ this.updatedAt = time;}
 
-    public void updateToken(String token) { this.token = token; }
+    /** 새 토큰을 받았으면 이전 실패로 꺼졌던 것도 다시 켠다 */
+    public void updateToken(String token) {
+        this.token = token;
+        this.active = true;
+        this.updatedAt = LocalDateTime.now();
+    }
 
     public void changeActive(boolean active) { this.active = active; }
 }

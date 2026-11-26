@@ -13,4 +13,5 @@ public class NotificationEditRequest {
     private long userProductId;
     private LocalTime intakeTime;
     private NotificationEnums.Category category;
+    private java.util.List<@jakarta.validation.constraints.Min(1) @jakarta.validation.constraints.Max(7) Integer> daysOfWeek;
 }

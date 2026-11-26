@@ -93,7 +93,7 @@ public class NotificationController {
 
     @PutMapping("/edit")
     public ResponseEntity<ApiResponse<NotificationResponse>> editNotification(
-            @RequestBody NotificationEditRequest notificationEditRequest,
+            @jakarta.validation.Valid @RequestBody NotificationEditRequest notificationEditRequest,
             @AuthenticationPrincipal UserPrincipal userPrincipal) {
         return ResponseUtil
                 .ok(notificationService.editNotification(userPrincipal.getUserId(), notificationEditRequest));
@@ -107,25 +107,31 @@ public class NotificationController {
         return ResponseUtil.ok();
     }
 
-    @PostMapping("/setting")
-    public ResponseEntity<ApiResponse<Void>> createNotificationSetting(
-            @RequestBody NotificationSettingRequest notificationSettingRequest,
+    @GetMapping("/setting")
+    public ResponseEntity<ApiResponse<NotificationSettingResponse>> getNotificationSetting(
             @AuthenticationPrincipal UserPrincipal userPrincipal) {
-        notificationService.createNotificationSetting(userPrincipal.getUserId(), notificationSettingRequest);
-        return ResponseUtil.ok();
+        return ResponseUtil.ok(notificationService.getNotificationSetting(userPrincipal.getUserId()));
+    }
+
+    @PostMapping("/setting")
+    public ResponseEntity<ApiResponse<NotificationSettingResponse>> createNotificationSetting(
+            @RequestBody NotificationSettingRequest request,
+            @AuthenticationPrincipal UserPrincipal userPrincipal) {
+        return ResponseUtil.ok(notificationService.saveNotificationSetting(
+                userPrincipal.getUserId(), request.getQuietStart(), request.getQuietEnd(), true));
     }
 
     @PutMapping("/setting")
-    public ResponseEntity<ApiResponse<Void>> editNotificationSetting(
+    public ResponseEntity<ApiResponse<NotificationSettingResponse>> editNotificationSetting(
             @RequestBody NotificationSettingEditRequest request, @AuthenticationPrincipal UserPrincipal userPrincipal) {
-        notificationService.editNotificationSetting(userPrincipal.getUserId(), request);
-        return ResponseUtil.ok();
+        return ResponseUtil.ok(notificationService.saveNotificationSetting(
+                userPrincipal.getUserId(), request.getQuietStart(), request.getQuietEnd(), request.isEnabled()));
     }
 
     @DeleteMapping("/delete")
     public ResponseEntity<ApiResponse<Void>> deleteNotification(
-            @RequestParam long notificationId) {
-        notificationService.deleteNotification(notificationId);
+            @RequestParam long notificationId, @AuthenticationPrincipal UserPrincipal userPrincipal) {
+        notificationService.deleteNotification(userPrincipal.getUserId(), notificationId);
         return ResponseUtil.ok();
     }
 
@@ -154,13 +160,6 @@ public class NotificationController {
                         java.util.Arrays.asList(0L),
                         "테스트 알림입니다! 실시간 연결이 확인되었습니다.",
                         "TEST"));
-        return ResponseUtil.ok();
-    }
-
-    @GetMapping("/test/reset")
-    public ResponseEntity<ApiResponse<Void>> resetTestNotification() {
-        log.info("SSE 테스트를 위한 알림 상태 강제 초기화 요청");
-        notificationService.resetDailyNotifications();
         return ResponseUtil.ok();
     }
 }

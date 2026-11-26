@@ -24,7 +24,7 @@ public class CookieUtil {
                 .secure(secure)      //환경별 적용
                 .path("/")
                 .maxAge(60 * 60)
-                .sameSite(secure ? "None" : "Lax")
+                .sameSite("Lax")       // 화면과 API가 같은 도메인이라 None이 필요 없다 (CSRF 차단)
                 .build();
     }
 
@@ -34,7 +34,7 @@ public class CookieUtil {
                 .secure(secure)
                 .path("/")
                 .maxAge(60 * 60 * 24 * 7)
-                .sameSite(secure ? "None" : "Lax")
+                .sameSite("Lax")       // 화면과 API가 같은 도메인이라 None이 필요 없다 (CSRF 차단)
                 .build();
     }
 
@@ -45,7 +45,7 @@ public class CookieUtil {
                 .secure(secure)
                 .path("/")
                 .maxAge(0)
-                .sameSite(secure ? "None" : "Lax")
+                .sameSite("Lax")       // 화면과 API가 같은 도메인이라 None이 필요 없다 (CSRF 차단)
                 .build();
     }
 
@@ -54,7 +54,7 @@ public class CookieUtil {
                 .secure(secure)
                 .path("/")
                 .maxAge(0)
-                .sameSite(secure ? "None" : "Lax")
+                .sameSite("Lax")       // 화면과 API가 같은 도메인이라 None이 필요 없다 (CSRF 차단)
                 .build();
     }
 }

@@ -4,12 +4,16 @@ import Button from '@/components/Button';
 import InputForm from '@/components/InputForm';
 import '../styles.css';
 
+const KAKAO_KEY = process.env.NEXT_PUBLIC_KAKAO_REST_API_KEY;
+const KAKAO_REDIRECT = process.env.NEXT_PUBLIC_KAKAO_REDIRECT_URI;
+
 interface LoginFormProps {
-    onSubmit: (data: any) => void;
+    onSubmit: (data: { email: string; password: string }) => void;
     isLoading: boolean;
+    error?: string;
 }
 
-export default function LoginForm({ onSubmit, isLoading }: LoginFormProps) {
+export default function LoginForm({ onSubmit, isLoading, error }: LoginFormProps) {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
@@ -61,7 +65,7 @@ export default function LoginForm({ onSubmit, isLoading }: LoginFormProps) {
         }
 
         setErrors({});
-        onSubmit({ email, password });
+        onSubmit({ email: email.trim(), password });
     };
 
     return (
@@ -91,16 +95,18 @@ export default function LoginForm({ onSubmit, isLoading }: LoginFormProps) {
                     required
                 />
 
+                {error && <p className="login-error" role="alert">{error}</p>}
+
                 <Button type="submit" variant="primary" size="large" isLoading={isLoading} style={{ marginTop: '1rem' }}>
                     로그인
                 </Button>
 
-                {/* Kakao Login */}
-                <button
+                {/* 카카오 설정이 없는 빌드에서는 동작하지 않는 버튼을 보이지 않는다 */}
+                {KAKAO_KEY && KAKAO_REDIRECT && <button
                     type="button"
                     className="kakao-login-btn"
                     onClick={() => {
-                        const KAKAO_AUTH_URL = `https://kauth.kakao.com/oauth/authorize?client_id=${process.env.NEXT_PUBLIC_KAKAO_REST_API_KEY}&redirect_uri=${process.env.NEXT_PUBLIC_KAKAO_REDIRECT_URI}&response_type=code`;
+                        const KAKAO_AUTH_URL = `https://kauth.kakao.com/oauth/authorize?client_id=${KAKAO_KEY}&redirect_uri=${encodeURIComponent(KAKAO_REDIRECT)}&response_type=code`;
                         window.location.href = KAKAO_AUTH_URL;
                     }}
                 >
@@ -108,7 +114,7 @@ export default function LoginForm({ onSubmit, isLoading }: LoginFormProps) {
                         <path d="M12 3C6.477 3 2 6.477 2 10.765c0 2.898 2.05 5.434 5.15 6.786-.233.864-.849 3.097-.971 3.558-.153.578.21.569.444.415.18-.119 2.87-1.95 4.02-2.738.98.136 1.988.204 3.003.204 5.523 0 10-3.477 10-7.765S17.523 3 12 3z" />
                     </svg>
                     <span>카카오 로그인</span>
-                </button>
+                </button>}
             </form>
 
             <div className="login-actions">

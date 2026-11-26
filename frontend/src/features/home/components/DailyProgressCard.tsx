@@ -69,14 +69,14 @@ export default function DailyProgressCard({ total = 4, taken = 3 }: DailyProgres
                     </div>
                     <div className="guide-text-box">
                         <h3 className="guide-title">새로운 영양제가 있나요?</h3>
-                        <p className="guide-subtitle">AI로 찍어서 성분 분석부터 등록까지 한 번에!</p>
+                        <p className="guide-subtitle">사진 한 장으로 제품을 찾고 성분을 확인해요</p>
                     </div>
                 </div>
                 <div className="hero-actions">
                     <Link href="/camera" className="btn btn-medium btn-primary full-width-btn scan-btn">
                         <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                             <Camera size={18} />
-                            영양제 분석 촬영하기
+                            영양제 찍기
                         </span>
                         <ChevronRight size={18} />
                     </Link>
