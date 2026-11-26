@@ -16,7 +16,11 @@ pipeline {
         }
         stage('Deploy') {
             steps {
-                sh 'cd /home/ubuntu/project && docker compose up -d --build yaksok-back yaksok-fastapi yaksok-front'
+                sh '''
+                    cd /home/ubuntu/project
+                    docker compose build --pull yaksok-back
+                    docker compose up -d --build yaksok-back yaksok-fastapi yaksok-front
+                '''
             }
         }
     }
