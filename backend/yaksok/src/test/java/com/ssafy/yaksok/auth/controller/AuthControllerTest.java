@@ -28,6 +28,7 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -127,7 +128,7 @@ class AuthControllerTest {
 
     // ================= 로그아웃 =================
     @Nested
-    @DisplayName("POST /api/v1/auth/logout")
+    @DisplayName("GET /api/v1/auth/logout")
     class LogoutApiTest {
 
         @Test
@@ -141,7 +142,7 @@ class AuthControllerTest {
 
             given(cookieUtil.deleteAccessToken()).willReturn(deletedCookie);
 
-            mockMvc.perform(post("/api/v1/auth/logout"))
+            mockMvc.perform(get("/api/v1/auth/logout"))
                     .andDo(print())
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.success").value(true))
@@ -172,8 +173,8 @@ class AuthControllerTest {
         request.setEmail(TEST_EMAIL);
         request.setPassword(TEST_PASSWORD);
         request.setName(TEST_NAME);
-        request.setAgeGroup("20대");
-        request.setGender("M");
+        request.setAgeGroup("TWENTY");   // 화면이 보내는 값
+        request.setGender("MALE");
         return request;
     }
 }

@@ -103,7 +103,7 @@ class UserControllerTest {
         Disease allDisease = Disease.builder().id(20L).sickName("감기").build();
 
         ProductIngredientResponse ingredient = new ProductIngredientResponse(
-                300L, 400L, "비타민C", new BigDecimal("500.00"), "mg", 1);
+                300L, 400L, "비타민C", new BigDecimal("500.00"), "mg", null);
 
         UserProductResponse userProduct = new UserProductResponse(
                 100L, 200L, "멀티비타민", "매일먹는비타민", 1,

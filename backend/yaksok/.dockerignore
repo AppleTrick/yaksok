@@ -1,0 +1,10 @@
+.git
+.gradle
+build
+.env
+.env.*
+**/.env
+**/.env.*
+*.log
+*.hprof
+hs_err_pid*
