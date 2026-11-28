@@ -43,6 +43,10 @@
   --color-neutral: #9CA3AF;
   --overlay: rgba(0, 0, 0, .5);
 
+  /* 입력칸: 회색 바탕 위에서도 칸이 보이게 */
+  --field-bg: var(--surface-1);
+  --field-border: #D5D9E0;
+
   /* 하루 시간대 (홈 복용 일정) */
   --slot-morning: linear-gradient(135deg, #FBBF24, #F59E0B);
   --slot-lunch: linear-gradient(135deg, #FB923C, #F97316);
@@ -96,6 +100,7 @@
   --color-warning-fg: #FBBF24;
   --color-caution-fg: #FB923C;
   --color-danger-fg: #F87171;
+  --field-border: #3A3B45;
 }
 
 @supports (height: 100dvh) {

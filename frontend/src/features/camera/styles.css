@@ -235,9 +235,11 @@ body {
 /* Shutter & Lower Controls */
 .pwa-controls {
     height: var(--footer-h);
-    display: flex;
+    /* 가운데 칸에 셔터를 둔다. 양옆 칸 폭이 달라도 셔터가 화면 가운데에 온다 */
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    justify-items: center;
     align-items: center;
-    justify-content: space-around;
     padding-bottom: env(safe-area-inset-bottom);
     position: absolute !important;
     bottom: 0;

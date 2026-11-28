@@ -62,3 +62,9 @@
 .sc-summary-grid div:not(.warn):first-child b, .sc-summary-grid div:not(.warn):nth-child(2) b { color: #fff; }
 .sc-summary-grid .warn b { color: var(--scan-danger-strong); }
 .sc-summary-grid span { color: var(--scan-text-sub); font-size: .8rem; }
+/* 좁은 폭(접는 폰): 단계 칸의 아이콘을 빼서 이름이 한 줄에 들어가게 */
+@media (max-width: 340px) {
+  .sc-steps { gap: 6px; padding-inline: 10px; }
+  .sc-steps li { grid-template-columns: 1fr; padding: 10px 8px; font-size: var(--fs-xs); }
+  .sc-steps li svg { display: none; }
+}

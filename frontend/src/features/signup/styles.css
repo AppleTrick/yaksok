@@ -68,11 +68,12 @@
 }
 
 .selection-btn {
-    flex: 1;
-    padding: 0.75rem;
-    border-radius: 10px;
-    border: 1px solid var(--light-grey);
-    background-color: var(--background-color);
+    flex: 1 1 4.5rem;
+    min-height: 44px;
+    padding: 0.6rem;
+    border-radius: var(--radius-control);
+    border: 1px solid var(--field-border);
+    background-color: var(--field-bg);
     font-size: var(--fs-md);
     font-weight: var(--fw-medium);
     color: var(--text-muted);

@@ -180,3 +180,13 @@ a {
 @media (prefers-reduced-motion: reduce) {
   .skeleton-line { animation: none; }
 }
+
+/* 글자 링크도 손가락으로 누를 만한 높이(44px)를 준다 (로그인·가입·비밀번호 찾기 아래 링크) */
+.login-actions a,
+.find-password-actions a,
+.signup-actions a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 4px;
+}
