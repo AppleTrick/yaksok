@@ -1,10 +1,12 @@
 import React from "react";
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import "pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css"; // 한글 Pretendard (테마 글꼴, 쓰는 글자 조각만 받음)
 import "@astryxdesign/core/reset.css";
 import "@astryxdesign/core/astryx.css";
 import "@/astryx-themes"; // 약속 테마 (src/themes/yaksok, astryx 테마 편집기로 만든다)
+// 한글 Pretendard. 테마가 불러오는 Fontsource판(라틴만, 글자 범위 없음)보다 뒤에 둬야 한다.
+// 같은 이름의 글꼴은 나중에 선언된 것부터 쓰므로, 앞에 두면 Fontsource판이 한글까지 가로막는다.
+import "pretendard/dist/web/static/pretendard-dynamic-subset.css";
 import "../styles/tokens.css";
 import "./globals.css";
 

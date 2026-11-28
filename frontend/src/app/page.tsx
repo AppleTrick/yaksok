@@ -69,7 +69,7 @@ export default function Home() {
     <VStack className="pg" gap={5}>
       <HomeHeader userName={userName} greetingText={greetingText} isLoading={isLoading}
         dateText={today ? today.toLocaleDateString('ko-KR', { month: 'long', day: 'numeric', weekday: 'long' }) : ''} />
-      {today && <NowCard today={today} schedules={schedules} total={totalMeds} taken={takenMeds} onToggleItem={toggleItemTaken} />}
+      {today && totalMeds > 0 && <NowCard today={today} schedules={schedules} total={totalMeds} taken={takenMeds} onToggleItem={toggleItemTaken} />}
       <TimelineSection today={today} schedules={schedules} onToggleItem={toggleItemTaken} />
     </VStack>
   );

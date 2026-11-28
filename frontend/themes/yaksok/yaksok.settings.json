@@ -57,18 +57,6 @@
       "state": "isPressed"
     },
     {
-      "thing": "font",
-      "value": "\"Pretendard Variable\", system-ui, sans-serif",
-      "source": "dial",
-      "on": "body"
-    },
-    {
-      "thing": "font",
-      "value": "\"Pretendard Variable\", system-ui, sans-serif",
-      "source": "dial",
-      "on": "heading"
-    },
-    {
       "thing": "neutral",
       "value": "#8A7B6E",
       "source": "dial"
@@ -125,6 +113,18 @@
       "thing": "info",
       "value": "#6A4CF5",
       "source": "dial"
+    },
+    {
+      "thing": "font",
+      "value": "Pretendard, system-ui, sans-serif",
+      "source": "dial",
+      "on": "body"
+    },
+    {
+      "thing": "font",
+      "value": "Pretendard, system-ui, sans-serif",
+      "source": "dial",
+      "on": "heading"
     }
   ],
   "lifted": [],
