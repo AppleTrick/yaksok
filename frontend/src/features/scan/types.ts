@@ -2,6 +2,7 @@ export interface Ingredient {
     name: string;
     amount: string;
     unit: string;
+    myAmount?: string; // 이미 먹고 있는 양
     totalAmount: string;
     status: 'safe' | 'warning' | 'unknown';
 }
@@ -25,6 +26,17 @@ export interface Found {
     confidence: number;
     candidates: Candidate[];
     texts: TextLine[];
+    intakeTime: string | null; // 예전 AI 서버가 추천한 복용 시간
+    intakeCategory: string | null;
+}
+
+/** 리포트로 넘기는 제품 하나 (사용자가 고른 것) */
+export interface ReportItem {
+    productId: number | null;
+    name: string;
+    ingredients: Ingredient[];
+    intakeTime: string | null;
+    intakeCategory: string | null;
 }
 
 export interface ScanResult {
@@ -48,6 +60,8 @@ interface RawProduct {
     ingredients?: Ingredient[] | null;
     candidates?: Candidate[] | null;
     texts?: TextLine[] | null;
+    intakeTime?: string | null;
+    intakeCategory?: string | null;
 }
 
 const isBox = (b: RawProduct['box']): b is [number, number, number, number] => Array.isArray(b) && b.length === 4;
@@ -64,6 +78,8 @@ function normalize(p: RawProduct): Found {
         confidence: p.confidence ?? 0,
         candidates: (p.candidates ?? old).map((c) => ({ ...c, ingredients: c.ingredients ?? [] })),
         texts: p.texts ?? [],
+        intakeTime: p.intakeTime ?? null,
+        intakeCategory: p.intakeCategory ?? null,
     };
 }
 
@@ -90,18 +106,18 @@ export async function analyze(blob: Blob): Promise<ScanResult> {
     };
 }
 
-export async function register(c: Candidate, time: string, category: string): Promise<void> {
+export async function register(item: ReportItem, time: string, category: string): Promise<void> {
     const res = await fetch('/api/v1/products/user', {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-            productId: c.productId, nickname: c.name.slice(0, 60), dailyDose: 1, doseAmount: 1, doseUnit: '회',
+            productId: item.productId, nickname: item.name.slice(0, 60), dailyDose: 1, doseAmount: 1, doseUnit: '정',
             intakeTime: time, intakeCategory: category,
         }),
     });
     if (!res.ok) {
         const body = await res.json().catch(() => null);
-        throw new ScanError(body?.error?.code === 'USER_PRODUCT_409' ? '이미 등록한 영양제예요.' : '등록하지 못했어요.');
+        throw new ScanError(body?.error?.code === 'USER_PRODUCT_409' ? `${item.name}: 이미 등록한 영양제예요.` : `${item.name}: 등록하지 못했어요.`);
     }
 }
