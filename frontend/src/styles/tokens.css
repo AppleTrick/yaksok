@@ -73,4 +73,32 @@
   --z-sticky: 50;
   --z-tabbar: 100;
   --z-modal: 1000;
+
+  /* 화면 틀 (v2). 휴대폰 형태에 따라 아래 @media가 값을 바꾼다 */
+  --app-max: 480px;                                   /* 앱 기둥 폭 */
+  --page-x: clamp(14px, 5vw, 24px);                   /* 화면 양옆 여백 */
+  --tabbar-h: 72px;
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --tabbar-space: calc(var(--tabbar-h) + var(--safe-bottom));       /* 탭바가 차지하는 높이 */
+  --fixed-edge: max(0px, calc((100vw - var(--app-max)) / 2));      /* 고정 요소를 앱 기둥 안에 두는 여백 */
+  --screen-h: 100vh;
+}
+
+@supports (height: 100dvh) {
+  :root { --screen-h: 100dvh; } /* 주소창이 접혔다 펴져도 맞는 높이 */
+}
+
+/* 좁은 폭: 접는 폰 바깥 화면, 작은 폰 (~340px) */
+@media (max-width: 340px) {
+  :root { --page-x: 12px; }
+}
+
+/* 낮은 높이: 휴대폰 가로 */
+@media (max-height: 500px) and (orientation: landscape) {
+  :root { --tabbar-h: 52px; }
+}
+
+/* 넓은 폭: 태블릿, 펼친 폴드 */
+@media (min-width: 700px) and (min-height: 600px) {
+  :root { --app-max: 600px; }
 }

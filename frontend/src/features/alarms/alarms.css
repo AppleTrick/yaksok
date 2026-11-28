@@ -1,4 +1,4 @@
-.al-page { padding: 28px 20px 130px; display: flex; flex-direction: column; gap: 14px; }
+.al-page { padding: 28px var(--page-x) calc(var(--tabbar-space) + 58px); display: flex; flex-direction: column; gap: 14px; }
 .al-header p { color: var(--text-muted); font-size: .95rem; min-height: 1.4em; }
 .al-header h1 { font-size: 1.9rem; font-weight: var(--fw-heavy); letter-spacing: -.02em; }
 .al-section { font-size: 1.05rem; font-weight: var(--fw-bold); margin-top: 12px; }
@@ -40,7 +40,7 @@
 .al-btn-wide { width: 100%; min-height: 52px; }
 .al-btn:disabled { opacity: .4; cursor: default; }
 .al-dim { position: fixed; inset: 0; z-index: var(--z-modal); background: var(--overlay); display: flex; align-items: flex-end; justify-content: center; }
-.al-sheet { width: 100%; max-width: 480px; padding: 22px 20px calc(22px + env(safe-area-inset-bottom)); border-radius: var(--radius-sheet) 28px 0 0; background: var(--surface-1); display: flex; flex-direction: column; gap: 16px; animation: al-up .25s ease-out; }
+.al-sheet { width: 100%; max-width: var(--app-max); padding: 22px var(--page-x) calc(22px + var(--safe-bottom)); border-radius: var(--radius-sheet) 28px 0 0; background: var(--surface-1); display: flex; flex-direction: column; gap: 16px; max-height: calc(var(--screen-h) - 12px); overflow-y: auto; overscroll-behavior: contain; animation: al-up .25s ease-out; }
 @keyframes al-up { from { transform: translateY(40px); opacity: 0; } }
 .al-sheet-head { display: flex; justify-content: space-between; align-items: center; font-size: 1.15rem; }
 .al-sheet-head button { display: grid; place-items: center; width: 44px; height: 44px; border: 0; background: none; color: var(--text-muted); cursor: pointer; }
@@ -48,8 +48,8 @@
 .al-seg { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; padding: 4px; border-radius: var(--radius-xl); background: var(--background-color); }
 .al-seg button { min-height: 44px; border: 0; border-radius: var(--radius-md); background: none; color: var(--text-muted); font: inherit; font-weight: var(--fw-semibold); cursor: pointer; }
 .al-seg button[aria-pressed='true'] { background: var(--surface-1); color: var(--primary-color); box-shadow: var(--shadow-sm); }
-.al-days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
-.al-days button { aspect-ratio: 1; min-height: 40px; border: 0; border-radius: var(--radius-round); background: var(--background-color); color: var(--text-muted); font: inherit; font-weight: var(--fw-bold); cursor: pointer; }
+.al-days { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: clamp(3px, 1.5vw, 6px); }
+.al-days button { aspect-ratio: 1; min-width: 0; max-width: 52px; justify-self: center; width: 100%; border: 0; border-radius: var(--radius-round); background: var(--background-color); color: var(--text-muted); font: inherit; font-weight: var(--fw-bold); cursor: pointer; }
 .al-days button[aria-pressed='true'] { background: var(--brand-strong); color: #fff; }
 .al-days-text { text-align: center; color: var(--text-muted); font-size: var(--fs-md); }
 @media (prefers-reduced-motion: reduce) { .al-sheet { animation: none; } }

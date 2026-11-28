@@ -34,7 +34,7 @@
 .rp-seg button { min-height: 44px; border: 0; border-radius: var(--radius-md); background: none; color: var(--text-muted); font: inherit; font-weight: var(--fw-semibold); cursor: pointer; }
 .rp-seg button[aria-pressed='true'] { background: var(--surface-1); color: var(--primary-color); box-shadow: var(--shadow-sm); }
 .rp-error { padding: 14px 16px; border-radius: var(--radius-control); background: var(--color-danger-bg); color: var(--color-danger-fg); font-size: var(--fs-md); line-height: 1.6; }
-.rp-bottom { position: fixed; left: 50%; bottom: 0; transform: translateX(-50%); width: 100%; max-width: 480px; padding: 12px 18px calc(16px + env(safe-area-inset-bottom)); background: linear-gradient(to top, var(--background-color) 70%, transparent); z-index: var(--z-sticky); }
+.rp-bottom { position: fixed; left: 50%; bottom: 0; transform: translateX(-50%); width: 100%; max-width: var(--app-max); padding: 12px var(--page-x) calc(16px + var(--safe-bottom)); background: linear-gradient(to top, var(--background-color) 70%, transparent); z-index: var(--z-sticky); }
 .rp-btn { width: 100%; min-height: 56px; border: 0; border-radius: 18px; background: var(--brand-strong); color: #fff; font: inherit; font-size: 1.05rem; font-weight: var(--fw-heavy); cursor: pointer; }
 .rp-btn:disabled { opacity: .45; cursor: default; }
 .rp-modal { display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center; line-height: 1.6; }

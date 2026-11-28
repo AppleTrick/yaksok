@@ -1,7 +1,7 @@
 .notification-settings-container {
     min-height: 100vh;
     background-color: var(--background-color);
-    padding-bottom: 120px;
+    padding-bottom: calc(var(--tabbar-space) + 28px); /* 탭바 + 아이폰 홈 막대 */
 }
 
 .settings-header {

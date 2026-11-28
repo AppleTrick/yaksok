@@ -27,6 +27,7 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   themeColor: "#F5F6F8",
+  viewportFit: "cover", // 아이폰 홈 막대 영역까지 그리고, safe-area로 비켜 둔다
   width: "device-width",
   initialScale: 1,
 };

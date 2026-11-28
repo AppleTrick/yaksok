@@ -12,7 +12,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: 1.5rem;
+    padding: clamp(0.75rem, 4vw, 1.5rem);
     animation: fadeInOverlay 0.3s ease-out;
 }
 
@@ -21,7 +21,7 @@
     width: 90vw;
     max-width: clamp(340px, 90vw, 600px);
     border-radius: var(--radius-2xl);
-    max-height: 85vh;
+    max-height: calc(var(--screen-h) - 1.5rem); /* 가로 모드에서도 위아래가 잘리지 않게, 넘치면 안에서 스크롤 */
 
     @media (min-width: 768px) {
         width: 100%;

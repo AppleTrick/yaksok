@@ -4,9 +4,9 @@
     left: 50%;
     transform: translateX(-50%);
     width: 100%;
-    max-width: 480px;
-    height: calc(72px + env(safe-area-inset-bottom));
-    padding: 0 6px env(safe-area-inset-bottom);
+    max-width: var(--app-max);
+    height: var(--tabbar-space);
+    padding: 0 6px var(--safe-bottom);
     display: grid;
     grid-template-columns: repeat(5, 1fr);
     background: var(--surface-1);
@@ -36,4 +36,10 @@
     color: #fff;
     background: var(--gradient-cta);
     box-shadow: 0 6px 16px rgba(216, 58, 8, 0.35);
+}
+
+/* 휴대폰 가로: 높이가 모자라 아이콘과 글자를 옆으로 놓는다 */
+@media (max-height: 500px) and (orientation: landscape) {
+    .tab-item { flex-direction: row; gap: 6px; }
+    .tab-item.main .tab-icon { width: 42px; height: 42px; margin-top: 0; }
 }
