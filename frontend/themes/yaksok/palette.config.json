@@ -20,6 +20,96 @@
           "policy": "exact"
         }
       ]
+    },
+    {
+      "id": "neutral",
+      "name": "Neutral",
+      "seed": "#8a7b6e",
+      "kind": "neutral",
+      "anchors": [
+        {
+          "mode": "light",
+          "stop": 55,
+          "color": "#8a7b6e",
+          "policy": "exact"
+        },
+        {
+          "mode": "dark",
+          "stop": 55,
+          "color": "#8a7b6e",
+          "policy": "exact"
+        }
+      ]
+    },
+    {
+      "id": "success",
+      "name": "Success",
+      "seed": "#24946a",
+      "anchors": [
+        {
+          "mode": "light",
+          "stop": 55,
+          "color": "#24946a",
+          "policy": "exact"
+        },
+        {
+          "mode": "dark",
+          "stop": 55,
+          "color": "#24946a",
+          "policy": "exact"
+        }
+      ]
+    },
+    {
+      "id": "warning",
+      "name": "Warning",
+      "seed": "#c77700",
+      "anchors": [
+        {
+          "mode": "light",
+          "stop": 60,
+          "color": "#c77700",
+          "policy": "exact"
+        },
+        {
+          "mode": "dark",
+          "stop": 60,
+          "color": "#c77700",
+          "policy": "exact"
+        }
+      ]
+    },
+    {
+      "id": "danger",
+      "name": "Danger",
+      "seed": "#d92d20",
+      "anchors": [
+        {
+          "mode": "light",
+          "stop": 50,
+          "color": "#d92d20",
+          "policy": "exact"
+        },
+        {
+          "mode": "dark",
+          "stop": 50,
+          "color": "#d92d20",
+          "policy": "exact"
+        }
+      ]
+    },
+    {
+      "id": "info",
+      "name": "Info",
+      "seed": "#6a4cf5",
+      "anchors": [
+        {
+          "mode": "light",
+          "stop": 50,
+          "color": "#6a4cf5",
+          "policy": "exact"
+        }
+      ]
     }
   ]
 }

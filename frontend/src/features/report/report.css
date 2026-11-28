@@ -1,14 +1,21 @@
 /* 리포트: Astryx 부품이 못 그리는 것만 (섭취량 막대, 아래 고정 버튼). 색은 Astryx 토큰 */
 .rp-page { padding-bottom: calc(110px + var(--safe-bottom)); }
-.rp-stat { flex: 1; min-width: 0; }
-.rp-stat.ok { color: var(--color-text-success); }
-.rp-stat.warn { color: var(--color-text-accent); }
 .rp-icon { flex: none; width: 48px; height: 48px; display: grid; place-items: center; border-radius: var(--radius-element); background: var(--color-accent-muted); color: var(--color-icon-accent); }
 .rp-ings { list-style: none; }
 
-.rp-bar { display: flex; height: 10px; margin: 8px 0 6px; border-radius: var(--radius-full); overflow: hidden; background: var(--color-background-muted); }
-.rp-bar .mine { background: var(--color-icon-secondary); }
-.rp-bar .add { background: var(--color-success); }
-.rp-ings .warning .rp-bar .add { background: var(--color-accent); }
+/* 결론 카드: 주의면 호박, 안전이면 초록 */
+.rp-verdict.warn { background: linear-gradient(150deg, var(--color-warning-muted), color-mix(in srgb, var(--color-warning-muted) 60%, var(--color-background-card))); }
+.rp-verdict.ok { background: linear-gradient(150deg, var(--color-success-muted), color-mix(in srgb, var(--color-success-muted) 60%, var(--color-background-card))); }
+.rp-lamp i { width: 34px; height: 8px; border-radius: 9px; background: color-mix(in srgb, var(--color-text-primary) 10%, transparent); }
+.rp-verdict.warn .rp-lamp i.on { background: var(--color-warning); }
+.rp-verdict.ok .rp-lamp i.on { background: var(--color-success); }
+
+/* 섭취량 막대: 이미 먹는 양(회색) + 이 제품(초록/호박) + 하루 상한 세로선 */
+.rp-bar { position: relative; height: 12px; margin: 12px 0 8px; border-radius: var(--radius-full); background: var(--color-background-muted); }
+.rp-bar i { position: absolute; top: 0; bottom: 0; }
+.rp-bar .mine { left: 0; border-radius: var(--radius-full) 0 0 var(--radius-full); background: var(--color-icon-disabled); }
+.rp-bar .add { border-radius: 0 var(--radius-full) var(--radius-full) 0; background: var(--color-success); }
+.rp-ings .warning .rp-bar .add { background: var(--color-warning); }
+.rp-bar .limit { position: absolute; top: -6px; bottom: -6px; width: 3px; margin-left: -1.5px; border-radius: 2px; background: var(--color-text-primary); }
 
 .rp-bottom { position: fixed; left: 50%; bottom: 0; transform: translateX(-50%); width: 100%; max-width: var(--app-max); padding: 12px var(--page-x) calc(16px + var(--safe-bottom)); background: linear-gradient(to top, var(--color-background-body) 70%, transparent); z-index: var(--z-sticky); }

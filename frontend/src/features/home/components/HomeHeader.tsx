@@ -6,15 +6,18 @@ import { Skeleton } from '@astryxdesign/core/Skeleton';
 interface HomeHeaderProps {
     userName: string;
     greetingText: string;
+    dateText: string;
     isLoading: boolean;
 }
 
-export default function HomeHeader({ userName, greetingText, isLoading }: HomeHeaderProps) {
+export default function HomeHeader({ userName, greetingText, dateText, isLoading }: HomeHeaderProps) {
     return (
-        <VStack gap={0.5} as="header">
-            <Text color="secondary">{greetingText}</Text>
-            {isLoading ? <Skeleton width={112} height={32} /> : <Heading level={1}>{userName} 님</Heading>}
-            <Text color="secondary" size="sm">오늘도 건강 약속을 지켜보세요.</Text>
+        <VStack gap={1} as="header">
+            <Text color="secondary" size="sm" weight="semibold">{dateText || ' '}</Text>
+            <Heading level={1} className="hm-hello">
+                {greetingText}<br />
+                {isLoading ? <Skeleton width={120} height={30} /> : `${userName} 님`}
+            </Heading>
         </VStack>
     );
 }

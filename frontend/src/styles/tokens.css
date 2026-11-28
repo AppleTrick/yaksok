@@ -48,6 +48,10 @@
   --field-border: #D5D9E0;
 
   /* 하루 시간대 (홈 복용 일정) */
+  /* 먹색 카드 (다음 알림): 밝은·어두운 화면 모두 진하게 */
+  --surface-ink: #1F1A17;
+  --on-ink: #FFFFFF;
+
   --slot-morning: linear-gradient(135deg, #FBBF24, #F59E0B);
   --slot-lunch: linear-gradient(135deg, #FB923C, #F97316);
   --slot-night: linear-gradient(135deg, #818CF8, #6366F1);
@@ -69,8 +73,8 @@
   --scan-text: #F4F4F6;
   --scan-text-sub: #A9ACB6;
   --scan-text-soft: #C9CBD2;
-  --scan-accent: #FF8A50;
-  --scan-accent-bg: #2A1C16;
+  --scan-accent: #A68BFF;   /* AI 신호 (방향 A: AI가 한 일은 보라) */
+  --scan-accent-bg: #231B3D;
   --scan-danger-bg: #3A1818;
   --scan-danger-fg: #FFB4B4;
   --scan-danger-strong: #FF9D9D;
@@ -86,9 +90,9 @@
   /* 화면 틀 (v2). 휴대폰 형태에 따라 아래 @media가 값을 바꾼다 */
   --app-max: 480px;                                   /* 앱 기둥 폭 */
   --page-x: clamp(14px, 5vw, 24px);                   /* 화면 양옆 여백 */
-  --tabbar-h: 72px;
+  --tabbar-h: 68px;
   --safe-bottom: env(safe-area-inset-bottom, 0px);
-  --tabbar-space: calc(var(--tabbar-h) + var(--safe-bottom));       /* 탭바가 차지하는 높이 */
+  --tabbar-space: calc(var(--tabbar-h) + var(--safe-bottom) + 12px);  /* 떠 있는 탭바가 차지하는 높이 (아래 12px 띄움) */
   --fixed-edge: max(0px, calc((100vw - var(--app-max)) / 2));      /* 고정 요소를 앱 기둥 안에 두는 여백 */
   --screen-h: 100vh;
 }

@@ -110,10 +110,10 @@ export default function MySupplementsPage() {
         <VStack className="pg" gap={4}>
             <HStack hAlign="between" vAlign="center">
                 <Heading level={1}>내 영양제</Heading>
-                <Badge variant="orange" label={`총 ${filteredItems.length}개`} />
+                <Badge variant="orange" label={`${filteredItems.length}개`} />
             </HStack>
 
-            <TextInput type="search" label="영양제 검색" isLabelHidden placeholder="영양제 이름, 효능 검색" value={searchTerm} onChange={setSearchTerm} size="lg" />
+            <TextInput type="search" label="영양제 검색" isLabelHidden placeholder="이름이나 효능으로 찾기" value={searchTerm} onChange={setSearchTerm} size="lg" />
 
             <SupplementList
                 items={filteredItems}
@@ -121,6 +121,7 @@ export default function MySupplementsPage() {
                 onAddClick={() => openRegisterModal()}
                 activeTab={activeTab}
                 onTabChange={setActiveTab}
+                timeOf={(item) => schedules.find((sc) => sc.items.some((i) => i.name === item.name))?.rawTime ?? null}
             />
 
             {selectedItem && (

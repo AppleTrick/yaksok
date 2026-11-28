@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Check, Clock, Pill } from 'lucide-react';
+import { ArrowLeft, Clock, Pill } from 'lucide-react';
 import { VStack } from '@astryxdesign/core/VStack';
 import { HStack } from '@astryxdesign/core/HStack';
 import { Heading } from '@astryxdesign/core/Heading';
@@ -102,11 +102,18 @@ export default function ReportPage() {
                 <Heading level={1}>영양제 리포트</Heading>
             </HStack>
 
-            <HStack gap={2}>
-                <Stat value={items.length} label="영양제" />
-                <Stat value={all.length} label="성분" />
-                <Stat value={warned.length || <Check size={22} />} label={warned.length ? '주의 성분' : '모두 안전'} tone={warned.length ? 'warn' : 'ok'} />
-            </HStack>
+            {/* 결론부터: 안전한지 한 문장 (신호등) */}
+            <Card className={`rp-verdict ${warned.length ? 'warn' : 'ok'}`}>
+                <VStack gap={2}>
+                    <HStack gap={1} className="rp-lamp" aria-hidden="true"><i className="on" /><i className={warned.length ? 'on' : ''} /><i /></HStack>
+                    <Heading level={2}>
+                        {warned.length ? `${warned.join(', ')} 성분이 하루 상한을 넘어요` : '모든 성분이 하루 상한 안이에요'}
+                    </Heading>
+                    <Text color="secondary">
+                        {warned.length ? '지금 드시는 영양제와 합친 양이에요. 등록 전에 양을 조절해 주세요.' : `영양제 ${items.length}개, 성분 ${all.length}개를 지금 드시는 것과 합쳐 봤어요.`}
+                    </Text>
+                </VStack>
+            </Card>
 
             {items.length > 1 && (
                 <SegmentedControl label="영양제" value={String(tab)} onChange={(v) => setTab(Number(v))}>
@@ -124,7 +131,7 @@ export default function ReportPage() {
                         </VStack>
                     </HStack>
 
-                    <Heading level={3}>성분별 섭취량</Heading>
+                    <HStack hAlign="between" vAlign="center"><Heading level={3}>성분 {item.ingredients.length}개</Heading><Text size="sm" color="secondary">세로 선 = 하루 상한</Text></HStack>
                     {item.ingredients.length ? (
                         <VStack gap={4} as="ul" className="rp-ings">{item.ingredients.map((g) => <IngredientRow key={g.name} g={g} />)}</VStack>
                     ) : (
@@ -176,35 +183,29 @@ export default function ReportPage() {
     );
 }
 
-function Stat({ value, label, tone }: { value: React.ReactNode; label: string; tone?: 'ok' | 'warn' }) {
-    return (
-        <Card className={`rp-stat ${tone ?? ''}`} padding={3}>
-            <VStack gap={0.5} hAlign="center">
-                <Text size="3xl" weight="bold" hasTabularNumbers color="inherit">{value}</Text>
-                <Text size="sm" color="secondary">{label}</Text>
-            </VStack>
-        </Card>
-    );
-}
-
 /** 이미 먹는 양과 이번에 더해지는 양을 한 막대로 보여 준다 */
 function IngredientRow({ g }: { g: Ingredient }) {
     const mine = num(g.myAmount);
     const add = num(g.amount);
-    const total = Math.max(num(g.totalAmount), mine + add) || 1;
+    const max = g.maxAmount ? num(g.maxAmount) : 0;
+    // 막대 눈금: 합친 양과 상한 중 큰 쪽이 막대의 85%가 되게
+    const scale = Math.max(mine + add, max) / 0.85 || 1;
+    const pct = (v: number) => `${Math.min(100, (v / scale) * 100)}%`;
+    const label = g.status === 'warning' ? '상한 넘음' : g.status === 'unknown' ? '상한 정보 없음' : '안전';
     return (
         <li className={g.status}>
             <HStack hAlign="between" vAlign="center" gap={2}>
                 <Text weight="semibold">{g.name}</Text>
-                <Badge variant={g.status === 'warning' ? 'warning' : g.status === 'unknown' ? 'neutral' : 'success'}
-                    label={g.status === 'warning' ? '과다 주의' : g.status === 'unknown' ? '상한 정보 없음' : '안전'} />
+                <Badge variant={g.status === 'warning' ? 'warning' : g.status === 'unknown' ? 'neutral' : 'success'} label={label} />
             </HStack>
             <div className="rp-bar" aria-hidden>
-                <i className="mine" style={{ width: `${(mine / total) * 100}%` }} />
-                <i className="add" style={{ width: `${(add / total) * 100}%` }} />
+                <i className="mine" style={{ width: pct(mine) }} />
+                <i className="add" style={{ left: pct(mine), width: pct(add) }} />
+                {max > 0 && <b className="limit" style={{ left: pct(max) }} />}
             </div>
             <Text color="secondary" size="sm" hasTabularNumbers>
                 {mine > 0 && <>지금 {fmt(mine)} + </>}이 제품 {fmt(add)} = <Text weight="bold" color="primary" size="sm">{fmt(mine + add)} {g.unit}</Text>
+                {max > 0 && <> · 상한 {fmt(max)} {g.unit}</>}
             </Text>
         </li>
     );

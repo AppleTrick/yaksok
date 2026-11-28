@@ -1,8 +1,9 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
-import { ChevronRight, Pill, Plus } from 'lucide-react';
+import { CloudSun, Moon, Pill, Plus, Sun } from 'lucide-react';
 import { VStack } from '@astryxdesign/core/VStack';
-import { Card } from '@astryxdesign/core/Card';
-import { List, ListItem } from '@astryxdesign/core/List';
+import { HStack } from '@astryxdesign/core/HStack';
+import { ClickableCard } from '@astryxdesign/core/ClickableCard';
+import { Text } from '@astryxdesign/core/Text';
 import { SegmentedControl, SegmentedControlItem } from '@astryxdesign/core/SegmentedControl';
 import { EmptyState } from '@astryxdesign/core/EmptyState';
 import { Button } from '@astryxdesign/core/Button';
@@ -15,13 +16,19 @@ interface SupplementListProps {
     onAddClick: () => void;
     activeTab: TabType;
     onTabChange: (tab: TabType) => void;
+    timeOf?: (item: MedicationItem) => string | null; // "09:00"
 }
+
+// 카드 그림 색: 이름으로 고정해 매번 같은 색이 나오게
+const TONES = ['orange', 'blue', 'yellow', 'green', 'purple', 'pink'];
+const toneOf = (name: string) => TONES[[...name].reduce((n, c) => n + c.charCodeAt(0), 0) % TONES.length];
+const slot = (t: string) => { const h = Number(t.slice(0, 2)); return h >= 18 ? { Icon: Moon, label: '저녁' } : h >= 12 ? { Icon: CloudSun, label: '점심' } : { Icon: Sun, label: '아침' }; };
 
 type TabType = 'taking' | 'stopped';
 
 const ITEMS_PER_PAGE = 10;
 
-export default function SupplementList({ items, onItemClick, onAddClick, activeTab, onTabChange }: SupplementListProps) {
+export default function SupplementList({ items, onItemClick, onAddClick, activeTab, onTabChange, timeOf }: SupplementListProps) {
     const [displayLimit, setDisplayLimit] = useState(ITEMS_PER_PAGE);
 
     const filteredItems = useMemo(() => items.filter((item) => (item.status || 'taking') === activeTab), [items, activeTab]);
@@ -46,24 +53,32 @@ export default function SupplementList({ items, onItemClick, onAddClick, activeT
     return (
         <VStack gap={4}>
             <SegmentedControl label="복용 상태" layout="fill" value={activeTab} onChange={(v) => changeTab(v as TabType)}>
-                <SegmentedControlItem value="taking" label="복용 중" />
-                <SegmentedControlItem value="stopped" label="복용 중단" />
+                <SegmentedControlItem value="taking" label={`복용 중 ${items.filter((i) => (i.status || 'taking') === 'taking').length}`} />
+                <SegmentedControlItem value="stopped" label={`쉬는 중 ${items.filter((i) => i.status === 'stopped').length}`} />
             </SegmentedControl>
 
             {displayedItems.length > 0 ? (
-                <Card padding={1}>
-                    <List hasDividers>
-                        {displayedItems.map((item) => (
-                            <ListItem
-                                key={item.id}
-                                label={item.nickname || item.name}
-                                startContent={<span className="ms-icon" aria-hidden="true"><Pill size={18} /></span>}
-                                endContent={<ChevronRight size={18} aria-hidden="true" />}
-                                onClick={() => onItemClick(item)}
-                            />
-                        ))}
-                    </List>
-                </Card>
+                // 내 약장: 2열 카드. 언제 먹는지를 카드에 바로 보여 준다
+                <div className="ms-grid">
+                    {displayedItems.map((item) => {
+                        const t = timeOf?.(item);
+                        const s = t ? slot(t) : null;
+                        return (
+                            <ClickableCard key={item.id} className="ms-card" label={`${item.nickname || item.name} 자세히`} onClick={() => onItemClick(item)} padding={4} elevation="low">
+                                <VStack gap={3} hAlign="start">
+                                    <span className={`ms-art ${toneOf(item.name)}`} aria-hidden="true"><Pill size={24} /></span>
+                                    <Text weight="bold" maxLines={2}>{item.nickname || item.name}</Text>
+                                    {s && <HStack gap={1} vAlign="center" className="ms-when"><s.Icon size={14} aria-hidden="true" /><Text size="sm" color="secondary" weight="semibold">{s.label} {t}</Text></HStack>}
+                                </VStack>
+                            </ClickableCard>
+                        );
+                    })}
+                    {activeTab === 'taking' && (
+                        <ClickableCard className="ms-card ms-add" label="영양제 추가" onClick={onAddClick} padding={4} variant="transparent">
+                            <VStack gap={1} hAlign="center" vAlign="center"><Plus size={22} aria-hidden="true" /><Text weight="semibold" color="secondary">직접 추가</Text></VStack>
+                        </ClickableCard>
+                    )}
+                </div>
             ) : activeTab === 'taking' ? (
                 <EmptyState icon={<Pill size={32} />} title="어떤 영양제를 드시고 계신가요?" description="매일 챙겨 먹는 영양제를 기록해 보세요."
                     actions={<Button variant="primary" icon={<Plus size={18} />} label="영양제 등록하기" onClick={onAddClick} />} />
@@ -74,8 +89,6 @@ export default function SupplementList({ items, onItemClick, onAddClick, activeT
 
             {hasMore && <div ref={observerTarget} className="ms-more"><Spinner /></div>}
 
-            {/* 떠 있는 추가 버튼: 앱 기둥 안, 탭바 위 */}
-            <Button className="ms-fab" variant="primary" size="lg" elevation="high" isIconOnly icon={<Plus size={24} />} label="영양제 직접 등록" onClick={onAddClick} />
         </VStack>
     );
 }

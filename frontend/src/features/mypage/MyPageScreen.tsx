@@ -47,7 +47,7 @@ export default function MyPageScreen() {
 
     return (
         <VStack className="pg" gap={4}>
-            <Heading level={1}>설정</Heading>
+            <Heading level={1}>나</Heading>
 
             <Card>
                 <HStack gap={3} vAlign="center">

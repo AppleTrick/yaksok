@@ -5,6 +5,7 @@ export interface Ingredient {
     myAmount?: string; // 이미 먹고 있는 양
     totalAmount: string;
     status: 'safe' | 'warning' | 'unknown';
+    maxAmount?: string | null; // 하루 상한 (모르면 없음)
 }
 
 export interface Candidate {

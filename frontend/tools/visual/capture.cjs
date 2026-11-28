@@ -11,7 +11,7 @@ const B = 'http://localhost:3000'; const OUT = process.argv[2]; fs.mkdirSync(OUT
     const p = await ctx.newPage();
     p.on('pageerror', e => log.push(`${scheme} 오류 ${e.message.slice(0, 100)}`));
     await route(p);
-    const still = async () => { await p.addStyleTag({ content: '*,*::before,*::after{animation:none!important;transition:none!important;caret-color:transparent!important} .sc-summary{visibility:hidden!important}' }).catch(() => {}); await p.waitForTimeout(1200); };
+    const still = async () => { await p.addStyleTag({ content: '*,*::before,*::after{animation:none!important;transition:none!important;caret-color:transparent!important} .sc-summary,.sc-ai{visibility:hidden!important}' }).catch(() => {}); await p.waitForTimeout(1200); };
     const shot = async (n, full = true) => { await still(); await p.screenshot({ path: path.join(OUT, `${scheme}-${n}.png`), fullPage: full }); };
     await walk(p, ctx, B, shot, log);
     await ctx.close();

@@ -1,2 +1,17 @@
-/* 알림: Astryx 부품이 못 그리는 것만. 다음 알림 카드는 기준색 바탕 */
-.al-hero { background: var(--color-accent); color: var(--color-on-accent); }
+/* 알림 (방향 A): Astryx 부품이 못 그리는 것만. 색은 Astryx 토큰 */
+.al-next { position: relative; overflow: hidden; background: var(--surface-ink); color: var(--on-ink); }
+.al-next::after { content: ''; position: absolute; right: -60px; top: -60px; width: 220px; height: 220px; border-radius: 50%; background: radial-gradient(circle, color-mix(in srgb, var(--color-accent) 60%, transparent), transparent 65%); pointer-events: none; }
+.al-next-cd { color: color-mix(in srgb, var(--color-accent) 45%, #fff); }
+.al-next-time { font-size: clamp(2.5rem, 13vw, 3.25rem); font-weight: 800; letter-spacing: -.04em; line-height: 1.05; }
+.al-next-who { opacity: .8; }
+
+/* 하루 줄기: 시간대 아이콘이 세로선으로 이어진다 */
+.al-rail { list-style: none; }
+.al-rail li { position: relative; padding-bottom: 12px; }
+.al-rail li::before { content: ''; position: absolute; left: 19px; top: 46px; bottom: 4px; width: 2px; background: var(--color-border); }
+.al-rail li.last::before { display: none; }
+.al-rail-icon { flex: none; width: 40px; height: 40px; border-radius: 14px; display: grid; place-items: center; }
+.al-rail-icon.morning { background: var(--color-background-yellow); color: var(--color-icon-yellow); }
+.al-rail-icon.lunch { background: var(--color-background-orange); color: var(--color-icon-orange); }
+.al-rail-icon.night { background: var(--color-background-purple); color: var(--color-icon-purple); }
+.al-card { flex: 1; min-width: 0; }

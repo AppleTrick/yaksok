@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { ScanResult } from './types';
 
-export const COLORS = ['#FF8A50', '#38BDF8', '#A3E635', '#F472B6', '#FACC15'];
+export const COLORS = ['#A68BFF', '#7DD3FC', '#A3E635', '#F472B6', '#FACC15']; // 첫 제품은 AI 보라
 export type Phase = 'ready' | 'analyzing' | 'detect' | 'read' | 'done';
 
 /** 서버가 돌려준 실제 탐지 상자와 글자 위치를 사진 위에 순서대로 그린다 */

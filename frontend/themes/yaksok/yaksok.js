@@ -92,8 +92,8 @@ export const yaksokTheme = {
     "--_astryx-pre-tempo-duration-slow": "700ms",
     "--_astryx-pre-tempo-duration-slow-max": "935ms",
     "--_astryx-motion-tempo": "1",
-    "--font-family-body": "Pretendard, system-ui, sans-serif",
-    "--font-family-heading": "Pretendard, system-ui, sans-serif",
+    "--font-family-body": "\"Pretendard Variable\", system-ui, sans-serif",
+    "--font-family-heading": "\"Pretendard Variable\", system-ui, sans-serif",
     "--font-family-code": "ui-monospace, \"SF Mono\", Monaco, Consolas, \"Liberation Mono\", \"Courier New\", monospace",
     "--color-syntax-keyword": "light-dark(#6b187c, #efa8ff)",
     "--color-syntax-string": "light-dark(#0b5615, #a4d6a3)",
@@ -114,51 +114,51 @@ export const yaksokTheme = {
     "--color-syntax-diff-header": "transparent",
     "--color-syntax-added-marker": "var(--color-syntax-punctuation)",
     "--color-syntax-removed-marker": "var(--color-syntax-punctuation)",
-    "--color-background-surface": "light-dark(#ffffff, #262626)",
-    "--color-background-body": "light-dark(#f1f1f1, #1b1b1b)",
-    "--color-background-card": "light-dark(#ffffff, #1b1b1b)",
-    "--color-background-popover": "light-dark(#ffffff, #1b1b1b)",
-    "--color-background-muted": "light-dark(#f1f1f1, #1b1b1b)",
+    "--color-background-surface": "light-dark(#ffffff, #2c241e)",
+    "--color-background-body": "light-dark(#FBF6F0, #211a15)",
+    "--color-background-card": "light-dark(#FFFFFF, #211a15)",
+    "--color-background-popover": "light-dark(#ffffff, #211a15)",
+    "--color-background-muted": "light-dark(#f3f0ee, #211a15)",
     "--color-accent": "light-dark(#d83a08, #d83a08)",
     "--color-accent-muted": "light-dark(#edccc3, #841900)",
     "--color-neutral": "light-dark(#0000000F, #ffffff1A)",
     "--color-overlay": "light-dark(#00000080, #000000CC)",
-    "--color-overlay-hover": "light-dark(#0000000D, #ffffff0D)",
-    "--color-overlay-pressed": "light-dark(#0000001A, #ffffff1A)",
+    "--color-overlay-hover": "light-dark(#0000000d, #ffffff0d)",
+    "--color-overlay-pressed": "light-dark(#0000001a, #ffffff1a)",
     "--color-text-primary": "light-dark(#000000, #ffffff)",
-    "--color-text-secondary": "light-dark(#474747, #9e9e9e)",
-    "--color-text-disabled": "light-dark(#919191, #525252)",
+    "--color-text-secondary": "light-dark(#51443a, #a5978b)",
+    "--color-text-disabled": "light-dark(#98897c, #5c4f46)",
     "--color-text-accent": "light-dark(#af2700, #ff9a80)",
-    "--color-on-dark": "#ffffff",
-    "--color-on-light": "#111111",
-    "--color-on-accent": "#ffffff",
-    "--color-on-success": "light-dark(#ffffff, #111111)",
-    "--color-on-error": "light-dark(#ffffff, #111111)",
-    "--color-on-warning": "#111111",
-    "--color-info": "light-dark(#0074e2, #6d9cfe)",
-    "--color-info-muted": "light-dark(#b9d7ff, #88bcff3D)",
-    "--color-on-info": "light-dark(#ffffff, #111111)",
-    "--color-text-info": "light-dark(#0067ce, #a1caff)",
-    "--color-text-success": "light-dark(#2f7d33, #90ca90)",
-    "--color-text-warning": "light-dark(#836700, #eec448)",
-    "--color-text-error": "light-dark(#c0262c, #ffaea7)",
-    "--color-on-info-muted": "light-dark(#003978, #a1caff)",
-    "--color-on-success-muted": "light-dark(#00490b, #90ca90)",
-    "--color-on-warning-muted": "light-dark(#4b3900, #eec448)",
-    "--color-on-error-muted": "light-dark(#76000c, #ffaea7)",
+    "--color-on-dark": "light-dark(#ffffff, #ffffff)",
+    "--color-on-light": "light-dark(#160f0b, #15100c)",
+    "--color-on-accent": "light-dark(#ffffff, #ffffff)",
+    "--color-on-success": "light-dark(#160f0b, #15100c)",
+    "--color-on-error": "light-dark(#ffffff, #ffffff)",
+    "--color-on-warning": "light-dark(#160f0b, #15100c)",
+    "--color-info": "light-dark(#6a4cf5, #a09eff)",
+    "--color-info-muted": "light-dark(#d0d2ee, #b0b0fa3d)",
+    "--color-on-info": "light-dark(#ffffff, #15100c)",
+    "--color-text-info": "light-dark(#5635cf, #c1c2ee)",
+    "--color-text-success": "light-dark(#006143, #86caa9)",
+    "--color-text-warning": "light-dark(#8b4b00, #fab672)",
+    "--color-text-error": "light-dark(#b50401, #f5b4aa)",
+    "--color-on-info-muted": "light-dark(#371d90, #c1c2ee)",
+    "--color-on-success-muted": "light-dark(#00482f, #9dd5b9)",
+    "--color-on-warning-muted": "light-dark(#5c2e00, #fab672)",
+    "--color-on-error-muted": "light-dark(#760000, #f5b4aa)",
     "--color-icon-accent": "light-dark(#af2700, #ff9a80)",
     "--color-icon-primary": "light-dark(#000000, #ffffff)",
-    "--color-icon-secondary": "light-dark(#6a6a6a, #9e9e9e)",
-    "--color-icon-disabled": "light-dark(#919191, #525252)",
-    "--color-success": "light-dark(#198100, #64af4c)",
-    "--color-warning": "#ffce2f",
-    "--color-error": "light-dark(#c9303a, #ff705d)",
-    "--color-success-muted": "light-dark(#bce0bb, #90ca903D)",
-    "--color-error-muted": "light-dark(#ffc4be, #ff98903D)",
-    "--color-warning-muted": "light-dark(#fae19e, #e2b6233D)",
-    "--color-border": "light-dark(#00000014, #ffffff1A)",
-    "--color-border-emphasized": "light-dark(#d4d4d4, #525252)",
-    "--color-skeleton": "light-dark(#d4d4d4, #525252)",
+    "--color-icon-secondary": "light-dark(#736357, #a5978b)",
+    "--color-icon-disabled": "light-dark(#98897c, #5c4f46)",
+    "--color-success": "light-dark(#24946a, #24946a)",
+    "--color-warning": "light-dark(#c77700, #c77700)",
+    "--color-error": "light-dark(#d92d20, #d92d20)",
+    "--color-success-muted": "light-dark(#abe4c7, #86caa93d)",
+    "--color-error-muted": "light-dark(#edccc6, #ff99893d)",
+    "--color-warning-muted": "light-dark(#ebcfb4, #eea55b3d)",
+    "--color-border": "light-dark(#EFE5DA, #ffffff1a)",
+    "--color-border-emphasized": "light-dark(#dad3cd, #5c4f46)",
+    "--color-skeleton": "light-dark(#dad3cd, #5c4f46)",
     "--color-shadow": "light-dark(#0000001A, #0000004D)",
     "--color-tint-hover": "light-dark(#000000, #ffffff)",
     "--color-background-red": "light-dark(#ffc4be, #5b2b28)",
@@ -203,8 +203,8 @@ export const yaksokTheme = {
     "--color-text-gray": "light-dark(#1b1b1b, #d4d4d4)",
     "--radius-none": "0px",
     "--radius-inner": "7px",
-    "--radius-element": "12px",
-    "--radius-container": "14px",
+    "--radius-element": "16px",
+    "--radius-container": "24px",
     "--radius-page": "34px",
     "--radius-chat": "var(--radius-container)",
     "--radius-full": "9999px",
@@ -216,7 +216,16 @@ export const yaksokTheme = {
     "--shadow-inset-success": "inset 0px 0px 0px 2px #2f7d334D",
     "--shadow-inset-warning": "inset 0px 0px 0px 2px #f8d36a4D",
     "--shadow-inset-error": "inset 0px 0px 0px 2px #de47454D",
-    "--focus-outline-color": "light-dark(#d83a08, #d83a08)"
+    "--color-background-inverted": "light-dark(#221a14, #f2f0ee)",
+    "--focus-outline-color": "light-dark(#d83a08, #d83a08)",
+    "--color-icon-success": "light-dark(#006143, #86caa9)",
+    "--color-border-success": "light-dark(#94d8b7, #54af87)",
+    "--color-icon-warning": "light-dark(#8b4b00, #fab672)",
+    "--color-border-warning": "light-dark(#fbb570, #d48628)",
+    "--color-icon-error": "light-dark(#b50401, #f5b4aa)",
+    "--color-border-error": "light-dark(#e9bab2, #f66e5c)",
+    "--color-icon-info": "light-dark(#5635cf, #c1c2ee)",
+    "--color-border-info": "light-dark(#c1c3e8, #928dfe)"
   },
   localTokens: {
     "--astryx-theme-neutral-color-status-fill-accent": "light-dark(#0074e2, #6d9cfe)"
@@ -323,22 +332,22 @@ export const yaksokTheme = {
     },
     "item": {
       "selected": {
-        "--color-text-secondary": "light-dark(#474747, #c6c6c6)"
+        "--color-text-secondary": "light-dark(#51443a, #ccc5bf)"
       }
     },
     "tree-list-item": {
       "selected": {
-        "--color-text-secondary": "light-dark(#474747, #c6c6c6)"
+        "--color-text-secondary": "light-dark(#51443a, #ccc5bf)"
       }
     },
     "file-input": {
       "mode:dropzone": {
-        "--color-text-secondary": "light-dark(#474747, #c6c6c6)"
+        "--color-text-secondary": "light-dark(#51443a, #ccc5bf)"
       }
     },
     "citation": {
       "variant:number": {
-        "--color-text-secondary": "light-dark(#474747, #c6c6c6)"
+        "--color-text-secondary": "light-dark(#51443a, #ccc5bf)"
       }
     },
     "button": {
@@ -404,7 +413,7 @@ export const yaksokTheme = {
     },
     "segmented-control-item": {
       "base": {
-        "--color-text-secondary": "light-dark(#474747, #c6c6c6)"
+        "--color-text-secondary": "light-dark(#51443a, #ccc5bf)"
       },
       "size:sm": {
         "height": "calc(var(--size-element-sm) - 8px)"
@@ -439,39 +448,83 @@ export const yaksokTheme = {
     },
     "card": {
       "base": {
-        "padding": "var(--spacing-3)"
+        "padding": "var(--spacing-3)",
+        "borderStyle": "none",
+        "boxShadow": "var(--shadow-med)"
       },
       "variant:blue": {
-        "--color-text-secondary": "light-dark(#474747, #b9b9b9)"
+        "--color-text-secondary": "light-dark(#51443a, #c0b6ae)"
       },
       "variant:cyan": {
-        "--color-text-secondary": "light-dark(#474747, #b9b9b9)"
+        "--color-text-secondary": "light-dark(#51443a, #c0b6ae)"
       },
       "variant:green": {
-        "--color-text-secondary": "light-dark(#474747, #b9b9b9)"
+        "--color-text-secondary": "light-dark(#51443a, #c0b6ae)"
       },
       "variant:orange": {
-        "--color-text-secondary": "light-dark(#474747, #b9b9b9)"
+        "--color-text-secondary": "light-dark(#51443a, #c0b6ae)"
       },
       "variant:pink": {
-        "--color-text-secondary": "light-dark(#474747, #b9b9b9)"
+        "--color-text-secondary": "light-dark(#51443a, #c0b6ae)"
       },
       "variant:purple": {
-        "--color-text-secondary": "light-dark(#474747, #b9b9b9)"
+        "--color-text-secondary": "light-dark(#51443a, #c0b6ae)"
       },
       "variant:red": {
-        "--color-text-secondary": "light-dark(#474747, #b9b9b9)"
+        "--color-text-secondary": "light-dark(#51443a, #c0b6ae)"
       },
       "variant:teal": {
-        "--color-text-secondary": "light-dark(#474747, #b9b9b9)"
+        "--color-text-secondary": "light-dark(#51443a, #c0b6ae)"
       },
       "variant:yellow": {
-        "--color-text-secondary": "light-dark(#474747, #b9b9b9)"
+        "--color-text-secondary": "light-dark(#51443a, #c0b6ae)"
       }
     },
     "section": {
       "base": {
         "padding": "var(--spacing-3)"
+      }
+    },
+    "dialog": {
+      "base": {
+        "borderStyle": "none",
+        "boxShadow": "var(--shadow-med)"
+      }
+    },
+    "popover": {
+      "base": {
+        "borderStyle": "none",
+        "boxShadow": "var(--shadow-med)"
+      }
+    },
+    "drawer": {
+      "base": {
+        "borderStyle": "none",
+        "boxShadow": "var(--shadow-med)"
+      }
+    },
+    "hover-card": {
+      "base": {
+        "borderStyle": "none",
+        "boxShadow": "var(--shadow-med)"
+      }
+    },
+    "dropdown-menu": {
+      "base": {
+        "borderStyle": "none",
+        "boxShadow": "var(--shadow-med)"
+      }
+    },
+    "selector-popup": {
+      "base": {
+        "borderStyle": "none",
+        "boxShadow": "var(--shadow-med)"
+      }
+    },
+    "banner": {
+      "base": {
+        "borderStyle": "none",
+        "boxShadow": "var(--shadow-med)"
       }
     },
     "text-input": {
@@ -596,11 +649,11 @@ export const yaksokTheme = {
         "ratio": 1.2
       },
       "body": {
-        "family": "Pretendard",
+        "family": "Pretendard Variable",
         "fallbacks": "system-ui, sans-serif"
       },
       "heading": {
-        "family": "Pretendard",
+        "family": "Pretendard Variable",
         "fallbacks": "system-ui, sans-serif",
         "weights": {
           "3": "bold",

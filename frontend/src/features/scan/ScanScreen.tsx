@@ -10,6 +10,7 @@ import { Button } from '@astryxdesign/core/Button';
 import { IconButton } from '@astryxdesign/core/IconButton';
 import { Banner } from '@astryxdesign/core/Banner';
 import { EmptyState } from '@astryxdesign/core/EmptyState';
+import { Badge } from '@astryxdesign/core/Badge';
 import { themes, defaultThemeSlug } from '@/astryx-themes';
 import { ArrowRight, Check, CircleHelp, RotateCcw, ScanLine, ScanText, Search, Sparkles, X } from 'lucide-react';
 import ScanStage, { COLORS, Phase, usePhases } from './ScanStage';
@@ -77,7 +78,7 @@ export default function ScanScreen({ src, onRetake, onReport }: {
         <div className="sc-page">
             <header className="sc-top">
                 <IconButton variant="ghost" label="닫기" icon={<X size={22} />} onClick={onRetake} />
-                <strong>{title}</strong>
+                {phase === 'done' && result ? <span className="sc-ai">✦ AI 분석 완료 · {sec(result.totalMs)}</span> : <strong>{title}</strong>}
                 <span />
             </header>
 
@@ -110,6 +111,8 @@ export default function ScanScreen({ src, onRetake, onReport }: {
             )}
 
             {phase === 'done' && result && (
+                // 결과 확인은 아래에서 올라오는 밝은 시트 (엄지로 고른다)
+                <Theme theme={themes[defaultThemeSlug]} mode="light">
                 <section className="sc-result">
                     {result.products.length === 0 ? (
                         <EmptyState isCompact icon={<CircleHelp size={28} />} title="영양제 병이나 상자를 찾지 못했어요" description="알약만으로는 제품을 알 수 없어요. 이름이 보이는 병 앞면을 찍어 주세요." />
@@ -137,6 +140,7 @@ export default function ScanScreen({ src, onRetake, onReport }: {
                             endContent={<ArrowRight size={18} />} isDisabled={!items.length} onClick={() => onReport(items)} />
                     </HStack>
                 </section>
+                </Theme>
             )}
         </div>
         </Theme>
@@ -187,8 +191,8 @@ function Picker({ candidates, sure, legacy, picked, onPick }: {
                     <li key={x.name}>
                         <button aria-pressed={picked === x.name} onClick={() => onPick(picked === x.name ? null : x.name)}>
                             <span className="sc-radio">{picked === x.name && <Check size={14} />}</span>
-                            <span className="sc-cand-name">{x.name}{sure === x.name && <em>유력</em>}</span>
-                            {x.score !== null && <span className="sc-score">{Math.round(x.score * 100)}</span>}
+                            <span className="sc-cand-name">{x.name}{sure === x.name && <em>✦ AI 유력 후보</em>}</span>
+                            {x.score !== null && <span className="sc-score"><small>일치</small>{Math.round(x.score * 100)}%</span>}
                         </button>
                     </li>
                 ))}

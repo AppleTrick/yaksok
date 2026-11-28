@@ -92,8 +92,8 @@ export const yaksokTheme = {
     "--_astryx-pre-tempo-duration-slow": "700ms",
     "--_astryx-pre-tempo-duration-slow-max": "935ms",
     "--_astryx-motion-tempo": "1",
-    "--font-family-body": "Pretendard, system-ui, sans-serif",
-    "--font-family-heading": "Pretendard, system-ui, sans-serif",
+    "--font-family-body": "\"Pretendard Variable\", system-ui, sans-serif",
+    "--font-family-heading": "\"Pretendard Variable\", system-ui, sans-serif",
     "--font-family-code": "ui-monospace, \"SF Mono\", Monaco, Consolas, \"Liberation Mono\", \"Courier New\", monospace",
     "--color-syntax-keyword": "light-dark(#6b187c, #efa8ff)",
     "--color-syntax-string": "light-dark(#0b5615, #a4d6a3)",
@@ -596,11 +596,11 @@ export const yaksokTheme = {
         "ratio": 1.2
       },
       "body": {
-        "family": "Pretendard",
+        "family": "Pretendard Variable",
         "fallbacks": "system-ui, sans-serif"
       },
       "heading": {
-        "family": "Pretendard",
+        "family": "Pretendard Variable",
         "fallbacks": "system-ui, sans-serif",
         "weights": {
           "3": "bold",

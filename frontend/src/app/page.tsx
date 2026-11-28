@@ -2,10 +2,9 @@
 
 import { useState, useEffect } from "react";
 import HomeHeader from "@/features/home/components/HomeHeader";
-import DailyProgressCard from "@/features/home/components/DailyProgressCard";
+import NowCard from "@/features/home/components/NowCard";
 import TimelineSection from "@/features/home/components/TimelineSection";
 import { useScheduleContext, isItemDue } from "@/features/notification/contexts/ScheduleContext";
-import HomeScanCard from "@/features/home/components/HomeScanCard";
 import { VStack } from '@astryxdesign/core/VStack';
 import '@/features/home/home.css';
 import '@/features/page.css';
@@ -13,9 +12,9 @@ import '@/features/page.css';
 // 시간대별 인사말 유틸리티 함수
 const getGreeting = (date: Date): string => {
   const hour = date.getHours();
-  if (hour >= 5 && hour < 11) return "상쾌한 아침을 시작하세요,";
-  if (hour >= 11 && hour < 17) return "활기찬 오후 보내세요,";
-  if (hour >= 17 && hour < 22) return "오늘 하루도 수고하셨어요,";
+  if (hour >= 5 && hour < 11) return "좋은 아침이에요,";
+  if (hour >= 11 && hour < 17) return "좋은 오후예요,";
+  if (hour >= 17 && hour < 22) return "오늘도 수고하셨어요,";
   return "편안한 밤 되세요,";
 };
 
@@ -68,9 +67,9 @@ export default function Home() {
 
   return (
     <VStack className="pg" gap={5}>
-      <HomeHeader userName={userName} greetingText={greetingText} isLoading={isLoading} />
-      <DailyProgressCard total={totalMeds} taken={takenMeds} />
-      <HomeScanCard />
+      <HomeHeader userName={userName} greetingText={greetingText} isLoading={isLoading}
+        dateText={today ? today.toLocaleDateString('ko-KR', { month: 'long', day: 'numeric', weekday: 'long' }) : ''} />
+      {today && <NowCard today={today} schedules={schedules} total={totalMeds} taken={takenMeds} onToggleItem={toggleItemTaken} />}
       <TimelineSection today={today} schedules={schedules} onToggleItem={toggleItemTaken} />
     </VStack>
   );

@@ -58,17 +58,75 @@
     },
     {
       "thing": "font",
-      "value": "Pretendard",
+      "value": "\"Pretendard Variable\", system-ui, sans-serif",
       "source": "dial",
       "on": "body"
     },
     {
       "thing": "font",
-      "value": "Pretendard",
+      "value": "\"Pretendard Variable\", system-ui, sans-serif",
       "source": "dial",
       "on": "heading"
+    },
+    {
+      "thing": "neutral",
+      "value": "#8A7B6E",
+      "source": "dial"
+    },
+    {
+      "thing": "success",
+      "value": "#24946A",
+      "source": "dial"
+    },
+    {
+      "thing": "warning",
+      "value": "#C77700",
+      "source": "dial"
+    },
+    {
+      "thing": "danger",
+      "value": "#D92D20",
+      "source": "dial"
+    },
+    {
+      "thing": "--color-background-body",
+      "value": "#FBF6F0",
+      "source": "token",
+      "mode": "light"
+    },
+    {
+      "thing": "--color-background-card",
+      "value": "#FFFFFF",
+      "source": "token",
+      "mode": "light"
+    },
+    {
+      "thing": "--color-border",
+      "value": "#EFE5DA",
+      "source": "token",
+      "mode": "light"
+    },
+    {
+      "thing": "--radius-container",
+      "value": "24px",
+      "source": "token"
+    },
+    {
+      "thing": "--radius-element",
+      "value": "16px",
+      "source": "token"
+    },
+    {
+      "thing": "surfaces",
+      "value": "raised",
+      "source": "dial"
+    },
+    {
+      "thing": "info",
+      "value": "#6A4CF5",
+      "source": "dial"
     }
   ],
   "lifted": [],
-  "palette": "d2303667b7a7b2628f0e36e5b8d6b2b66175a31d8e4b63b0ed59895550100f72"
+  "palette": "e1e61803ea9f66fe38f83a4beb015c83bafb639b4447e8eb3f1f3da02daddcb8"
 }

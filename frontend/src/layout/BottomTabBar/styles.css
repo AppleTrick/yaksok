@@ -1,16 +1,22 @@
+/* 아래 탭바: 화면 위에 떠 있는 둥근 막대 + 가운데 찍기 버튼 (방향 A). 색은 Astryx 토큰 */
 .bottom-tab-bar {
     position: fixed;
-    bottom: 0;
     left: 50%;
+    bottom: calc(var(--safe-bottom) + 12px);
     transform: translateX(-50%);
-    width: 100%;
-    max-width: var(--app-max);
-    height: var(--tabbar-space);
-    padding: 0 6px var(--safe-bottom);
+    width: calc(100% - 2 * var(--page-x));
+    max-width: calc(var(--app-max) - 2 * var(--page-x));
+    height: var(--tabbar-h);
+    padding: 0 6px;
     display: grid;
     grid-template-columns: repeat(5, 1fr);
-    background: var(--surface-1);
-    border-top: 1px solid var(--border-color);
+    align-items: center;
+    border-radius: 26px;
+    background: color-mix(in srgb, var(--color-background-card) 92%, transparent);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    box-shadow: var(--shadow-high);
+    border: 1px solid var(--color-border);
     z-index: var(--z-tabbar); /* 모달과 시트(1000)보다 아래 */
 }
 
@@ -20,26 +26,29 @@
     align-items: center;
     justify-content: center;
     gap: 3px;
-    color: var(--text-muted);
-    font-size: 0.72rem;
-    font-weight: var(--fw-semibold);
+    min-height: 48px;
+    color: var(--color-text-secondary);
+    font-size: var(--font-size-xs, 0.75rem);
+    font-weight: var(--font-weight-semibold, 600);
 }
 
-.tab-item.active { color: var(--primary-color); }
+.tab-item.active { color: var(--color-text-accent); }
 .tab-icon { display: grid; place-items: center; }
 
 .tab-item.main .tab-icon {
-    width: 52px;
-    height: 52px;
-    margin-top: -24px;
-    border-radius: var(--radius-round);
-    color: #fff;
-    background: var(--gradient-cta);
-    box-shadow: 0 6px 16px rgba(216, 58, 8, 0.35);
+    width: 58px;
+    height: 58px;
+    margin-top: -26px;
+    border-radius: 22px;
+    color: var(--color-on-accent);
+    background: linear-gradient(140deg, color-mix(in srgb, var(--color-accent) 70%, #FFB08A), var(--color-accent));
+    box-shadow: 0 10px 22px color-mix(in srgb, var(--color-accent) 42%, transparent);
 }
+
+.tab-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
 /* 휴대폰 가로: 높이가 모자라 아이콘과 글자를 옆으로 놓는다 */
 @media (max-height: 500px) and (orientation: landscape) {
-    .tab-item { flex-direction: row; gap: 6px; }
-    .tab-item.main .tab-icon { width: 42px; height: 42px; margin-top: 0; }
+    .tab-item { flex-direction: row; gap: 6px; min-height: 40px; }
+    .tab-item.main .tab-icon { width: 44px; height: 44px; margin-top: 0; border-radius: 16px; }
 }

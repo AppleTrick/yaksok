@@ -11,7 +11,7 @@
 | 앱이 읽는 테마 | `src/themes/yaksok/`, `src/astryx-themes.ts` (자동 생성, 손대지 않는다) |
 | 테마·언어 연결 | `src/app/AstryxRoot.tsx` (한국어, 밝은·어두운 모드) |
 | 화면 틀 토큰 | `src/styles/tokens.css` |
-| 글꼴 | Pretendard (`@fontsource/pretendard`, OFL) |
+| 글꼴 | Pretendard Variable (`pretendard` 패키지, 한글 포함, OFL) |
 
 ## 원칙
 
@@ -22,18 +22,32 @@
 5. 휴대폰 모양은 접는 폰 바깥 화면(280px)부터 태블릿·가로까지 다양하다. 아래 "화면 틀" 토큰과 `@container`로 짜고, 바꿀 때마다 "크기 검사"를 돌린다.
 6. 납품 전에 `npx astryx doctor --built .`이 실패(fail) 없이 끝나야 한다.
 
+## 방향 A: 따뜻한 루틴 + AI 신호
+
+시안과 이유: 작업 폴더 `design/direction/README.md` (2026-11-28에 A로 정함).
+
+1. **화면마다 주인공 하나.** 홈은 "지금 먹을 차례"와 먹었어요, 리포트는 결론 한 문장, 알림은 "몇 분 뒤", 스캔은 AI가 찾은 병, 내 영양제는 약장 카드.
+2. **안전은 신호등.** 초록(success) = 안전, 호박(warning) = 상한 넘음, 빨강(error) = 위험. 다른 뜻으로 쓰지 않는다. 문장으로 먼저 말한다.
+3. **AI가 한 일은 보라.** Astryx의 info 색을 보라(`#6A4CF5`)로 바꿨다. `Banner status="info"`, `--color-info*`, 스캔 화면 `--scan-accent`는 "AI가 알려 준 것"에만 쓴다.
+4. **숫자는 크게, 버튼은 엄지 쪽.** 떠 있는 탭바, 가운데 찍기, 확인은 아래 시트.
+5. 먹색 카드(`--surface-ink`)는 "다음 알림"처럼 강조할 카드 하나에만.
+
 ## 약속 테마 (`yaksok`, neutral 기반)
 
 | 설정 | 값 | 이유 |
 |---|---|---|
-| 기준색(accent) | `#D83A08` | 흰 글자 대비 4.5:1 이상. 링크·강조 글자는 테마가 더 진한 단계로 바꾼다 |
-| 기준색 위 글자 | 흰색 | |
-| 모서리 | large | |
-| 글꼴 | Pretendard (본문·제목) | 한글 |
-| 버튼·입력칸·세그먼트·목록 줄 | 최소 높이 44px | 손가락으로 누르는 앱 |
-| 눌린 토글(요일, 질환) | 기준색 바탕 | 회색이면 안 눌린 것과 구별이 안 됐다 |
+| 바탕 / 카드 / 선 (밝은) | `#FBF6F0` / `#FFFFFF` / `#EFE5DA` | 따뜻한 크림 |
+| 회색 계열(neutral) | `#8A7B6E` | 따뜻한 회색 |
+| 기준색(accent) | `#D83A08` | 흰 글자 대비 4.5:1 이상 |
+| 안전 / 주의 / 위험 | `#24946A` / `#C77700` / `#D92D20` | 글자로 쓸 때는 테마가 대비를 맞춘 진한 단계를 쓴다 |
+| AI (info) | `#6A4CF5` | |
+| 모서리 | 카드 24px, 버튼·입력 16px | |
+| 그림자 | raised | |
+| 글꼴 | Pretendard Variable (한글 포함, `pretendard` 패키지) | |
+| 버튼·입력칸·세그먼트·목록 줄 | 최소 44px | |
+| 눌린 토글 | 기준색 바탕 | |
 
-바꾸는 법: `npx astryx experimental theme editor set yaksok <무엇> <값>` → `npx astryx experimental theme editor show yaksok --png`로 확인 → 앱은 자동으로 따라온다.
+바꾸는 법: `npx astryx experimental theme editor set yaksok <무엇> <값>` → `editor show yaksok --png`로 그림 확인 → **`npm run astryx:fonts`** (편집기가 글꼴 파일을 다시 쓰면 한글 Pretendard 줄이 빠진다. 편집기는 Fontsource판만 알아보는데 Fontsource판에는 한글이 없다).
 
 ## 예전 이름 (호환)
 
@@ -88,6 +102,11 @@ python tools/visual/diff.py ../.visual/before ../.visual/after ../.visual/diff
 
 | 화면 | 상태 |
 |---|---|
-| 홈, 내 영양제(목록·상세·직접 등록), 알림(목록·수정 시트·방해금지), 설정·마이페이지·내 정보 수정·계정 보안·탈퇴, 로그인·가입·비밀번호 찾기, 리포트, 복용 알림 창 | Astryx 부품 |
-| 스캔 분석 화면 | 어두운 테마를 겹쳐 씌우고 버튼·요약·안내만 Astryx. 상자·단계 시각화는 직접 그림 |
-| 카메라 촬영, 아래 탭바, 푸시 권한 안내 | 직접 그림 (색은 토큰) |
+| 홈 | 방향 A: 지금 먹을 차례 카드(`NowCard`) + 오늘 일정 |
+| 알림 | 방향 A: 먹색 "다음 알림" 카드 + 하루 줄기 + 상태 칩 |
+| 내 영양제 | 방향 A: 약장 카드 2열, 직접 추가 카드 |
+| 리포트 | 방향 A: 결론 카드(신호등) + 상한 세로선 막대 |
+| 스캔 분석 | 방향 A: 어두운 렌즈, AI 보라 상자·단계, 결과는 밝은 시트와 일치율 |
+| 나(설정)·내 정보 수정·계정 보안·탈퇴, 로그인·가입·비밀번호 찾기, 복용 알림 창 | Astryx 부품 + 테마 (구성은 그대로) |
+| 카메라 촬영, 탭바 | 직접 그림 (탭바는 방향 A의 떠 있는 막대) |
+| 아직 없음 | 연속 기록(날짜별 복용 기록이 필요), 홈 안전 신호(안전한 섭취량 API가 필요) |
