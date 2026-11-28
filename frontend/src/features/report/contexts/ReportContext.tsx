@@ -1,29 +1,11 @@
 "use client";
 
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useCallback, useContext, useState, ReactNode } from 'react';
+import type { ReportItem } from '@/features/scan/types';
 
-// 분석된 제품 정보
-interface DetectedProduct {
-    name: string;
-    confidence: number;
-    box: number[];
-}
-
-// 분석 결과 전체 (Spring Boot 통합 응답의 data 필드 구조)
-interface AnalysisResult {
-    displayData: {
-        objectCount: number;
-        products: DetectedProduct[];
-    };
-    reportData: {
-        products: any[];
-        overdoseAnalysis: any;
-    };
-}
-
-// 리포트 데이터 (Mock 기반)
+/** 분석 결과에서 사용자가 고른 제품들. 리포트 화면이 이것으로 등록까지 한다. */
 interface ReportData {
-    analysisResult: AnalysisResult | null;
+    items: ReportItem[];
     capturedImage: string | null;
 }
 
@@ -33,25 +15,12 @@ interface ReportContextType {
     clearReportData: () => void;
 }
 
+const EMPTY: ReportData = { items: [], capturedImage: null };
 const ReportContext = createContext<ReportContextType | undefined>(undefined);
 
 export function ReportProvider({ children }: { children: ReactNode }) {
-    const [reportData, setReportDataState] = useState<ReportData>({
-        analysisResult: null,
-        capturedImage: null,
-    });
-
-    const setReportData = (data: ReportData) => {
-        setReportDataState(data);
-    };
-
-    const clearReportData = () => {
-        setReportDataState({
-            analysisResult: null,
-            capturedImage: null,
-        });
-    };
-
+    const [reportData, setReportData] = useState<ReportData>(EMPTY);
+    const clearReportData = useCallback(() => setReportData(EMPTY), []);
     return (
         <ReportContext.Provider value={{ reportData, setReportData, clearReportData }}>
             {children}
@@ -61,8 +30,6 @@ export function ReportProvider({ children }: { children: ReactNode }) {
 
 export function useReportContext() {
     const context = useContext(ReportContext);
-    if (!context) {
-        throw new Error('useReportContext must be used within a ReportProvider');
-    }
+    if (!context) throw new Error('useReportContext must be used within a ReportProvider');
     return context;
 }
