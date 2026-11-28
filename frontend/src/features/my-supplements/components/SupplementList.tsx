@@ -1,9 +1,13 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
+import { ChevronRight, Pill, Plus } from 'lucide-react';
+import { VStack } from '@astryxdesign/core/VStack';
+import { Card } from '@astryxdesign/core/Card';
+import { List, ListItem } from '@astryxdesign/core/List';
+import { SegmentedControl, SegmentedControlItem } from '@astryxdesign/core/SegmentedControl';
+import { EmptyState } from '@astryxdesign/core/EmptyState';
+import { Button } from '@astryxdesign/core/Button';
+import { Spinner } from '@astryxdesign/core/Spinner';
 import { MedicationItem } from '@/features/notification/types';
-import MySupplementCard from './MySupplementCard';
-import { Plus } from 'lucide-react';
-import { motion } from 'framer-motion';
-import '../styles.css';
 
 interface SupplementListProps {
     items: MedicationItem[];
@@ -20,122 +24,58 @@ const ITEMS_PER_PAGE = 10;
 export default function SupplementList({ items, onItemClick, onAddClick, activeTab, onTabChange }: SupplementListProps) {
     const [displayLimit, setDisplayLimit] = useState(ITEMS_PER_PAGE);
 
-    // 1. Filter items based on active tab
-    const filteredItems = useMemo(() => {
-        return items.filter(item => {
-            const status = item.status || 'taking'; // Default to taking
-            return status === activeTab;
-        });
-    }, [items, activeTab]);
-
-    // 2. Pagination (Infinite Scroll)
-    const displayedItems = useMemo(() => {
-        return filteredItems.slice(0, displayLimit);
-    }, [filteredItems, displayLimit]);
-
+    const filteredItems = useMemo(() => items.filter((item) => (item.status || 'taking') === activeTab), [items, activeTab]);
+    const displayedItems = useMemo(() => filteredItems.slice(0, displayLimit), [filteredItems, displayLimit]);
     const hasMore = displayedItems.length < filteredItems.length;
 
-    // 3. Observer for infinite scroll
+    // 끝까지 내리면 10개씩 더 보여 준다
     const observerTarget = useRef<HTMLDivElement>(null);
-
     useEffect(() => {
-        const observer = new IntersectionObserver(
-            (entries) => {
-                if (entries[0].isIntersecting && hasMore) {
-                    setDisplayLimit(prev => prev + ITEMS_PER_PAGE);
-                }
-            },
-            { threshold: 1.0 }
-        );
-
-        if (observerTarget.current) {
-            observer.observe(observerTarget.current);
-        }
-
+        const observer = new IntersectionObserver((entries) => {
+            if (entries[0].isIntersecting && hasMore) setDisplayLimit((prev) => prev + ITEMS_PER_PAGE);
+        }, { threshold: 1.0 });
+        if (observerTarget.current) observer.observe(observerTarget.current);
         return () => observer.disconnect();
     }, [hasMore]);
 
-    // Reset pagination when tab changes
-    useEffect(() => {
+    const changeTab = (tab: TabType) => {
         setDisplayLimit(ITEMS_PER_PAGE);
-    }, [activeTab]);
+        onTabChange(tab);
+    };
 
     return (
-        <div className="supplement-list-container">
-            {/* Tabs */}
-            <div className="status-tabs">
-                <button
-                    className={`status-tab ${activeTab === 'taking' ? 'active' : ''}`}
-                    onClick={() => onTabChange('taking')}
-                >
-                    복용 중
-                </button>
-                <button
-                    className={`status-tab ${activeTab === 'stopped' ? 'active' : ''}`}
-                    onClick={() => onTabChange('stopped')}
-                >
-                    복용 중단
-                </button>
-            </div>
+        <VStack gap={4}>
+            <SegmentedControl label="복용 상태" layout="fill" value={activeTab} onChange={(v) => changeTab(v as TabType)}>
+                <SegmentedControlItem value="taking" label="복용 중" />
+                <SegmentedControlItem value="stopped" label="복용 중단" />
+            </SegmentedControl>
 
-            {/* List */}
-            <div className="list-content">
-                {displayedItems.length > 0 ? (
-                    displayedItems.map((item) => (
-                        <MySupplementCard
-                            key={item.id}
-                            item={item}
-                            onClick={onItemClick}
-                        />
-                    ))
-                ) : (
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="empty-state-animated"
-                    >
-                        <div className="floating-icon-wrapper">
-                            <span className="floating-icon">💊</span>
-                        </div>
-                        <div className="empty-content-wrapper">
-                            <div className="empty-text-group">
-                                <h3 className="empty-main-text">
-                                    {activeTab === 'taking'
-                                        ? '어떤 영양제를 드시고 계신가요?'
-                                        : '아직 중단한 영양제가 없네요'}
-                                </h3>
-                                <p className="empty-sub-text">
-                                    {activeTab === 'taking'
-                                        ? '매일 챙겨 먹는 영양제를 기록해 보세요.'
-                                        : '꾸준히 잘 챙겨 드시고 계신가 봐요!'}
-                                </p>
-                            </div>
+            {displayedItems.length > 0 ? (
+                <Card padding={1}>
+                    <List hasDividers>
+                        {displayedItems.map((item) => (
+                            <ListItem
+                                key={item.id}
+                                label={item.nickname || item.name}
+                                startContent={<span className="ms-icon" aria-hidden="true"><Pill size={18} /></span>}
+                                endContent={<ChevronRight size={18} aria-hidden="true" />}
+                                onClick={() => onItemClick(item)}
+                            />
+                        ))}
+                    </List>
+                </Card>
+            ) : activeTab === 'taking' ? (
+                <EmptyState icon={<Pill size={32} />} title="어떤 영양제를 드시고 계신가요?" description="매일 챙겨 먹는 영양제를 기록해 보세요."
+                    actions={<Button variant="primary" icon={<Plus size={18} />} label="영양제 등록하기" onClick={onAddClick} />} />
+            ) : (
+                <EmptyState title="아직 중단한 영양제가 없어요" description="꾸준히 잘 챙겨 드시고 계신가 봐요!"
+                    actions={<Button label="복용 중인 영양제 보기" onClick={() => changeTab('taking')} />} />
+            )}
 
-                            {activeTab === 'taking' ? (
-                                <button className="empty-cta-btn primary" onClick={onAddClick}>
-                                    <Plus size={18} />
-                                    <span>영양제 등록하기</span>
-                                </button>
-                            ) : (
-                                <button
-                                    className="empty-cta-link"
-                                    onClick={() => onTabChange('taking')}
-                                >
-                                    현재 복용 중인 영양제 보러 가기
-                                </button>
-                            )}
-                        </div>
-                    </motion.div>
-                )}
+            {hasMore && <div ref={observerTarget} className="ms-more"><Spinner /></div>}
 
-                {/* Loader Target */}
-                {hasMore && <div ref={observerTarget} className="loading-trigger">Loading...</div>}
-            </div>
-
-            {/* FAB (Floating Action Button) */}
-            <button className="fab-button" onClick={onAddClick}>
-                <Plus size={24} />
-            </button>
-        </div>
+            {/* 떠 있는 추가 버튼: 앱 기둥 안, 탭바 위 */}
+            <Button className="ms-fab" variant="primary" size="lg" elevation="high" isIconOnly icon={<Plus size={24} />} label="영양제 직접 등록" onClick={onAddClick} />
+        </VStack>
     );
 }

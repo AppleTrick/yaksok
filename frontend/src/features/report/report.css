@@ -1,43 +1,14 @@
-.rp-page { min-height: 100dvh; padding: 0 18px 120px; display: flex; flex-direction: column; gap: 14px; background: var(--background-color); }
-.rp-top { display: grid; grid-template-columns: 44px 1fr 44px; align-items: center; padding: 12px 0 0; text-align: center; }
-.rp-top h1 { font-size: var(--fs-lg); font-weight: var(--fw-heavy); }
-.rp-top button { width: 44px; height: 44px; display: grid; place-items: center; border: 0; border-radius: var(--radius-round); background: var(--surface-1); color: var(--foreground-color); cursor: pointer; }
-.rp-hero { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-.rp-hero div { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 16px 6px; border-radius: var(--radius-card); background: var(--surface-1); box-shadow: var(--shadow-premium); }
-.rp-hero b { display: flex; align-items: center; min-height: 32px; font-size: 1.7rem; font-weight: var(--fw-heavy); font-variant-numeric: tabular-nums; }
-.rp-hero span { color: var(--text-muted); font-size: var(--fs-sm); }
-.rp-hero .ok b { color: var(--color-success-fg); }
-.rp-hero .warn b { color: var(--brand-strong); }
-.rp-tabs { display: flex; gap: 8px; overflow-x: auto; }
-.rp-tabs button { flex: none; max-width: 220px; min-height: 44px; padding: 0 16px; border: 0; border-radius: var(--radius-control); background: var(--surface-1); color: var(--text-muted); font: inherit; font-weight: var(--fw-bold); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; }
-.rp-tabs button[aria-selected='true'] { background: var(--brand-strong); color: #fff; }
-.rp-card { display: flex; flex-direction: column; gap: 12px; padding: 20px; border-radius: var(--radius-2xl); background: var(--surface-1); box-shadow: var(--shadow-premium); }
-.rp-card h3 { display: flex; align-items: center; gap: 6px; margin-top: 6px; font-size: var(--fs-base); font-weight: var(--fw-bold); }
-.rp-product { display: flex; gap: 14px; align-items: center; }
-.rp-product h2 { font-size: 1.15rem; font-weight: var(--fw-heavy); line-height: 1.35; }
-.rp-product p, .rp-muted { color: var(--text-muted); font-size: .88rem; line-height: 1.5; }
-.rp-icon { flex: none; width: 48px; height: 48px; display: grid; place-items: center; border-radius: var(--radius-xl); background: var(--tint); color: var(--primary-color); }
-.rp-ings { list-style: none; display: flex; flex-direction: column; gap: 14px; }
-.rp-ing-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
-.rp-badge { flex: none; padding: 3px 10px; border-radius: var(--radius-pill); font-size: .78rem; font-weight: var(--fw-bold); background: var(--color-success-bg); color: var(--color-success-fg); }
-.rp-ings .warning .rp-badge { background: var(--color-caution-bg); color: var(--color-caution-fg); }
-.rp-ings .unknown .rp-badge { background: var(--light-grey); color: var(--text-muted); }
-.rp-bar { display: flex; height: 10px; margin: 8px 0 6px; border-radius: var(--radius-pill); overflow: hidden; background: var(--light-grey); }
-.rp-bar .mine { background: var(--color-neutral); }
-.rp-bar .add { background: var(--color-positive); }
-.rp-ings .warning .rp-bar .add { background: var(--brand-strong); }
-.rp-ing-num { color: var(--text-muted); font-size: var(--fs-sm); font-variant-numeric: tabular-nums; }
-.rp-ing-num b { color: var(--foreground-color); }
-.rp-when { display: flex; flex-direction: column; gap: 10px; }
-.rp-when input { min-height: 48px; padding: 0 12px; border: 1px solid var(--border-color); border-radius: var(--radius-control); background: var(--background-color); color: var(--foreground-color); font: inherit; font-weight: var(--fw-bold); font-size: var(--fs-lg); }
-.rp-seg { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; padding: 4px; border-radius: var(--radius-xl); background: var(--background-color); }
-.rp-seg button { min-height: 44px; border: 0; border-radius: var(--radius-md); background: none; color: var(--text-muted); font: inherit; font-weight: var(--fw-semibold); cursor: pointer; }
-.rp-seg button[aria-pressed='true'] { background: var(--surface-1); color: var(--primary-color); box-shadow: var(--shadow-sm); }
-.rp-error { padding: 14px 16px; border-radius: var(--radius-control); background: var(--color-danger-bg); color: var(--color-danger-fg); font-size: var(--fs-md); line-height: 1.6; }
-.rp-bottom { position: fixed; left: 50%; bottom: 0; transform: translateX(-50%); width: 100%; max-width: var(--app-max); padding: 12px var(--page-x) calc(16px + var(--safe-bottom)); background: linear-gradient(to top, var(--background-color) 70%, transparent); z-index: var(--z-sticky); }
-.rp-btn { width: 100%; min-height: 56px; border: 0; border-radius: 18px; background: var(--brand-strong); color: #fff; font: inherit; font-size: 1.05rem; font-weight: var(--fw-heavy); cursor: pointer; }
-.rp-btn:disabled { opacity: .45; cursor: default; }
-.rp-modal { display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center; line-height: 1.6; }
-.rp-modal ul { list-style: none; width: 100%; }
-.rp-modal li { padding: 8px 0; border-bottom: 1px solid var(--border-color); font-weight: var(--fw-bold); color: var(--color-caution-fg); }
-.rp-modal li:last-child { border-bottom: 0; }
+/* 리포트: Astryx 부품이 못 그리는 것만 (섭취량 막대, 아래 고정 버튼). 색은 Astryx 토큰 */
+.rp-page { padding-bottom: calc(110px + var(--safe-bottom)); }
+.rp-stat { flex: 1; min-width: 0; }
+.rp-stat.ok { color: var(--color-text-success); }
+.rp-stat.warn { color: var(--color-text-accent); }
+.rp-icon { flex: none; width: 48px; height: 48px; display: grid; place-items: center; border-radius: var(--radius-element); background: var(--color-accent-muted); color: var(--color-icon-accent); }
+.rp-ings { list-style: none; }
+
+.rp-bar { display: flex; height: 10px; margin: 8px 0 6px; border-radius: var(--radius-full); overflow: hidden; background: var(--color-background-muted); }
+.rp-bar .mine { background: var(--color-icon-secondary); }
+.rp-bar .add { background: var(--color-success); }
+.rp-ings .warning .rp-bar .add { background: var(--color-accent); }
+
+.rp-bottom { position: fixed; left: 50%; bottom: 0; transform: translateX(-50%); width: 100%; max-width: var(--app-max); padding: 12px var(--page-x) calc(16px + var(--safe-bottom)); background: linear-gradient(to top, var(--color-background-body) 70%, transparent); z-index: var(--z-sticky); }

@@ -68,3 +68,8 @@
   .sc-steps li { grid-template-columns: 1fr; padding: 10px 8px; font-size: var(--fs-xs); }
   .sc-steps li svg { display: none; }
 }
+
+/* Astryx 부품과 같이 쓰는 칸 */
+.sc-pad { padding: 12px 14px 0; }
+.sc-stat { flex: 1; min-width: 0; }
+.sc-stat.warn { color: var(--color-text-accent); }

@@ -39,7 +39,7 @@ async function walk(p, ctx, B, shot, log) {
       await go(u); await shot(n);
     }
     await go('/my-supplements'); await p.locator('text=메가도스C').first().click().catch(() => log.push('상세 못 엶')); await shot('supplement-detail', false);
-    await go('/reminders'); await p.locator('.al-item').first().click().catch(() => log.push('알림 수정 못 엶')); await shot('alarm-edit', false);
+    await go('/reminders'); await p.getByText(/메가도스C 비타민C 3000mg · 매일/).first().click().catch(() => log.push('알림 수정 못 엶')); await shot('alarm-edit', false);
     await go('/camera'); await shot('camera', false);
     await p.setInputFiles('input[type=file]', PHOTO); await shot('scan-review', false);
     await p.getByRole('button', { name: '분석 시작' }).click(); await p.locator('.sc-result').waitFor({ timeout: 10000 }).catch(() => log.push('결과 안 나옴')); await shot('scan-result');

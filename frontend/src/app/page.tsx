@@ -6,7 +6,9 @@ import DailyProgressCard from "@/features/home/components/DailyProgressCard";
 import TimelineSection from "@/features/home/components/TimelineSection";
 import { useScheduleContext, isItemDue } from "@/features/notification/contexts/ScheduleContext";
 import HomeScanCard from "@/features/home/components/HomeScanCard";
+import { VStack } from '@astryxdesign/core/VStack';
 import '@/features/home/home.css';
+import '@/features/page.css';
 
 // 시간대별 인사말 유틸리티 함수
 const getGreeting = (date: Date): string => {
@@ -65,11 +67,11 @@ export default function Home() {
   const greetingText = today ? getGreeting(today) : "반갑습니다,";
 
   return (
-    <div className="hm-page">
+    <VStack className="pg" gap={5}>
       <HomeHeader userName={userName} greetingText={greetingText} isLoading={isLoading} />
       <DailyProgressCard total={totalMeds} taken={takenMeds} />
       <HomeScanCard />
       <TimelineSection today={today} schedules={schedules} onToggleItem={toggleItemTaken} />
-    </div>
+    </VStack>
   );
 }

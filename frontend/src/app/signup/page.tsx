@@ -4,7 +4,6 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import SignupForm from '@/features/signup/components/SignupForm';
-import '@/features/signup/styles.css';
 
 export default function SignupPage() {
     const [isLoading, setIsLoading] = useState(false);

@@ -1,7 +1,12 @@
 import React, { useState } from 'react';
-import Link from 'next/link';
-import Button from '@/components/Button';
-import InputForm from '@/components/InputForm';
+import { VStack } from '@astryxdesign/core/VStack';
+import { HStack } from '@astryxdesign/core/HStack';
+import { Heading } from '@astryxdesign/core/Heading';
+import { Text } from '@astryxdesign/core/Text';
+import { TextInput } from '@astryxdesign/core/TextInput';
+import { Button } from '@astryxdesign/core/Button';
+import { Banner } from '@astryxdesign/core/Banner';
+import '@/features/page.css';
 import '../styles.css';
 
 const KAKAO_KEY = process.env.NEXT_PUBLIC_KAKAO_REST_API_KEY;
@@ -33,8 +38,7 @@ export default function LoginForm({ onSubmit, isLoading, error }: LoginFormProps
         return '';
     };
 
-    const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const value = e.target.value;
+    const handleEmailChange = (value: string) => {
         setEmail(value);
         // 입력 중일 때는 에러 메시지를 부드럽게 업데이트하거나 지움
         if (errors.email) {
@@ -42,8 +46,7 @@ export default function LoginForm({ onSubmit, isLoading, error }: LoginFormProps
         }
     };
 
-    const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const value = e.target.value;
+    const handlePasswordChange = (value: string) => {
         setPassword(value);
         if (errors.password) {
             setErrors(prev => ({ ...prev, password: validatePassword(value) }));
@@ -69,37 +72,24 @@ export default function LoginForm({ onSubmit, isLoading, error }: LoginFormProps
     };
 
     return (
-        <div className="login-container">
-            <header className="login-header">
-                <h1 className="login-title">로그인</h1>
-                <p className="login-subtitle">건강한 하루를 시작하세요</p>
-            </header>
+        <VStack className="pg-plain lg-page" gap={6} vAlign="center">
+            <VStack gap={1} hAlign="center">
+                <Heading level={1} color="accent">약속</Heading>
+                <Text color="secondary">건강한 하루를 시작하세요</Text>
+            </VStack>
 
-            <form className="login-form" onSubmit={handleSubmit} noValidate>
-                <InputForm
-                    label="이메일"
-                    type="email"
-                    placeholder="이메일을 입력하세요"
-                    value={email}
-                    onChange={handleEmailChange}
-                    error={errors.email}
-                    required
-                />
-                <InputForm
-                    label="비밀번호"
-                    type="password"
-                    placeholder="비밀번호를 입력하세요"
-                    value={password}
-                    onChange={handlePasswordChange}
-                    error={errors.password}
-                    required
-                />
+            <form onSubmit={handleSubmit} noValidate>
+                <VStack gap={4}>
+                    <TextInput label="이메일" type="email" autoComplete="email" inputMode="email" placeholder="이메일을 입력하세요"
+                        value={email} onChange={handleEmailChange} size="lg"
+                        status={errors.email ? { type: 'error', message: errors.email } : undefined} />
+                    <TextInput label="비밀번호" type="password" autoComplete="current-password" placeholder="비밀번호를 입력하세요"
+                        value={password} onChange={handlePasswordChange} size="lg"
+                        status={errors.password ? { type: 'error', message: errors.password } : undefined} />
 
-                {error && <p className="login-error" role="alert">{error}</p>}
+                    {error && <Banner status="error" title={error} />}
 
-                <Button type="submit" variant="primary" size="large" isLoading={isLoading} style={{ marginTop: '1rem' }}>
-                    로그인
-                </Button>
+                    <Button type="submit" variant="primary" size="lg" width="100%" isLoading={isLoading} label="로그인" />
 
                 {/* 카카오 설정이 없는 빌드에서는 동작하지 않는 버튼을 보이지 않는다 */}
                 {KAKAO_KEY && KAKAO_REDIRECT && <button
@@ -115,16 +105,13 @@ export default function LoginForm({ onSubmit, isLoading, error }: LoginFormProps
                     </svg>
                     <span>카카오 로그인</span>
                 </button>}
+                </VStack>
             </form>
 
-            <div className="login-actions">
-                <Link href="/find-password">
-                    <span className="login-link">비밀번호 찾기</span>
-                </Link>
-                <Link href="/signup">
-                    <span className="login-link">회원가입</span>
-                </Link>
-            </div>
-        </div>
+            <HStack hAlign="between">
+                <Button variant="ghost" href="/find-password" label="비밀번호 찾기" />
+                <Button variant="ghost" href="/signup" label="회원가입" />
+            </HStack>
+        </VStack>
     );
 }

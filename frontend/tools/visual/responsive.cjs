@@ -30,9 +30,15 @@ function inspect() {
     const r = e.getBoundingClientRect(); const s = getComputedStyle(e);
     if (s.position !== 'fixed' && (r.right > W + 1 || r.left < -1) && !clipped(e) && e.children.length === 0) out.offscreen.push(name(e));
     const hasText = [...e.childNodes].some(n => n.nodeType === 3 && n.textContent.trim());
-    if (hasText && /(hidden|clip)/.test(s.overflow) && s.textOverflow !== 'ellipsis' && !/-webkit-box/.test(s.display) && (e.scrollWidth > e.clientWidth + 1 || e.scrollHeight > e.clientHeight + 2)) out.cut.push(name(e));
+    const srOnly = r.width <= 2 || r.height <= 2 || s.clip !== 'auto' || /inset\(50%|inset\(100%/.test(s.clipPath); // 화면 읽기용으로 숨긴 글자
+    if (!srOnly && hasText && /(hidden|clip)/.test(s.overflow) && s.textOverflow !== 'ellipsis' && !/-webkit-box/.test(s.display) && (e.scrollWidth > e.clientWidth + 1 || e.scrollHeight > e.clientHeight + 2)) out.cut.push(name(e));
     if (e.matches('button, a[href], input:not([type=hidden]), select, [role=button], [role=switch]') && !e.closest('[aria-hidden=true]')) {
-      const t = e.matches('input[type=checkbox], input[type=radio]') ? e.parentElement.getBoundingClientRect() : r;
+      // 누르는 영역: 이 요소 하나만 감싼 틀(최대 3단계)이 있으면 그 틀까지 같이 눌린다 (Astryx 입력칸·세그먼트·목록 줄)
+      let t = r;
+      for (let a = e.parentElement, i = 0; a && i < 3; a = a.parentElement, i++) {
+        if (a.querySelectorAll('button, a[href], input:not([type=hidden]), select, [role=button], [role=switch]').length !== 1) break;
+        const ar = a.getBoundingClientRect(); if (ar.height > t.height) t = ar;
+      }
       if (Math.min(t.width, t.height) < 32) out.small.push(`${name(e)} ${Math.round(t.width)}×${Math.round(t.height)}`);
     }
     if (hasText && parseFloat(s.fontSize) < 11) out.tiny.push(`${name(e)} ${s.fontSize}`);

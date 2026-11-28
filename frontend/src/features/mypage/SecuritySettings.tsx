@@ -2,13 +2,19 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ChevronLeft, ShieldCheck, UserX } from 'lucide-react';
-import { COLORS } from '@/constants/colors';
-import Button from '@/components/Button';
+import { ShieldCheck, UserX } from 'lucide-react';
+import { VStack } from '@astryxdesign/core/VStack';
+import { HStack } from '@astryxdesign/core/HStack';
+import { Heading } from '@astryxdesign/core/Heading';
+import { Text } from '@astryxdesign/core/Text';
+import { Card } from '@astryxdesign/core/Card';
+import { TextInput } from '@astryxdesign/core/TextInput';
+import { Button } from '@astryxdesign/core/Button';
+import SubPageHeader from '@/components/SubPageHeader';
 import { changePassword } from '@/services/userService';
 import { useUserInfo } from '@/services/useUserInfo';
 import WithdrawalModal from './WithdrawalModal';
-import './styles.css';
+import '@/features/page.css';
 
 export default function SecuritySettings() {
     const router = useRouter();
@@ -68,88 +74,30 @@ export default function SecuritySettings() {
     };
 
     return (
-        <div className="mypage-container">
-            <header className="mypage-header">
-                <button onClick={() => router.back()} className="back-button">
-                    <ChevronLeft size={24} />
-                </button>
-                <h1 className="header-title">계정 및 보안</h1>
-                <div style={{ width: 40 }}></div>
-            </header>
+        <VStack className="pg lg-page" gap={5}>
+            <SubPageHeader title="계정 및 보안" />
 
-            <div className="info-sections">
-                <section className="info-section">
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '1.5rem' }}>
-                        <ShieldCheck size={20} color={COLORS.primary} />
-                        <h2 className="section-title" style={{ margin: 0 }}>비밀번호 변경</h2>
-                    </div>
+            <Card>
+                <form onSubmit={handlePasswordChange}>
+                    <VStack gap={4}>
+                        <HStack gap={2} vAlign="center"><ShieldCheck size={20} color="var(--color-icon-accent)" aria-hidden="true" /><Heading level={2}>비밀번호 변경</Heading></HStack>
+                        <TextInput label="현재 비밀번호" type="password" autoComplete="current-password" value={currentPassword} onChange={setCurrentPassword} />
+                        <TextInput label="새 비밀번호" type="password" autoComplete="new-password" description="영문, 숫자, 특수문자 포함 8자 이상" value={newPassword} onChange={setNewPassword} />
+                        <TextInput label="새 비밀번호 확인" type="password" autoComplete="new-password" value={confirmPassword} onChange={setConfirmPassword} />
+                        <Button type="submit" variant="primary" width="100%" label="비밀번호 변경하기" isLoading={submitting} />
+                    </VStack>
+                </form>
+            </Card>
 
-                    <form onSubmit={handlePasswordChange} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                        <div className="form-group" style={{ margin: 0 }}>
-                            <label className="form-label">현재 비밀번호</label>
-                            <input
-                                type="password"
-                                value={currentPassword}
-                                onChange={(e) => setCurrentPassword(e.target.value)}
-                                className="form-input"
-                                placeholder="현재 비밀번호를 입력해주세요"
-                            />
-                        </div>
-                        <div className="form-group" style={{ margin: 0 }}>
-                            <label className="form-label">새 비밀번호</label>
-                            <input
-                                type="password"
-                                value={newPassword}
-                                onChange={(e) => setNewPassword(e.target.value)}
-                                className="form-input"
-                                placeholder="새 비밀번호를 입력해주세요"
-                            />
-                        </div>
-                        <div className="form-group" style={{ margin: 0 }}>
-                            <label className="form-label">새 비밀번호 확인</label>
-                            <input
-                                type="password"
-                                value={confirmPassword}
-                                onChange={(e) => setConfirmPassword(e.target.value)}
-                                className="form-input"
-                                placeholder="새 비밀번호를 다시 입력해주세요"
-                            />
-                        </div>
-                        <Button
-                            type="submit"
-                            disabled={submitting}
-                            style={{ marginTop: '0.5rem' }}
-                        >
-                            {submitting ? "처리 중..." : "비밀번호 변경하기"}
-                        </Button>
-                    </form>
-                </section>
+            <Card>
+                <VStack gap={3}>
+                    <HStack gap={2} vAlign="center"><UserX size={20} color="var(--color-icon-error)" aria-hidden="true" /><Heading level={2}>회원 탈퇴</Heading></HStack>
+                    <Text color="secondary" size="sm">계정을 삭제하면 모든 기록(복용 정보, 질환 정보 등)이 사라지며 복구할 수 없습니다.</Text>
+                    <Button variant="destructive" width="100%" label="탈퇴하기" onClick={handleWithdrawalClick} isDisabled={submitting} />
+                </VStack>
+            </Card>
 
-                <section className="info-section" style={{ marginTop: '20px', border: '1px solid #fee2e2' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '1rem' }}>
-                        <UserX size={20} color={COLORS.error} />
-                        <h2 className="section-title" style={{ margin: 0, color: COLORS.error }}>회원 탈퇴</h2>
-                    </div>
-                    <p style={{ fontSize: '0.85rem', color: '#64748b', lineHeight: '1.5', marginBottom: '1.25rem' }}>
-                        계정을 삭제하면 모든 기록(복용 정보, 질환 정보 등)이 사라지며 복구할 수 없습니다.
-                    </p>
-                    <button
-                        className="logout-button-full"
-                        style={{ padding: '0.9rem', fontSize: '0.9rem' }}
-                        onClick={handleWithdrawalClick}
-                        disabled={submitting}
-                    >
-                        탈퇴하기
-                    </button>
-                </section>
-            </div>
-
-            {showWithdrawModal && (
-                <WithdrawalModal
-                    email={userEmail}
-                    onClose={() => setShowWithdrawModal(false)}
-                />
-            )}
-        </div>
+            {showWithdrawModal && <WithdrawalModal email={userEmail} onClose={() => setShowWithdrawModal(false)} />}
+        </VStack>
     );
 }

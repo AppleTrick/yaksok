@@ -1,15 +1,21 @@
 "use client";
 
 import React, { useState, useMemo } from 'react';
-import { Search } from 'lucide-react';
 import { useScheduleContext } from '@/features/notification/contexts/ScheduleContext';
 import { MedicationItem, Cycle } from '@/features/notification/types';
 import SupplementDetailModal from '@/features/my-supplements/components/SupplementDetailModal';
 import SupplementList from '@/features/my-supplements/components/SupplementList';
 import ManualRegistrationForm from '@/features/my-supplements/components/ManualRegistrationForm';
-import Modal from '@/components/Modal';
+import { VStack } from '@astryxdesign/core/VStack';
+import { HStack } from '@astryxdesign/core/HStack';
+import { Heading } from '@astryxdesign/core/Heading';
+import { Badge } from '@astryxdesign/core/Badge';
+import { TextInput } from '@astryxdesign/core/TextInput';
+import { Dialog, DialogHeader } from '@astryxdesign/core/Dialog';
+
 import { deleteUserProduct } from '@/features/my-supplements/api/supplementApi';
-import '@/features/my-supplements/styles.css';
+import '@/features/page.css';
+import '@/features/my-supplements/supplements.css';
 
 export default function MySupplementsPage() {
     const { schedules, refreshSchedules, toggleMedicationStatus } = useScheduleContext();
@@ -101,26 +107,14 @@ export default function MySupplementsPage() {
     };
 
     return (
-        <div className="my-supplements-container">
-            <div className="page-header">
-                <div className="header-title-row">
-                    <h1>내 영양제</h1>
-                    <span className="count-badge">총 {filteredItems.length}개</span>
-                </div>
+        <VStack className="pg" gap={4}>
+            <HStack hAlign="between" vAlign="center">
+                <Heading level={1}>내 영양제</Heading>
+                <Badge variant="orange" label={`총 ${filteredItems.length}개`} />
+            </HStack>
 
-                <div className="search-bar">
-                    <Search className="search-icon" size={20} />
-                    <input
-                        type="text"
-                        placeholder="영양제 이름, 효능 검색"
-                        className="search-input"
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                    />
-                </div>
-            </div>
+            <TextInput type="search" label="영양제 검색" isLabelHidden placeholder="영양제 이름, 효능 검색" value={searchTerm} onChange={setSearchTerm} size="lg" />
 
-            {/* List */}
             <SupplementList
                 items={filteredItems}
                 onItemClick={setSelectedItem}
@@ -129,7 +123,6 @@ export default function MySupplementsPage() {
                 onTabChange={setActiveTab}
             />
 
-            {/* Detail Modal */}
             {selectedItem && (
                 <SupplementDetailModal
                     isOpen={!!selectedItem}
@@ -140,28 +133,19 @@ export default function MySupplementsPage() {
                     onToggleStatus={(newStatus) => {
                         toggleMedicationStatus(selectedItem.name, newStatus);
                         setSelectedItem(prev => prev ? { ...prev, status: newStatus } : null);
-                        // 상태 변경 시 자동으로 해당 탭으로 전환
-                        setActiveTab(newStatus);
+                        setActiveTab(newStatus); // 상태를 바꾸면 그 탭으로 옮긴다
                     }}
                     onEdit={() => openRegisterModal(selectedItem)}
-                    onSave={() => setSelectedItem(null)} // 저장 후 모달 닫기
+                    onSave={() => setSelectedItem(null)}
                 />
             )}
 
-            {/* Registration Modal */}
-            <Modal
-                isOpen={isRegisterModalOpen}
-                onClose={() => setIsRegisterModalOpen(false)}
-                title={itemToEdit ? "수정" : "등록"}
-            >
-                <ManualRegistrationForm
-                    onClose={() => setIsRegisterModalOpen(false)}
-                    initialData={itemToEdit}
-                />
-            </Modal>
-
-            {/* Spacing for Bottom Tab Bar */}
-            <div style={{ height: "80px" }}></div>
-        </div>
+            <Dialog isOpen={isRegisterModalOpen} onOpenChange={setIsRegisterModalOpen} width="min(440px, 100%)" purpose="form">
+                <DialogHeader title={itemToEdit ? '영양제 수정' : '영양제 직접 등록'} onOpenChange={setIsRegisterModalOpen} />
+                <VStack padding={4}>
+                    <ManualRegistrationForm onClose={() => setIsRegisterModalOpen(false)} initialData={itemToEdit} />
+                </VStack>
+            </Dialog>
+        </VStack>
     );
 }

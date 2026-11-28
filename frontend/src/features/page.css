@@ -1,0 +1,14 @@
+/* Astryx로 짠 화면이 같이 쓰는 바깥 틀 (여백만). 화면 틀 토큰은 styles/tokens.css */
+.pg {
+  min-height: var(--screen-h);
+  padding: var(--spacing-6, 24px) var(--page-x) calc(var(--tabbar-space) + 28px);
+}
+
+/* 탭바가 없는 화면 (로그인, 가입, 비밀번호 찾기, 하위 설정) */
+.pg-plain {
+  min-height: var(--screen-h);
+  padding: var(--spacing-6, 24px) var(--page-x) calc(var(--safe-bottom) + 28px);
+}
+
+/* 로그인·가입처럼 폼 하나만 있는 화면: 넓은 화면에서도 폭을 좁게 */
+.lg-page { width: 100%; max-width: 440px; margin-inline: auto; }

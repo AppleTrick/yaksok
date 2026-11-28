@@ -2,21 +2,30 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ChevronLeft } from 'lucide-react';
-import Button from '@/components/Button';
+import { VStack } from '@astryxdesign/core/VStack';
+import { Text } from '@astryxdesign/core/Text';
+import { TextInput } from '@astryxdesign/core/TextInput';
+import { Selector } from '@astryxdesign/core/Selector';
+import { SegmentedControl, SegmentedControlItem } from '@astryxdesign/core/SegmentedControl';
+import { ToggleButton, ToggleButtonGroup } from '@astryxdesign/core/ToggleButton';
+import { Button } from '@astryxdesign/core/Button';
+import { Skeleton } from '@astryxdesign/core/Skeleton';
+import { Banner } from '@astryxdesign/core/Banner';
+import SubPageHeader from '@/components/SubPageHeader';
 import { updateUserInfo, Disease, UserInfo } from '@/services/userService';
 import { useUserInfo, clearUserInfo, loadUserInfo } from '@/services/useUserInfo';
-import '@/features/mypage/styles.css';
+import '@/features/page.css';
 
 export default function EditProfilePage() {
     const { userInfo } = useUserInfo();
     // 정보가 오기 전에는 칸을 만들지 않는다. 받은 값으로 처음부터 채워 입력 중인 값을 덮지 않게 한다.
     if (!userInfo) {
         return (
-            <div className="mypage-container" aria-busy="true">
-                <span className="skeleton-line" style={{ width: '60%', height: '1.4rem', margin: '24px 20px' }} />
-                <span className="skeleton-line" style={{ height: '3rem', margin: '0 20px' }} />
-            </div>
+            <VStack className="pg lg-page" gap={4}>
+                <SubPageHeader title="내 정보 수정" />
+                <Skeleton height={48} />
+                <Skeleton height={48} />
+            </VStack>
         );
     }
     return <EditProfileForm initial={userInfo} />;
@@ -25,6 +34,7 @@ export default function EditProfilePage() {
 function EditProfileForm({ initial }: { initial: UserInfo }) {
     const router = useRouter();
     const [submitting, setSubmitting] = useState(false);
+    const [failed, setFailed] = useState(false);
 
     const [name, setName] = useState(initial.userDataResponse.name);
     const [ageGroup, setAgeGroup] = useState(initial.userDataResponse.ageGroup);
@@ -32,18 +42,15 @@ function EditProfileForm({ initial }: { initial: UserInfo }) {
     const allDiseases: Disease[] = initial.allDiseases;
     const [selectedDiseaseIds, setSelectedDiseaseIds] = useState<number[]>(initial.userDiseases.map(d => d.id));
 
-    const toggleDisease = (id: number) => {
-        setSelectedDiseaseIds(prev =>
-            prev.includes(id) ? prev.filter(dId => dId !== id) : [...prev, id]
-        );
-    };
+    const [nameError, setNameError] = useState('');
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!name.trim()) {
-            alert("닉네임을 입력해주세요.");
+            setNameError('닉네임을 입력해 주세요.');
             return;
         }
+        setNameError('');
 
         setSubmitting(true);
         const success = await updateUserInfo({
@@ -59,95 +66,39 @@ function EditProfileForm({ initial }: { initial: UserInfo }) {
             alert("정보가 수정되었습니다.");
             router.push('/settings'); // Redirect to settings page instead of /mypage (alias)
         } else {
-            alert("정보 수정에 실패했습니다.");
+            setFailed(true);
         }
         setSubmitting(false);
     };
 
+    const ages = [['TEN', '10대'], ['TWENTY', '20대'], ['THIRTY', '30대'], ['FORTY', '40대'], ['FIFTY', '50대'], ['SIXTY', '60대 이상']];
+
     return (
-        <div className="mypage-container">
-            <header className="mypage-header">
-                <button onClick={() => router.back()} className="back-button">
-                    <ChevronLeft size={24} />
-                </button>
-                <h1 className="header-title">내 정보 수정</h1>
-                <div style={{ width: 24 }}></div>
-            </header>
-
-            <form onSubmit={handleSubmit} style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                <div className="form-group">
-                    <label className="form-label">닉네임</label>
-                    <input
-                        type="text"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        placeholder="닉네임을 입력하세요"
-                        className="form-input"
-                    />
-                </div>
-
-                <div className="form-group">
-                    <label className="form-label">연령대</label>
-                    <select
-                        value={ageGroup || ''}
-                        onChange={(e) => setAgeGroup(e.target.value)}
-                        className="form-select"
-                    >
-                        <option value="TEN">10대</option>
-                        <option value="TWENTY">20대</option>
-                        <option value="THIRTY">30대</option>
-                        <option value="FORTY">40대</option>
-                        <option value="FIFTY">50대</option>
-                        <option value="SIXTY">60대 이상</option>
-                    </select>
-                </div>
-
-                <div className="form-group">
-                    <label className="form-label">성별</label>
-                    <div style={{ display: 'flex', gap: '10px' }}>
-                        <button
-                            type="button"
-                            onClick={() => setGender('MALE')}
-                            className={`gender-button ${gender === 'MALE' ? 'active' : ''}`}
-                        >
-                            남성
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => setGender('FEMALE')}
-                            className={`gender-button ${gender === 'FEMALE' ? 'active' : ''}`}
-                        >
-                            여성
-                        </button>
-                    </div>
-                </div>
-
-                <div className="form-group">
-                    <label className="form-label">보유 질환</label>
-                    <div className="disease-selection-grid">
-                        {allDiseases.map(disease => (
-                            <button
-                                key={disease.id}
-                                type="button"
-                                onClick={() => toggleDisease(disease.id)}
-                                className={`disease-select-item ${selectedDiseaseIds.includes(disease.id) ? 'selected' : ''}`}
-                            >
-                                {disease.sickName}
-                            </button>
-                        ))}
-                    </div>
-                </div>
-
-                <div style={{ marginTop: '20px' }}>
-                    <Button
-                        onClick={() => { }}
-                        style={{ width: '100%' }}
-                        disabled={submitting}
-                    >
-                        {submitting ? "저장 중..." : "저장하기"}
-                    </Button>
-                </div>
+        <VStack className="pg lg-page" gap={5}>
+            <SubPageHeader title="내 정보 수정" />
+            <form onSubmit={handleSubmit}>
+                <VStack gap={4}>
+                    <TextInput label="닉네임" placeholder="닉네임을 입력하세요" value={name} onChange={setName} size="lg"
+                        status={nameError ? { type: 'error', message: nameError } : undefined} />
+                    <Selector label="연령대" options={ages.map(([value, label]) => ({ value, label }))} value={ageGroup || undefined} onChange={(v) => setAgeGroup(v ?? '')} />
+                    <VStack gap={1}>
+                        <Text type="label" weight="semibold">성별</Text>
+                        <SegmentedControl label="성별" layout="fill" value={gender} onChange={setGender}>
+                            <SegmentedControlItem value="MALE" label="남성" />
+                            <SegmentedControlItem value="FEMALE" label="여성" />
+                        </SegmentedControl>
+                    </VStack>
+                    <VStack gap={1}>
+                        <Text type="label" weight="semibold">보유 질환</Text>
+                        <ToggleButtonGroup label="보유 질환" type="multiple" value={selectedDiseaseIds.map(String)}
+                            onChange={(v: string | string[] | null) => setSelectedDiseaseIds(((v as string[]) ?? []).map(Number))}>
+                            {allDiseases.map((d) => <ToggleButton key={d.id} value={String(d.id)} label={d.sickName} />)}
+                        </ToggleButtonGroup>
+                    </VStack>
+                    {failed && <Banner status="error" title="정보를 저장하지 못했어요. 잠시 뒤 다시 시도해 주세요." />}
+                    <Button type="submit" variant="primary" size="lg" width="100%" label="저장하기" isLoading={submitting} />
+                </VStack>
             </form>
-        </div>
+        </VStack>
     );
 }
