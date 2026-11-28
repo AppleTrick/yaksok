@@ -1,0 +1,76 @@
+/*
+ * 약속 디자인 토큰 v1. 새 화면은 여기 있는 값만 쓴다. 규칙은 frontend/DESIGN.md.
+ * v1은 이미 쓰던 값에 이름만 붙였다 (옮겨도 화면이 바뀌지 않게). 값을 바꾸는 일은 따로 검토한다.
+ */
+:root {
+  /* 글자 크기 */
+  --fs-xs: .75rem;
+  --fs-sm: .85rem;
+  --fs-md: .9rem;
+  --fs-base: 1rem;
+  --fs-lg: 1.1rem;
+  --fs-xl: 1.25rem;
+  --fs-2xl: 1.4rem;
+  --fs-3xl: 1.75rem;
+  --fs-4xl: 2.1rem;
+
+  /* 글자 굵기 */
+  --fw-medium: 500;
+  --fw-semibold: 600;
+  --fw-bold: 700;
+  --fw-heavy: 800;
+
+  /* 모서리 (--radius-xl 16px, --radius-2xl 24px은 globals.css에 이미 있음) */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-control: 14px;   /* 버튼, 입력창 */
+  --radius-card: 20px;      /* 카드 */
+  --radius-sheet: 28px;     /* 아래에서 올라오는 시트 */
+  --radius-pill: 999px;
+  --radius-round: 50%;
+
+  /* 상태 색 (글자 / 배경) */
+  --color-success-fg: #15803D;
+  --color-success-bg: rgba(22, 163, 74, .12);
+  --color-positive: #22A06B;
+  --color-warning-fg: #B45309;
+  --color-warning-bg: rgba(217, 119, 6, .14);
+  --color-caution-fg: #C2410C;
+  --color-caution-bg: rgba(216, 58, 8, .12);
+  --color-danger: #DC2626;
+  --color-danger-fg: #B91C1C;
+  --color-danger-bg: rgba(220, 38, 38, .1);
+  --color-neutral: #9CA3AF;
+  --overlay: rgba(0, 0, 0, .5);
+
+  /* 그라데이션 */
+  --gradient-cta: linear-gradient(135deg, #FF7A45, #D83A08);
+  --gradient-hero: linear-gradient(135deg, #E8541A, #B92F05);
+
+  /* 카메라·스캔 화면 (항상 어두운 화면) */
+  --scan-bg: #0E0F13;
+  --scan-panel: #16181E;
+  --scan-chip: #191B21;
+  --scan-field: #1D2027;
+  --scan-button: #22242B;
+  --scan-tab: #22252D;
+  --scan-button-2: #2A2D36;
+  --scan-line: #2E313B;
+  --scan-line-strong: #565A66;
+  --scan-text: #F4F4F6;
+  --scan-text-sub: #A9ACB6;
+  --scan-text-soft: #C9CBD2;
+  --scan-accent: #FF8A50;
+  --scan-accent-bg: #2A1C16;
+  --scan-danger-bg: #3A1818;
+  --scan-danger-fg: #FFB4B4;
+  --scan-danger-strong: #FF9D9D;
+  --scan-success-bg: #12301E;
+  --scan-success-fg: #86EFAC;
+
+  /* 쌓임 순서 */
+  --z-raised: 1;
+  --z-sticky: 50;
+  --z-tabbar: 100;
+  --z-modal: 1000;
+}
