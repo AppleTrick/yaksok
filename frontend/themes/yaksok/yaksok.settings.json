@@ -1,0 +1,74 @@
+{
+  "name": "yaksok",
+  "like": "neutral",
+  "mode": "both",
+  "settings": [
+    {
+      "thing": "corners",
+      "value": "large",
+      "source": "dial"
+    },
+    {
+      "thing": "accent",
+      "value": "#D83A08",
+      "source": "dial"
+    },
+    {
+      "thing": "--color-on-accent",
+      "value": "#ffffff",
+      "source": "token"
+    },
+    {
+      "thing": "min-height",
+      "value": "44px",
+      "source": "property",
+      "on": "button"
+    },
+    {
+      "thing": "min-height",
+      "value": "44px",
+      "source": "property",
+      "on": "inputs"
+    },
+    {
+      "thing": "min-height",
+      "value": "44px",
+      "source": "property",
+      "on": "segmented-control"
+    },
+    {
+      "thing": "min-height",
+      "value": "44px",
+      "source": "property",
+      "on": "list-item"
+    },
+    {
+      "thing": "background-color",
+      "value": "var(--color-accent)",
+      "source": "property",
+      "on": "toggle-button",
+      "state": "isPressed"
+    },
+    {
+      "thing": "color",
+      "value": "var(--color-on-accent)",
+      "source": "property",
+      "on": "toggle-button",
+      "state": "isPressed"
+    },
+    {
+      "thing": "font",
+      "value": "Pretendard",
+      "source": "dial",
+      "on": "body"
+    },
+    {
+      "thing": "font",
+      "value": "Pretendard",
+      "source": "dial",
+      "on": "heading"
+    }
+  ],
+  "lifted": [],
+  "palette": "d2303667b7a7b2628f0e36e5b8d6b2b66175a31d8e4b63b0ed59895550100f72"
+}

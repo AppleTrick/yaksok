@@ -1,6 +1,9 @@
 import React from "react";
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import "@astryxdesign/core/reset.css";
+import "@astryxdesign/core/astryx.css";
+import "@/astryx-themes"; // 약속 테마 (src/themes/yaksok, astryx 테마 편집기로 만든다)
 import "../styles/tokens.css";
 import "./globals.css";
 
@@ -42,6 +45,7 @@ import { AnimatePresence } from "framer-motion";
 import AppContainer from "@/layout/AppContainer";
 
 import { ThemeProvider } from "../contexts/ThemeContext";
+import AstryxRoot from "./AstryxRoot";
 
 export default function RootLayout({
   children,
@@ -59,6 +63,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <ThemeProvider>
+        <AstryxRoot>
           <ScheduleProvider>
             <ReportProvider>
               <AppContainer>
@@ -74,6 +79,7 @@ export default function RootLayout({
               <BottomTabBar />
             </ReportProvider>
           </ScheduleProvider>
+        </AstryxRoot>
         </ThemeProvider>
       </body>
     </html>

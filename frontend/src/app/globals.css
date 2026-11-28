@@ -14,8 +14,6 @@
   --text-main: #1A1A1A;
 
   /* Functional Colors */
-  --color-error: #EF4444;
-  --color-success: #4CAF50;
 
   /* Mappings for Legacy Compatibility */
   --primary-color: #FF5722;
@@ -83,7 +81,6 @@
 /* --- Global Utilities for Interaction --- */
 /* Tangibility: Click Feedback */
 .btn:active,
-button:active,
 .interactive-card:active {
   transform: scale(0.96);
   transition: transform 0.1s ease-in-out;
@@ -106,10 +103,18 @@ main {
   animation: fadeIn 0.4s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
-* {
-  box-sizing: border-box;
-  padding: 0;
-  margin: 0;
+/* 기본 초기화는 가장 낮은 층(reset)에 둔다. 층 밖에 두면 Astryx 부품의 여백까지 지운다 */
+@layer reset {
+  * {
+    box-sizing: border-box;
+    padding: 0;
+    margin: 0;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
 }
 
 html,
@@ -123,11 +128,6 @@ body {
   -moz-osx-font-smoothing: grayscale;
   word-break: keep-all;      /* "촬영하/기"처럼 단어 중간에서 끊기지 않게 */
   overflow-wrap: break-word;
-}
-
-a {
-  color: inherit;
-  text-decoration: none;
 }
 
 /* --- Responsive App Simulator Layout --- */
