@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { LogOut } from 'lucide-react';
 import { logout } from '@/services/userService';
+import { clearUserInfo } from '@/services/useUserInfo';
 import Modal from '@/components/Modal';
 import '../styles.css';
 
@@ -17,6 +18,7 @@ export default function LogoutButton() {
         setIsLogoutModalOpen(false);
         await logout(); // 서버 로그아웃 요청
         localStorage.removeItem("userName");
+        clearUserInfo();
         router.push("/login");
     };
 
