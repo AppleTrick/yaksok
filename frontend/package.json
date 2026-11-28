@@ -7,12 +7,13 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "astryx:fonts": "node tools/astryx-fonts.cjs"
+    "astryx:check": "node tools/astryx-check.cjs"
   },
   "dependencies": {
     "@astryxdesign/core": "0.7.17",
     "@astryxdesign/theme-neutral": "0.7.17",
     "@ducanh2912/next-pwa": "^10.2.9",
+    "@fontsource/pretendard": "5.3.0",
     "@stylexjs/stylex": "0.19.2",
     "axios": "^1.21.0",
     "firebase": "^12.8.0",

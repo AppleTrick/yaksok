@@ -11,7 +11,7 @@
 | 앱이 읽는 테마 | `src/themes/yaksok/`, `src/astryx-themes.ts` (자동 생성, 손대지 않는다) |
 | 테마·언어 연결 | `src/app/AstryxRoot.tsx` (한국어, 밝은·어두운 모드) |
 | 화면 틀 토큰 | `src/styles/tokens.css` |
-| 글꼴 | Pretendard Variable (`pretendard` 패키지, 한글 포함, OFL) |
+| 글꼴 | Pretendard (`@fontsource/pretendard` 라틴 + `pretendard` 한글, OFL) |
 
 ## 원칙
 
@@ -43,11 +43,11 @@
 | AI (info) | `#6A4CF5` | |
 | 모서리 | 카드 24px, 버튼·입력 16px | |
 | 그림자 | raised | |
-| 글꼴 | Pretendard Variable (한글 포함, `pretendard` 패키지) | |
+| 글꼴 | Pretendard. 테마는 Fontsource판(라틴)을 불러오고, 한글은 `layout.tsx`가 `pretendard` 패키지에서 같은 이름으로 불러온다 | Fontsource판에는 한글이 없다 |
 | 버튼·입력칸·세그먼트·목록 줄 | 최소 44px | |
 | 눌린 토글 | 기준색 바탕 | |
 
-바꾸는 법: `npx astryx experimental theme editor set yaksok <무엇> <값>` → `editor show yaksok --png`로 그림 확인 → **`npm run astryx:fonts`** (편집기가 글꼴 파일을 다시 쓰면 한글 Pretendard 줄이 빠진다. 편집기는 Fontsource판만 알아보는데 Fontsource판에는 한글이 없다).
+바꾸는 법: `npx astryx experimental theme editor set yaksok <무엇> <값>` → `editor show yaksok --png`로 그림 확인 → **`npm run astryx:check`** (원본과 앱 복사본이 같은지 확인). 앱 복사본 `src/themes/yaksok` 안의 파일은 **손으로 고치지 않는다**. 고치면 편집기가 복사본 갱신을 조용히 멈춰 새 색이 앱에 안 들어간다 (2026-11-28 운영에서 겪음).
 
 ## 예전 이름 (호환)
 
