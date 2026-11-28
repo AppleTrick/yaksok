@@ -1,86 +1,33 @@
 "use client";
 
-import Link from "next/link";
-import { ChevronRight, Sparkles, Camera } from "lucide-react";
-import './progress.css';
-
 interface DailyProgressProps {
-    total?: number;
-    taken?: number;
+    total: number;
+    taken: number;
 }
 
-export default function DailyProgressCard({ total = 4, taken = 3 }: DailyProgressProps) {
-    const percentage = total > 0 ? (taken / total) * 100 : 0;
-    // Circle Config
-    const headerHeight = 30;
-    const size = 120;
-    const strokeWidth = 12;
-    const radius = (size - strokeWidth) / 2;
-    const circumference = 2 * Math.PI * radius;
-    const strokeDashoffset = circumference - (percentage / 100) * circumference;
+// 고리는 viewBox로 그려 카드 폭에 맞춰 늘고 준다 (home.css .hm-ring)
+const R = 54;
+const C = 2 * Math.PI * R;
+
+export default function DailyProgressCard({ total, taken }: DailyProgressProps) {
+    const percent = total > 0 ? Math.round((taken / total) * 100) : 0;
 
     return (
-        <section className="daily-progress-card hero-card">
-            <div className="progress-info-section">
-                <div className="progress-text-group">
-                    <h2 className="hero-title">오늘의 복용</h2>
-                    <p className="hero-desc">
-                        오늘 예정된 <span className="highlight-text">{total}개</span> 중<br />
-                        <span className="highlight-val">{taken}개</span>를 드셨어요.
-                    </p>
-                </div>
-
-                <div className="gauge-wrapper">
-                    <svg width={size} height={size} className="progress-ring">
-                        {/* Track */}
-                        <circle
-                            className="progress-ring__circle--track"
-                            stroke="var(--light-grey)"
-                            strokeWidth={strokeWidth}
-                            fill="transparent"
-                            r={radius}
-                            cx={size / 2}
-                            cy={size / 2}
-                        />
-                        {/* Indicator */}
-                        <circle
-                            className="progress-ring__circle--indicator"
-                            stroke="var(--color-brand)"
-                            strokeWidth={strokeWidth}
-                            fill="transparent"
-                            r={radius}
-                            cx={size / 2}
-                            cy={size / 2}
-                            strokeDasharray={`${circumference} ${circumference}`}
-                            strokeDashoffset={strokeDashoffset}
-                            strokeLinecap="round"
-                        />
-                    </svg>
-                    <div className="gauge-center-text">
-                        <span className="percentage-val">{Math.round(percentage)}%</span>
-                    </div>
-                </div>
+        <section className="hm-card hm-progress" aria-label="오늘의 복용">
+            <div>
+                <h2 className="hm-progress-label">오늘의 복용</h2>
+                <p className="hm-progress-text">
+                    오늘 예정된 <b>{total}개</b> 중<br />
+                    <strong>{taken}개</strong>를 드셨어요.
+                </p>
             </div>
-
-            <div className="camera-guide-section">
-                <div className="guide-header">
-                    <div className="guide-icon-box">
-                        <Sparkles size={20} className="ai-sparkle" />
-                    </div>
-                    <div className="guide-text-box">
-                        <h3 className="guide-title">새로운 영양제가 있나요?</h3>
-                        <p className="guide-subtitle">사진 한 장으로 제품을 찾고 성분을 확인해요</p>
-                    </div>
-                </div>
-                <div className="hero-actions">
-                    <Link href="/camera" className="btn btn-medium btn-primary full-width-btn scan-btn">
-                        <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <Camera size={18} />
-                            영양제 찍기
-                        </span>
-                        <ChevronRight size={18} />
-                    </Link>
-                </div>
+            <div className="hm-ring" role="img" aria-label={`${percent}% 복용`}>
+                <svg viewBox="0 0 120 120" aria-hidden="true">
+                    <circle className="hm-ring-track" cx="60" cy="60" r={R} fill="none" strokeWidth="12" />
+                    <circle className="hm-ring-bar" cx="60" cy="60" r={R} fill="none" strokeWidth="12" strokeLinecap="round"
+                        strokeDasharray={C} strokeDashoffset={C - (percent / 100) * C} />
+                </svg>
+                <span aria-hidden="true">{percent}%</span>
             </div>
         </section>
     );

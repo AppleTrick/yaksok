@@ -43,6 +43,11 @@
   --color-neutral: #9CA3AF;
   --overlay: rgba(0, 0, 0, .5);
 
+  /* 하루 시간대 (홈 복용 일정) */
+  --slot-morning: linear-gradient(135deg, #FBBF24, #F59E0B);
+  --slot-lunch: linear-gradient(135deg, #FB923C, #F97316);
+  --slot-night: linear-gradient(135deg, #818CF8, #6366F1);
+
   /* 그라데이션 */
   --gradient-cta: linear-gradient(135deg, #FF7A45, #D83A08);
   --gradient-hero: linear-gradient(135deg, #E8541A, #B92F05);
@@ -82,6 +87,15 @@
   --tabbar-space: calc(var(--tabbar-h) + var(--safe-bottom));       /* 탭바가 차지하는 높이 */
   --fixed-edge: max(0px, calc((100vw - var(--app-max)) / 2));      /* 고정 요소를 앱 기둥 안에 두는 여백 */
   --screen-h: 100vh;
+}
+
+/* 어두운 화면: 상태 글자색을 밝혀 어두운 바탕에서도 읽히게 한다 */
+:root[data-theme='dark'] {
+  --color-success-fg: #4ADE80;
+  --color-success-bg: rgba(74, 222, 128, .14);
+  --color-warning-fg: #FBBF24;
+  --color-caution-fg: #FB923C;
+  --color-danger-fg: #F87171;
 }
 
 @supports (height: 100dvh) {
