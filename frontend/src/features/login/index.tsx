@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
+import { clearUserInfo } from '@/services/useUserInfo';
 import axios from 'axios';
 import LoginForm from './components/LoginForm';
 import './styles.css';
@@ -22,6 +23,7 @@ export default function LoginFeature() {
         setError('');
         try {
             localStorage.setItem('userName', await request());
+            clearUserInfo(); // 앞서 로그인한 사람의 정보가 남지 않게
             router.replace('/');
         } catch (e) {
             setError(errorMessage(e));

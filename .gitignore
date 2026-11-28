@@ -51,3 +51,6 @@ firebase.json
 /OCRLearning
 OCRLearning.zip
 .DS_Store
+
+# 화면 비교 캡처 (frontend/DESIGN.md)
+/.visual/

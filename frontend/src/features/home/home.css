@@ -1,0 +1,105 @@
+/* 홈. 토큰만 쓴다 (frontend/DESIGN.md).
+   카드는 들어간 칸의 폭을 보고 배치를 바꾼다 (@container). 화면 폭이 아니라 카드 폭이라
+   접는 폰, 가로 모드, 태블릿에서 같은 규칙으로 움직인다. */
+
+.hm-page {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(16px, 4vw, 22px);
+  padding: clamp(16px, 4vw, 24px) var(--page-x) calc(var(--tabbar-space) + 28px);
+}
+
+/* 머리글 */
+.hm-greet { font-size: var(--fs-base); color: var(--text-muted); }
+.hm-name { margin-top: 2px; font-size: clamp(var(--fs-2xl), 8vw, var(--fs-3xl)); font-weight: var(--fw-heavy); letter-spacing: -.02em; line-height: 1.25; }
+.hm-sub { margin-top: 4px; font-size: var(--fs-sm); color: var(--text-muted); }
+
+/* 카드 공통 */
+.hm-card {
+  container-type: inline-size;
+  padding: clamp(16px, 4.5vw, 22px);
+  border-radius: var(--radius-card);
+  background: var(--surface-1);
+  box-shadow: var(--shadow-premium);
+}
+
+/* 오늘의 복용 */
+.hm-progress { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.hm-progress-label { font-size: var(--fs-base); font-weight: var(--fw-bold); color: var(--text-muted); }
+.hm-progress-text { margin-top: 6px; font-size: var(--fs-lg); line-height: 1.45; }
+.hm-progress-text b { font-weight: var(--fw-bold); }
+.hm-progress-text strong { font-size: var(--fs-2xl); font-weight: var(--fw-heavy); color: var(--primary-color); }
+
+.hm-ring { position: relative; flex: none; width: clamp(84px, 30cqi, 120px); aspect-ratio: 1; }
+.hm-ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+.hm-ring-track { stroke: var(--foreground-color); opacity: .1; }
+.hm-ring-bar { stroke: var(--primary-color); transition: stroke-dashoffset 1s ease-out; }
+.hm-ring span { position: absolute; inset: 0; display: grid; place-items: center; font-size: clamp(var(--fs-lg), 8cqi, var(--fs-2xl)); font-weight: var(--fw-heavy); font-variant-numeric: tabular-nums; }
+
+/* 좁은 카드(접는 폰 바깥 화면): 고리를 위로 올리고 글을 아래 둔다 */
+@container (max-width: 250px) {
+  .hm-progress { flex-direction: column-reverse; align-items: flex-start; }
+}
+
+/* 새 영양제 찍기 */
+.hm-scan { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 12px 14px; }
+.hm-scan-icon { display: grid; place-items: center; width: 44px; height: 44px; border-radius: var(--radius-md); background: var(--tint); color: var(--primary-color); }
+.hm-scan-title { font-size: var(--fs-base); font-weight: var(--fw-bold); }
+.hm-scan-desc { margin-top: 2px; font-size: var(--fs-sm); color: var(--text-muted); line-height: 1.4; }
+.hm-scan-btn {
+  grid-column: 1 / -1;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  min-height: 52px;
+  border-radius: var(--radius-control);
+  background: var(--brand-strong); /* 흰 글자 대비 4.5:1 이상 */
+  color: #fff;
+  font-size: var(--fs-base); font-weight: var(--fw-bold);
+}
+.hm-scan-btn:active { transform: scale(.98); }
+
+/* 좁은 카드: 아이콘을 글 위로 */
+@container (max-width: 250px) {
+  .hm-scan { grid-template-columns: 1fr; }
+}
+
+/* 오늘 일정 */
+.hm-slot { display: flex; flex-direction: column; gap: 10px; }
+.hm-slot-head { display: flex; align-items: center; gap: 10px; }
+.hm-slot-icon { display: grid; place-items: center; width: 34px; height: 34px; border-radius: var(--radius-md); color: #fff; }
+.hm-slot-icon.morning { background: var(--slot-morning); }
+.hm-slot-icon.lunch { background: var(--slot-lunch); }
+.hm-slot-icon.night { background: var(--slot-night); }
+.hm-slot-title { font-size: var(--fs-base); font-weight: var(--fw-bold); }
+.hm-slot-time { font-size: var(--fs-xs); color: var(--text-muted); }
+
+.hm-meds { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr)); gap: 10px; }
+.hm-med {
+  display: flex; align-items: center; gap: 12px;
+  width: 100%; min-height: 64px;
+  padding: 12px 14px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-xl);
+  background: var(--surface-1);
+  color: inherit; font: inherit; text-align: left;
+  cursor: pointer;
+}
+.hm-med:active { transform: scale(.99); }
+.hm-med[aria-pressed='true'] { border-color: transparent; background: var(--color-success-bg); }
+.hm-med-check { display: grid; place-items: center; flex: none; width: 32px; height: 32px; border-radius: var(--radius-round); background: var(--background-color); color: var(--text-muted); }
+.hm-med[aria-pressed='true'] .hm-med-check { background: var(--color-positive); color: #fff; }
+.hm-med-body { flex: 1; min-width: 0; }
+.hm-med-name { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--fs-md); font-weight: var(--fw-bold); }
+.hm-med[aria-pressed='true'] .hm-med-name { color: var(--text-muted); text-decoration: line-through; }
+.hm-med-detail { display: block; margin-top: 2px; font-size: var(--fs-xs); color: var(--text-muted); }
+.hm-med-state { flex: none; padding: 5px 10px; border-radius: var(--radius-pill); font-size: var(--fs-xs); font-weight: var(--fw-semibold); background: var(--color-caution-bg); color: var(--color-caution-fg); }
+.hm-med[aria-pressed='true'] .hm-med-state { background: transparent; color: var(--color-success-fg); }
+
+/* 일정이 없을 때 */
+.hm-empty { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 36px 16px; text-align: center; color: var(--text-muted); }
+.hm-empty svg { margin-bottom: 6px; opacity: .6; }
+.hm-empty strong { color: var(--foreground-color); font-size: var(--fs-base); }
+.hm-empty p { font-size: var(--fs-sm); }
+
+@media (prefers-reduced-motion: reduce) {
+  .hm-ring-bar { transition: none; }
+}

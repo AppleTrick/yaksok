@@ -13,14 +13,14 @@
 }
 
 .find-password-title {
-    font-size: 1.75rem;
-    font-weight: 800;
+    font-size: var(--fs-3xl);
+    font-weight: var(--fw-heavy);
     color: var(--primary-color);
     margin-bottom: 0.5rem;
 }
 
 .find-password-subtitle {
-    font-size: 1rem;
+    font-size: var(--fs-base);
     color: var(--text-muted);
 }
 
@@ -34,7 +34,7 @@
     margin-top: 1.5rem;
     display: flex;
     justify-content: center;
-    font-size: 0.9rem;
+    font-size: var(--fs-md);
 }
 
 .find-password-link {
@@ -58,5 +58,5 @@
 
 .success-message p {
     color: var(--foreground-color);
-    font-size: 0.9rem;
+    font-size: var(--fs-md);
 }

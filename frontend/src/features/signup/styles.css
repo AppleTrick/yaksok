@@ -13,14 +13,14 @@
 }
 
 .signup-title {
-    font-size: 1.75rem;
-    font-weight: 800;
+    font-size: var(--fs-3xl);
+    font-weight: var(--fw-heavy);
     color: var(--primary-color);
     margin-bottom: 0.5rem;
 }
 
 .signup-subtitle {
-    font-size: 1rem;
+    font-size: var(--fs-base);
     color: var(--text-muted);
 }
 
@@ -34,7 +34,7 @@
     margin-top: 1.5rem;
     display: flex;
     justify-content: center;
-    font-size: 0.9rem;
+    font-size: var(--fs-md);
     gap: 0.5rem;
 }
 
@@ -44,7 +44,7 @@
 
 .signup-link {
     color: var(--primary-color);
-    font-weight: 600;
+    font-weight: var(--fw-semibold);
     cursor: pointer;
 }
 
@@ -56,8 +56,8 @@
 }
 
 .label-text {
-    font-size: 0.9rem;
-    font-weight: 600;
+    font-size: var(--fs-md);
+    font-weight: var(--fw-semibold);
     color: var(--foreground-color);
 }
 
@@ -68,13 +68,14 @@
 }
 
 .selection-btn {
-    flex: 1;
-    padding: 0.75rem;
-    border-radius: 10px;
-    border: 1px solid var(--light-grey);
-    background-color: var(--background-color);
-    font-size: 0.9rem;
-    font-weight: 500;
+    flex: 1 1 4.5rem;
+    min-height: 44px;
+    padding: 0.6rem;
+    border-radius: var(--radius-control);
+    border: 1px solid var(--field-border);
+    background-color: var(--field-bg);
+    font-size: var(--fs-md);
+    font-weight: var(--fw-medium);
     color: var(--text-muted);
     cursor: pointer;
     transition: all 0.2s;
@@ -85,7 +86,7 @@
     border-color: var(--primary-color);
     background-color: var(--sub-background);
     color: var(--primary-color);
-    font-weight: 700;
+    font-weight: var(--fw-bold);
 }
 
 .selection-btn:hover {

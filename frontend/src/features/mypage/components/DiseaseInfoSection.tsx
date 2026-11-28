@@ -4,15 +4,18 @@ import '../styles.css';
 
 interface DiseaseInfoSectionProps {
     diseases: Disease[];
+    loading?: boolean;
 }
 
-export default function DiseaseInfoSection({ diseases }: DiseaseInfoSectionProps) {
+export default function DiseaseInfoSection({ diseases, loading = false }: DiseaseInfoSectionProps) {
     return (
         <div className="info-sections">
             <section className="info-section">
                 <h2 className="section-title">내 질환 정보</h2>
                 <div className="disease-tags">
-                    {diseases.length ? (
+                    {loading ? (
+                        <span className="skeleton-line" style={{ width: '8rem', height: '1.9rem' }} aria-hidden="true" />
+                    ) : diseases.length ? (
                         diseases.map(d => (
                             <span key={d.id} className="disease-tag">{d.sickName}</span>
                         ))

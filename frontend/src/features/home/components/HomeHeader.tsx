@@ -1,6 +1,3 @@
-import React from 'react';
-import '../styles.css';
-
 interface HomeHeaderProps {
     userName: string;
     greetingText: string;
@@ -9,18 +6,12 @@ interface HomeHeaderProps {
 
 export default function HomeHeader({ userName, greetingText, isLoading }: HomeHeaderProps) {
     return (
-        <header className="home-header">
-            <div className="greeting-section">
-                <span className="greeting-sub">{greetingText}</span>
-                <h1 className="greeting-main">
-                    {isLoading ? (
-                        <span className="skeleton-loader" />
-                    ) : (
-                        `${userName} 님`
-                    )}
-                </h1>
-                <p className="greeting-desc">오늘도 건강 약속을 지켜보세요.</p>
-            </div>
+        <header>
+            <p className="hm-greet">{greetingText}</p>
+            <h1 className="hm-name">
+                {isLoading ? <span className="skeleton-line" style={{ width: '7rem', height: '1.6em' }} aria-label="이름을 불러오는 중" /> : `${userName} 님`}
+            </h1>
+            <p className="hm-sub">오늘도 건강 약속을 지켜보세요.</p>
         </header>
     );
 }

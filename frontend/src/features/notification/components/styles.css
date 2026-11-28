@@ -1,7 +1,7 @@
 .notification-settings-container {
     min-height: 100vh;
     background-color: var(--background-color);
-    padding-bottom: 120px;
+    padding-bottom: calc(var(--tabbar-space) + 28px); /* 탭바 + 아이폰 홈 막대 */
 }
 
 .settings-header {
@@ -13,8 +13,8 @@
 }
 
 .header-title {
-    font-size: 1.25rem;
-    font-weight: 700;
+    font-size: var(--fs-xl);
+    font-weight: var(--fw-bold);
     color: var(--foreground-color);
 }
 
@@ -42,8 +42,8 @@
 }
 
 .card-title {
-    font-size: 1rem;
-    font-weight: 700;
+    font-size: var(--fs-base);
+    font-weight: var(--fw-bold);
     color: var(--foreground-color);
     margin-bottom: 1.25rem;
 }
@@ -85,13 +85,13 @@
 }
 
 .schedule-time {
-    font-size: 1.25rem;
-    font-weight: 800;
+    font-size: var(--fs-xl);
+    font-weight: var(--fw-heavy);
     color: var(--primary-color);
 }
 
 .schedule-label {
-    font-size: 0.85rem;
+    font-size: var(--fs-sm);
     color: var(--text-muted);
 }
 
@@ -106,7 +106,7 @@
     border: none;
     cursor: pointer;
     padding: 8px;
-    border-radius: 50%;
+    border-radius: var(--radius-round);
     transition: background-color 0.2s;
     color: var(--text-muted);
     display: flex;
@@ -134,7 +134,7 @@
     background-color: var(--surface-1);
     border-radius: 1rem;
     color: var(--primary-color);
-    font-weight: 600;
+    font-weight: var(--fw-semibold);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -160,8 +160,8 @@
 }
 
 .setting-label {
-    font-size: 1rem;
-    font-weight: 500;
+    font-size: var(--fs-base);
+    font-weight: var(--fw-medium);
     color: var(--foreground-color);
 }
 
@@ -189,9 +189,9 @@
 }
 
 .time-row span {
-    font-size: 0.9rem;
+    font-size: var(--fs-md);
     color: var(--text-muted);
-    font-weight: 500;
+    font-weight: var(--fw-medium);
 }
 
 /* Modal Overlay */
@@ -231,8 +231,8 @@
 }
 
 .modal-header h3 {
-    font-size: 1.25rem;
-    font-weight: 700;
+    font-size: var(--fs-xl);
+    font-weight: var(--fw-bold);
     color: var(--foreground-color);
 }
 
@@ -259,8 +259,8 @@
     flex: 1;
     padding: 1rem;
     border-radius: 1rem;
-    font-weight: 600;
-    font-size: 1rem;
+    font-weight: var(--fw-semibold);
+    font-size: var(--fs-base);
     cursor: pointer;
     border: none;
     display: flex;
@@ -322,20 +322,20 @@
 .toast-icon {
     background-color: rgba(255, 255, 255, 0.2);
     padding: 8px;
-    border-radius: 50%;
+    border-radius: var(--radius-round);
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
 .toast-content h4 {
-    font-size: 1rem;
-    font-weight: 700;
+    font-size: var(--fs-base);
+    font-weight: var(--fw-bold);
     margin-bottom: 2px;
 }
 
 .toast-content p {
-    font-size: 0.9rem;
+    font-size: var(--fs-md);
     opacity: 0.9;
 }
 

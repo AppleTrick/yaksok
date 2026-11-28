@@ -1,37 +1,36 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ChevronLeft } from 'lucide-react';
 import Button from '@/components/Button';
-import { fetchUserInfo, updateUserInfo, Disease } from '@/services/userService';
+import { updateUserInfo, Disease, UserInfo } from '@/services/userService';
+import { useUserInfo, clearUserInfo, loadUserInfo } from '@/services/useUserInfo';
 import '@/features/mypage/styles.css';
 
 export default function EditProfilePage() {
+    const { userInfo } = useUserInfo();
+    // 정보가 오기 전에는 칸을 만들지 않는다. 받은 값으로 처음부터 채워 입력 중인 값을 덮지 않게 한다.
+    if (!userInfo) {
+        return (
+            <div className="mypage-container" aria-busy="true">
+                <span className="skeleton-line" style={{ width: '60%', height: '1.4rem', margin: '24px 20px' }} />
+                <span className="skeleton-line" style={{ height: '3rem', margin: '0 20px' }} />
+            </div>
+        );
+    }
+    return <EditProfileForm initial={userInfo} />;
+}
+
+function EditProfileForm({ initial }: { initial: UserInfo }) {
     const router = useRouter();
-    const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
 
-    const [name, setName] = useState('');
-    const [ageGroup, setAgeGroup] = useState('THIRTY');
-    const [gender, setGender] = useState('MALE');
-    const [allDiseases, setAllDiseases] = useState<Disease[]>([]);
-    const [selectedDiseaseIds, setSelectedDiseaseIds] = useState<number[]>([]);
-
-    useEffect(() => {
-        const loadUser = async () => {
-            const data = await fetchUserInfo();
-            if (data) {
-                setName(data.userDataResponse.name);
-                setAgeGroup(data.userDataResponse.ageGroup);
-                setGender(data.userDataResponse.gender);
-                setAllDiseases(data.allDiseases);
-                setSelectedDiseaseIds(data.userDiseases.map(d => d.id));
-            }
-            setLoading(false);
-        };
-        loadUser();
-    }, []);
+    const [name, setName] = useState(initial.userDataResponse.name);
+    const [ageGroup, setAgeGroup] = useState(initial.userDataResponse.ageGroup);
+    const [gender, setGender] = useState(initial.userDataResponse.gender);
+    const allDiseases: Disease[] = initial.allDiseases;
+    const [selectedDiseaseIds, setSelectedDiseaseIds] = useState<number[]>(initial.userDiseases.map(d => d.id));
 
     const toggleDisease = (id: number) => {
         setSelectedDiseaseIds(prev =>
@@ -55,6 +54,8 @@ export default function EditProfilePage() {
         });
 
         if (success) {
+            clearUserInfo();
+            await loadUserInfo();
             alert("정보가 수정되었습니다.");
             router.push('/settings'); // Redirect to settings page instead of /mypage (alias)
         } else {
@@ -62,8 +63,6 @@ export default function EditProfilePage() {
         }
         setSubmitting(false);
     };
-
-    if (loading) return <div className="mypage-container" style={{ padding: 20 }}>로딩 중...</div>;
 
     return (
         <div className="mypage-container">
@@ -94,7 +93,7 @@ export default function EditProfilePage() {
                         onChange={(e) => setAgeGroup(e.target.value)}
                         className="form-select"
                     >
-                        <option value="TEEN">10대</option>
+                        <option value="TEN">10대</option>
                         <option value="TWENTY">20대</option>
                         <option value="THIRTY">30대</option>
                         <option value="FORTY">40대</option>

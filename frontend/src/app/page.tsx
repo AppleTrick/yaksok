@@ -5,8 +5,8 @@ import HomeHeader from "@/features/home/components/HomeHeader";
 import DailyProgressCard from "@/features/home/components/DailyProgressCard";
 import TimelineSection from "@/features/home/components/TimelineSection";
 import { useScheduleContext, isItemDue } from "@/features/notification/contexts/ScheduleContext";
-import '@/features/home/styles.css';
-import '@/features/home/components/timeline_v2.css';
+import HomeScanCard from "@/features/home/components/HomeScanCard";
+import '@/features/home/home.css';
 
 // 시간대별 인사말 유틸리티 함수
 const getGreeting = (date: Date): string => {
@@ -65,27 +65,11 @@ export default function Home() {
   const greetingText = today ? getGreeting(today) : "반갑습니다,";
 
   return (
-    <div className="home-container">
-      <HomeHeader
-        userName={userName}
-        greetingText={greetingText}
-        isLoading={isLoading}
-      />
-
-      <div className="dashboard-content">
-        {/* Hero Section */}
-        <DailyProgressCard total={totalMeds} taken={takenMeds} />
-
-        {/* Timeline Section */}
-        <TimelineSection
-          today={today}
-          schedules={schedules}
-          onToggleItem={toggleItemTaken}
-        />
-      </div>
-
-      {/* Spacing for Bottom Tab Bar */}
-      <div style={{ height: "100px" }}></div>
+    <div className="hm-page">
+      <HomeHeader userName={userName} greetingText={greetingText} isLoading={isLoading} />
+      <DailyProgressCard total={totalMeds} taken={takenMeds} />
+      <HomeScanCard />
+      <TimelineSection today={today} schedules={schedules} onToggleItem={toggleItemTaken} />
     </div>
   );
 }

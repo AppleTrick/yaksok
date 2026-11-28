@@ -15,14 +15,14 @@
 }
 
 .login-title {
-    font-size: 1.75rem;
-    font-weight: 800;
+    font-size: var(--fs-3xl);
+    font-weight: var(--fw-heavy);
     color: var(--primary-color);
     margin-bottom: 0.5rem;
 }
 
 .login-subtitle {
-    font-size: 1rem;
+    font-size: var(--fs-base);
     color: var(--text-muted);
 }
 
@@ -40,7 +40,7 @@
     /* 간격 축소 (3rem -> 2rem) */
     display: flex;
     justify-content: space-between;
-    font-size: 0.9rem;
+    font-size: var(--fs-md);
     max-width: 360px;
     width: 100%;
     margin-left: auto;
@@ -60,7 +60,7 @@
     color: rgba(0, 0, 0, 0.85);
     /* Standard Kakao Text Color */
     border: none;
-    border-radius: 12px;
+    border-radius: var(--radius-md);
     padding: 0.9rem 1rem;
     /* Adjust to match other buttons */
     cursor: pointer;
@@ -70,8 +70,8 @@
     justify-content: center;
     align-items: center;
     gap: 8px;
-    font-size: 1rem;
-    font-weight: 600;
+    font-size: var(--fs-base);
+    font-weight: var(--fw-semibold);
     text-decoration: none;
     transition: opacity 0.2s;
 }
@@ -95,7 +95,7 @@
     }
 
     .login-subtitle {
-        font-size: 1.1rem;
+        font-size: var(--fs-lg);
     }
 }
 
@@ -122,14 +122,14 @@
     /* Make inputs and buttons slightly grander on desktop */
     .kakao-login-btn {
         padding: 1rem 1.25rem;
-        font-size: 1.1rem;
+        font-size: var(--fs-lg);
     }
 }
 
 .login-error {
     padding: 12px 14px;
-    border-radius: 12px;
+    border-radius: var(--radius-md);
     background: rgba(220, 38, 38, 0.1);
     color: #B91C1C;
-    font-size: 0.9rem;
+    font-size: var(--fs-md);
 }

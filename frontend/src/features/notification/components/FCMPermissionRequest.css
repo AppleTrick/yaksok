@@ -25,15 +25,15 @@
     width: 48px;
     height: 48px;
     background: linear-gradient(135deg, #FFF3E0 0%, #FFE0B2 100%);
-    border-radius: 12px;
+    border-radius: var(--radius-md);
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
 .fcm-request-text h3 {
-    font-size: 1rem;
-    font-weight: 700;
+    font-size: var(--fs-base);
+    font-weight: var(--fw-bold);
     color: var(--foreground-color);
     margin: 0 0 0.25rem 0;
 }
@@ -53,8 +53,8 @@
 .fcm-request-btn {
     flex: 1;
     padding: 0.875rem;
-    border-radius: 12px;
-    font-weight: 600;
+    border-radius: var(--radius-md);
+    font-weight: var(--fw-semibold);
     font-size: 0.9375rem;
     border: none;
     cursor: pointer;
@@ -119,8 +119,8 @@
 }
 
 .fcm-denied-text h4 {
-    font-size: 1rem;
-    font-weight: 700;
+    font-size: var(--fs-base);
+    font-weight: var(--fw-bold);
     color: #E65100;
     margin: 0 0 0.25rem 0;
 }
@@ -142,14 +142,14 @@
     border: none;
     cursor: pointer;
     transition: all 0.2s;
-    font-weight: 600;
+    font-weight: var(--fw-semibold);
 }
 
 .fcm-denied-btn-close {
     background: transparent;
     color: #F57C00;
     padding: 0.5rem;
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -164,7 +164,7 @@
     background: white;
     color: var(--primary-color);
     padding: 0.875rem;
-    border-radius: 12px;
+    border-radius: var(--radius-md);
     font-size: 0.9375rem;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }

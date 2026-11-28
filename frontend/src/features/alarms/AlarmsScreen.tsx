@@ -109,10 +109,10 @@ export default function AlarmsScreen() {
                         </div>
                         {quiet.enabled && (
                             <div className="al-quiet-times">
-                                <input type="time" aria-label="방해금지 시작" value={quiet.quietStart.slice(0, 5)}
+                                <input type="time" aria-label="방해금지 시작" value={(quiet.quietStart ?? '22:00').slice(0, 5)}
                                     onChange={(e) => e.target.value && run(() => saveQuietHours({ ...quiet, quietStart: `${e.target.value}:00` }))} />
                                 <span>부터</span>
-                                <input type="time" aria-label="방해금지 끝" value={quiet.quietEnd.slice(0, 5)}
+                                <input type="time" aria-label="방해금지 끝" value={(quiet.quietEnd ?? '07:00').slice(0, 5)}
                                     onChange={(e) => e.target.value && run(() => saveQuietHours({ ...quiet, quietEnd: `${e.target.value}:00` }))} />
                                 <span>까지</span>
                             </div>

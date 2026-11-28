@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { Bell, Camera, Home, Pill, Settings } from 'lucide-react';
 import { usePathname } from 'next/navigation';
+import { prefetchUserInfo } from '@/services/useUserInfo';
 import './styles.css';
 
 const HIDDEN = ['/camera', '/report', '/login', '/signup', '/find-password'];
@@ -23,7 +24,8 @@ export default function BottomTabBar() {
             {ITEMS.map(({ href, icon: Icon, label, main }) => {
                 const active = pathname === href;
                 return (
-                    <Link key={href} href={href} aria-current={active ? 'page' : undefined} className={`tab-item ${active ? 'active' : ''} ${main ? 'main' : ''}`}>
+                    <Link key={href} href={href} aria-current={active ? 'page' : undefined} className={`tab-item ${active ? 'active' : ''} ${main ? 'main' : ''}`}
+                        onPointerDown={href === '/settings' ? prefetchUserInfo : undefined}>
                         <span className="tab-icon"><Icon size={main ? 26 : 23} /></span>
                         <span>{label}</span>
                     </Link>

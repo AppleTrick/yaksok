@@ -64,14 +64,14 @@ export const fetchUserInfo = async (): Promise<UserInfo | null> => {
 };
 
 export const updateUserInfo = async (data: UserUpdateData): Promise<boolean> => {
-    // try {
-    //     const response = await axios.put('/api/v1/user/info', data);
-    //     if (response.status === 200 && response.data.success) {
-    //         return true;
-    //     }
-    // } catch (error) {
-    //     console.error("사용자 정보 수정 실패:", error);
-    // }
+    try {
+        const response = await axios.put('/api/v1/user/edit', data);
+        if (response.status === 200 && response.data.success) {
+            return true;
+        }
+    } catch (error) {
+        console.error("사용자 정보 수정 실패:", error);
+    }
     return false;
 };
 
