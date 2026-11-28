@@ -74,8 +74,8 @@
 }
 
 .cm-modal-title {
-    font-size: 1.25rem;
-    font-weight: 800;
+    font-size: var(--fs-xl);
+    font-weight: var(--fw-heavy);
     color: var(--foreground-color);
     letter-spacing: -0.025em;
 }
@@ -86,7 +86,7 @@
     cursor: pointer;
     width: 36px;
     height: 36px;
-    border-radius: 50%;
+    border-radius: var(--radius-round);
     color: var(--text-muted);
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     display: flex;

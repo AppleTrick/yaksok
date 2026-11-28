@@ -119,8 +119,8 @@ body {
 }
 
 .cam-header-title {
-    font-size: 1.1rem;
-    font-weight: 700;
+    font-size: var(--fs-lg);
+    font-weight: var(--fw-bold);
     position: absolute;
     left: 50%;
     transform: translateX(-50%);
@@ -144,7 +144,7 @@ body {
 .cam-btn-icon-circle {
     width: 44px;
     height: 44px;
-    border-radius: 50%;
+    border-radius: var(--radius-round);
     background: rgba(255, 255, 255, 0.15);
     /* Lighter glass for buttons */
     border: 1px solid rgba(255, 255, 255, 0.2);
@@ -166,9 +166,9 @@ body {
     background: var(--cam-orange);
     color: #fff;
     padding: 6px 12px;
-    border-radius: 20px;
-    font-size: 0.75rem;
-    font-weight: 800;
+    border-radius: var(--radius-card);
+    font-size: var(--fs-xs);
+    font-weight: var(--fw-heavy);
     box-shadow: 0 4px 12px rgba(255, 107, 61, 0.3);
 }
 
@@ -185,7 +185,7 @@ body {
     /* Standard ratio for desktop */
     max-height: calc(100dvh - 240px);
     border: 1.5px dashed rgba(255, 255, 255, 0.6);
-    border-radius: 24px;
+    border-radius: var(--radius-2xl);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -225,7 +225,7 @@ body {
 .shutter-ball {
     width: 60px;
     height: 60px;
-    border-radius: 50%;
+    border-radius: var(--radius-round);
     background: #fff;
     transition: transform 0.1s;
     /* Breathing Effect */
@@ -252,7 +252,7 @@ body {
     margin-top: 0;
     background: rgba(0, 0, 0, 0.6);
     padding: 10px 20px;
-    border-radius: 24px;
+    border-radius: var(--radius-2xl);
     color: #fff;
     font-size: 0.95rem;
     text-align: center;
@@ -270,7 +270,7 @@ body {
 
 .guide-text span {
     color: var(--cam-orange);
-    font-weight: 700;
+    font-weight: var(--fw-bold);
 }
 
 .shutter-ring:active .shutter-ball {
@@ -294,8 +294,8 @@ body {
 }
 
 .glass-ctrl-btn span {
-    font-size: 0.75rem;
-    font-weight: 500;
+    font-size: var(--fs-xs);
+    font-weight: var(--fw-medium);
 }
 
 /* Action Buttons (Row) */
@@ -316,9 +316,9 @@ body {
 .cam-btn-base {
     flex: 1;
     height: 54px;
-    border-radius: 16px;
-    font-size: 1rem;
-    font-weight: 700;
+    border-radius: var(--radius-xl);
+    font-size: var(--fs-base);
+    font-weight: var(--fw-bold);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -381,7 +381,7 @@ body {
     margin-bottom: 16px;
     background: var(--cam-surface);
     border: 1px solid var(--cam-border);
-    border-radius: 24px;
+    border-radius: var(--radius-2xl);
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
     transition: transform 0.2s, box-shadow 0.2s;
 }
@@ -393,11 +393,11 @@ body {
 .card-idx-circle {
     width: 36px;
     height: 36px;
-    border-radius: 14px;
+    border-radius: var(--radius-control);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-weight: 800;
+    font-weight: var(--fw-heavy);
     font-size: 0.95rem;
     flex-shrink: 0;
     background: var(--cam-mint);
@@ -413,9 +413,9 @@ body {
 }
 
 .count-badge {
-    font-size: 0.9rem;
+    font-size: var(--fs-md);
     color: var(--cam-gray);
-    font-weight: 600;
+    font-weight: var(--fw-semibold);
 }
 
 .card-header-line {
@@ -431,8 +431,8 @@ body {
     gap: 6px;
     padding: 4px 10px;
     border-radius: 10px;
-    font-size: 0.75rem;
-    font-weight: 700;
+    font-size: var(--fs-xs);
+    font-weight: var(--fw-bold);
     background: var(--cam-mint);
     color: var(--cam-green);
     width: fit-content;
@@ -445,11 +445,11 @@ body {
 
 .btn-edit-small {
     padding: 4px 10px;
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
     background: var(--cam-light-gray);
     border: none;
     font-size: 0.7rem;
-    font-weight: 700;
+    font-weight: var(--fw-bold);
     color: #666;
     cursor: pointer;
 }
@@ -461,9 +461,9 @@ body {
     background: var(--cam-glass);
     color: var(--cam-black);
     padding: 8px 14px;
-    border-radius: 12px;
-    font-size: 0.75rem;
-    font-weight: 700;
+    border-radius: var(--radius-md);
+    font-size: var(--fs-xs);
+    font-weight: var(--fw-bold);
     z-index: 20;
     backdrop-filter: blur(12px);
     border: 1px solid rgba(255, 255, 255, 0.5);
@@ -479,11 +479,11 @@ body {
     height: 32px;
     background: var(--cam-orange);
     color: #fff;
-    border-radius: 50%;
+    border-radius: var(--radius-round);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-weight: 800;
+    font-weight: var(--fw-heavy);
     border: 2.5px solid #fff;
     transform: translate(-50%, -50%);
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
@@ -507,8 +507,8 @@ body {
 .cam-loading-text {
     margin-top: 24px;
     color: #fff;
-    font-weight: 600;
-    font-size: 1rem;
+    font-weight: var(--fw-semibold);
+    font-size: var(--fs-base);
     animation: pulse-text 2s ease-in-out infinite;
 }
 
@@ -580,7 +580,7 @@ body {
 button.shutter-ring {
     padding: 0;
     background: transparent;
-    border-radius: 50%;
+    border-radius: var(--radius-round);
     cursor: pointer;
 }
 

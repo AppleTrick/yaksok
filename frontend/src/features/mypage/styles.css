@@ -22,8 +22,8 @@
 }
 
 .header-title {
-    font-size: 1.1rem;
-    font-weight: 800;
+    font-size: var(--fs-lg);
+    font-weight: var(--fw-heavy);
     color: var(--foreground-color);
     margin: 0;
 }
@@ -35,7 +35,7 @@
     cursor: pointer;
     width: 40px;
     height: 40px;
-    border-radius: 50%;
+    border-radius: var(--radius-round);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -80,7 +80,7 @@
     /* Reduced from 100px */
     height: 80px;
     /* Reduced from 100px */
-    border-radius: 50%;
+    border-radius: var(--radius-round);
     /* Make it circular for better proportion */
     background-color: var(--white);
     /* White background for cleanliness */
@@ -102,13 +102,13 @@
 
 .profile-name {
     font-size: 1.5rem;
-    font-weight: 800;
+    font-weight: var(--fw-heavy);
     color: var(--foreground-color);
     margin: 0;
 }
 
 .profile-email {
-    font-size: 0.9rem;
+    font-size: var(--fs-md);
     color: var(--text-muted);
     margin-top: 0.25rem;
 }
@@ -131,8 +131,8 @@
 }
 
 .section-title {
-    font-size: 1rem;
-    font-weight: 800;
+    font-size: var(--fs-base);
+    font-weight: var(--fw-heavy);
     margin-bottom: 1rem;
     color: var(--foreground-color);
 }
@@ -149,13 +149,13 @@
     color: var(--color-brand);
     padding: 0.5rem 1rem;
     border-radius: 1rem;
-    font-size: 0.85rem;
-    font-weight: 600;
+    font-size: var(--fs-sm);
+    font-weight: var(--fw-semibold);
 }
 
 .empty-text {
     color: var(--text-muted);
-    font-size: 0.9rem;
+    font-size: var(--fs-md);
 }
 
 /* Menu List */
@@ -177,7 +177,7 @@
     justify-content: space-between;
     padding: 1.25rem 1.5rem;
     border-bottom: 1px solid var(--light-grey);
-    font-weight: 600;
+    font-weight: var(--fw-semibold);
     color: var(--foreground-color);
     cursor: pointer;
     transition: background-color 0.2s;
@@ -208,8 +208,8 @@
     color: var(--error-color);
     border: 1px solid #FFEBEB;
     border-radius: var(--radius-xl);
-    font-size: 1rem;
-    font-weight: 700;
+    font-size: var(--fs-base);
+    font-weight: var(--fw-bold);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -231,8 +231,8 @@
 .form-label {
     display: block;
     margin-bottom: 0.75rem;
-    font-weight: 700;
-    font-size: 0.9rem;
+    font-weight: var(--fw-bold);
+    font-size: var(--fs-md);
     color: var(--foreground-color);
 }
 
@@ -242,7 +242,7 @@
     padding: 1rem;
     border-radius: 1rem;
     border: 2px solid var(--light-grey);
-    font-size: 1rem;
+    font-size: var(--fs-base);
     font-family: var(--font-main);
     transition: border-color 0.2s;
 }
@@ -259,7 +259,7 @@
     border-radius: 1rem;
     border: 2px solid var(--light-grey);
     background-color: var(--white);
-    font-weight: 600;
+    font-weight: var(--fw-semibold);
     cursor: pointer;
     transition: all 0.2s;
 }
@@ -281,8 +281,8 @@
     border-radius: 1rem;
     border: 2px solid var(--light-grey);
     background-color: var(--white);
-    font-size: 0.85rem;
-    font-weight: 600;
+    font-size: var(--fs-sm);
+    font-weight: var(--fw-semibold);
     cursor: pointer;
     transition: all 0.2s;
 }
@@ -299,7 +299,7 @@
     width: 44px;
     height: 24px;
     background-color: var(--light-grey);
-    border-radius: 20px;
+    border-radius: var(--radius-card);
     position: relative;
     transition: background-color 0.3s;
 }
@@ -312,7 +312,7 @@
     width: 20px;
     height: 20px;
     background-color: white;
-    border-radius: 50%;
+    border-radius: var(--radius-round);
     position: absolute;
     top: 2px;
     left: 2px;

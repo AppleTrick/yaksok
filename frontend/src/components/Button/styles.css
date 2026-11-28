@@ -2,8 +2,8 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    border-radius: 16px;
-    font-weight: 700;
+    border-radius: var(--radius-xl);
+    font-weight: var(--fw-bold);
     cursor: pointer;
     transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     border: none;
@@ -57,10 +57,10 @@
 
 .btn-medium {
     padding: 0.75rem 1.5rem;
-    font-size: 1rem;
+    font-size: var(--fs-base);
 }
 
 .btn-large {
     padding: 1.125rem 2rem;
-    font-size: 1rem;
+    font-size: var(--fs-base);
 }
