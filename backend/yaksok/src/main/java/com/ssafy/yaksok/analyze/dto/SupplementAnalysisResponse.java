@@ -65,6 +65,7 @@ public class SupplementAnalysisResponse {
         private String unit;
         private String myAmount; // 유저 현재까지 섭취량
         private String totalAmount; // myAmount + amount
-        private String status; // "safe" | "warning"
+        private String status; // "safe" | "warning" | "unknown"
+        private String maxAmount; // 하루 상한 (모르면 null). 화면이 막대에 상한선을 긋는다
     }
 }
