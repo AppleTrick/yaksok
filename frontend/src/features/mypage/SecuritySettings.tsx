@@ -1,11 +1,12 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ChevronLeft, ShieldCheck, UserX } from 'lucide-react';
 import { COLORS } from '@/constants/colors';
 import Button from '@/components/Button';
-import { changePassword, fetchUserInfo, UserInfo } from '@/services/userService';
+import { changePassword } from '@/services/userService';
+import { useUserInfo } from '@/services/useUserInfo';
 import WithdrawalModal from './WithdrawalModal';
 import './styles.css';
 
@@ -14,7 +15,7 @@ export default function SecuritySettings() {
     const [submitting, setSubmitting] = useState(false);
 
     // User info for withdrawal verification
-    const [userEmail, setUserEmail] = useState<string>('');
+    const userEmail = useUserInfo().userInfo?.userDataResponse.email ?? '';
     const [showWithdrawModal, setShowWithdrawModal] = useState(false);
 
     // Password state
@@ -22,15 +23,6 @@ export default function SecuritySettings() {
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
 
-    useEffect(() => {
-        const loadUserInfo = async () => {
-            const info = await fetchUserInfo();
-            if (info && info.userDataResponse) {
-                setUserEmail(info.userDataResponse.email);
-            }
-        };
-        loadUserInfo();
-    }, []);
 
     const validatePassword = (password: string) => {
         const regex = /^(?=.*[a-zA-Z])(?=.*[0-9])(?=.*[!@#$%^&*]).{8,}$/;
