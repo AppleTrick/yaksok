@@ -10,8 +10,8 @@
 }
 
 /* 머리글 */
-.hm-greet { font-size: var(--fs-md); color: var(--text-muted); }
-.hm-name { margin-top: 2px; font-size: clamp(var(--fs-xl), 7vw, var(--fs-3xl)); font-weight: var(--fw-heavy); letter-spacing: -.02em; line-height: 1.25; }
+.hm-greet { font-size: var(--fs-base); color: var(--text-muted); }
+.hm-name { margin-top: 2px; font-size: clamp(var(--fs-2xl), 8vw, var(--fs-3xl)); font-weight: var(--fw-heavy); letter-spacing: -.02em; line-height: 1.25; }
 .hm-sub { margin-top: 4px; font-size: var(--fs-sm); color: var(--text-muted); }
 
 /* 카드 공통 */
