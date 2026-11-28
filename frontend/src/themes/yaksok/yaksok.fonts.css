@@ -1,0 +1,2 @@
+/* 한글이 들어 있는 Pretendard. 쓰는 글자 조각만 받는다. tools/astryx-fonts.cjs가 쓴다 */
+@import "pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css";

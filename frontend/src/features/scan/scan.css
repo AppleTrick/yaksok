@@ -68,3 +68,27 @@
   .sc-steps li { grid-template-columns: 1fr; padding: 10px 8px; font-size: var(--fs-xs); }
   .sc-steps li svg { display: none; }
 }
+
+/* Astryx 부품과 같이 쓰는 칸 */
+.sc-pad { padding: 12px 14px 0; }
+.sc-stat { flex: 1; min-width: 0; }
+.sc-stat.warn { color: var(--color-text-accent); }
+
+/* ── 방향 A: AI 신호 ───────────────────────── */
+.sc-ai { justify-self: center; padding: 6px 12px; border-radius: 999px; background: rgba(166, 139, 255, .16); color: #C7B8FF; font-size: .85rem; font-weight: 700; }
+.sc-box { filter: drop-shadow(0 0 8px rgba(166, 139, 255, .6)); }
+.sc-sweep { background: linear-gradient(to bottom, transparent, rgba(166, 139, 255, .5)); }
+
+/* 결과 시트 (밝은 테마 안) */
+.sc-result { background: var(--color-background-card); color: var(--color-text-primary); box-shadow: 0 -10px 40px rgba(0, 0, 0, .35); }
+.sc-result .sc-summary, .sc-result .sc-hint { color: var(--color-text-secondary); }
+.sc-result .sc-tabs button { background: var(--color-background-muted); color: var(--color-text-primary); }
+.sc-result .sc-tabs button[aria-selected='true'] { background: var(--color-text-primary); color: var(--color-background-card); }
+.sc-result .sc-cands button { border: 1.5px solid var(--color-border); background: var(--color-background-card); color: var(--color-text-primary); }
+.sc-result .sc-cands button[aria-pressed='true'] { border: 2px solid var(--color-info); background: var(--color-info-muted); }
+.sc-result .sc-radio { border-color: var(--color-border-emphasized); }
+.sc-result [aria-pressed='true'] .sc-radio { border-color: var(--color-info); background: var(--color-info); color: var(--color-on-info); }
+.sc-result .sc-cand-name em { display: block; margin-top: 2px; font-style: normal; font-size: .8rem; font-weight: 700; color: var(--color-text-info); }
+.sc-result .sc-score { margin-left: auto; text-align: right; font-size: 1.25rem; font-weight: 800; color: var(--color-text-info); font-variant-numeric: tabular-nums; }
+.sc-result .sc-score small { display: block; font-size: .72rem; font-weight: 600; color: var(--color-text-secondary); }
+.sc-result .sc-ask { color: var(--color-text-primary); font-weight: 800; }

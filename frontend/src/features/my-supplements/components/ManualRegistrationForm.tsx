@@ -1,12 +1,15 @@
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { useScheduleContext } from '@/features/notification/contexts/ScheduleContext';
 import { MedicationItem, MealCategory } from '@/features/notification/types';
-import TimePicker from '@/components/TimePicker';
+import { VStack } from '@astryxdesign/core/VStack';
+import { HStack } from '@astryxdesign/core/HStack';
+import { TextInput } from '@astryxdesign/core/TextInput';
+import { TimeInput, type ISOTimeString } from '@astryxdesign/core/TimeInput';
+import { SegmentedControl, SegmentedControlItem } from '@astryxdesign/core/SegmentedControl';
+import { Button } from '@astryxdesign/core/Button';
 import { createUserProduct, getUserProducts } from '../api/supplementApi';
 import { createNotification, NotificationCategory } from '@/features/notification/api/notificationApi';
-import { Loader2, Pill, Clock, LayoutGrid, CheckCircle2 } from 'lucide-react';
-import '../styles.css';
+import { Pill, Clock, CheckCircle2 } from 'lucide-react';
 
 interface ManualRegistrationFormProps {
     onClose: () => void;
@@ -21,9 +24,9 @@ const CATEGORY_MAP: Record<string, 'BEFOREMEAL' | 'AFTERMEAL' | 'BEFORESLEEP'> =
 
 
 const MEAL_LABELS: Record<MealCategory, { label: string; icon: React.ReactNode }> = {
-    'empty_stomach': { label: '식전', icon: <Pill size={18} /> },
-    'post_meal': { label: '식후', icon: <CheckCircle2 size={18} /> },
-    'pre_sleep': { label: '취침전', icon: <Clock size={18} /> }
+    'empty_stomach': { label: '식전', icon: <Pill size={16} /> },
+    'post_meal': { label: '식후', icon: <CheckCircle2 size={16} /> },
+    'pre_sleep': { label: '취침전', icon: <Clock size={16} /> }
 };
 
 export default function ManualRegistrationForm({ onClose, initialData }: ManualRegistrationFormProps) {
@@ -93,96 +96,21 @@ export default function ManualRegistrationForm({ onClose, initialData }: ManualR
         }
     };
 
-    const containerVariants = {
-        hidden: { opacity: 0, y: 15 },
-        visible: {
-            opacity: 1,
-            y: 0,
-            transition: {
-                duration: 0.4,
-                staggerChildren: 0.1
-            }
-        }
-    };
-
-    const itemVariants = {
-        hidden: { opacity: 0, y: 10 },
-        visible: { opacity: 1, y: 0 }
-    };
-
     return (
-        <motion.form
-            onSubmit={handleSubmit}
-            className="manual-registration-v2"
-            initial="hidden"
-            animate="visible"
-            variants={containerVariants}
-        >
-            {/* Name Input Group */}
-            <motion.div className="form-group-v2" variants={itemVariants}>
-                <div className="label-with-icon">
-                    <LayoutGrid size={16} className="label-icon" />
-                    <label>영양제 이름</label>
-                </div>
-                <input
-                    type="text"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    placeholder="예: 내 비타민"
-                    className="modern-input"
-                    autoFocus
-                />
-            </motion.div>
-
-            {/* Meal Category Group */}
-            <motion.div className="form-group-v2" variants={itemVariants}>
-                <div className="label-with-icon">
-                    <Pill size={16} className="label-icon" />
-                    <label>복용 시점</label>
-                </div>
-                <div className="segmented-control-v2">
+        <form onSubmit={handleSubmit}>
+            <VStack gap={4}>
+                <TextInput label="영양제 이름" placeholder="예: 내 비타민" value={name} onChange={setName} size="lg" />
+                <SegmentedControl label="복용 시점" layout="fill" value={mealCategory} onChange={(v) => setMealCategory(v as MealCategory)}>
                     {(['empty_stomach', 'post_meal', 'pre_sleep'] as MealCategory[]).map((cat) => (
-                        <button
-                            key={cat}
-                            type="button"
-                            className={`segment-btn ${mealCategory === cat ? 'active' : ''}`}
-                            onClick={() => setMealCategory(cat)}
-                        >
-                            {mealCategory === cat && (
-                                <motion.div
-                                    layoutId="segment-bg"
-                                    className="segment-active-bg"
-                                    transition={{ type: "spring", bounce: 0.2, duration: 0.4 }}
-                                />
-                            )}
-                            <span className="btn-icon">{MEAL_LABELS[cat].icon}</span>
-                            <span className="btn-text">{MEAL_LABELS[cat].label}</span>
-                        </button>
+                        <SegmentedControlItem key={cat} value={cat} label={MEAL_LABELS[cat].label} icon={MEAL_LABELS[cat].icon} />
                     ))}
-                </div>
-            </motion.div>
-
-            {/* Time Picker Group */}
-            <motion.div className="form-group-v2" variants={itemVariants}>
-                <div className="label-with-icon">
-                    <Clock size={16} className="label-icon" />
-                    <label>섭취 시간</label>
-                </div>
-                <div className="modern-time-picker-card">
-                    <TimePicker value={time} onChange={setTime} />
-                </div>
-            </motion.div>
-
-            {/* Action Buttons */}
-            <motion.div className="form-actions-v2" variants={itemVariants}>
-                <button type="button" className="modern-btn-secondary" onClick={onClose} disabled={isSaving}>
-                    취소
-                </button>
-                <button type="submit" className="modern-btn-primary" disabled={!name || isSaving}>
-                    {isSaving ? <Loader2 className="animate-spin" size={20} /> : (initialData ? '수정 완료' : '등록하기')}
-                </button>
-            </motion.div>
-        </motion.form>
+                </SegmentedControl>
+                <TimeInput label="섭취 시간" value={time as ISOTimeString} onChange={(v) => v && setTime(v.slice(0, 5))} />
+                <HStack gap={2} hAlign="end">
+                    <Button label="취소" onClick={onClose} isDisabled={isSaving} />
+                    <Button type="submit" variant="primary" label={initialData ? '수정 완료' : '등록하기'} isDisabled={!name} isLoading={isSaving} />
+                </HStack>
+            </VStack>
+        </form>
     );
 }
-

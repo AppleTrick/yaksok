@@ -1,0 +1,132 @@
+{
+  "name": "yaksok",
+  "like": "neutral",
+  "mode": "both",
+  "settings": [
+    {
+      "thing": "corners",
+      "value": "large",
+      "source": "dial"
+    },
+    {
+      "thing": "accent",
+      "value": "#D83A08",
+      "source": "dial"
+    },
+    {
+      "thing": "--color-on-accent",
+      "value": "#ffffff",
+      "source": "token"
+    },
+    {
+      "thing": "min-height",
+      "value": "44px",
+      "source": "property",
+      "on": "button"
+    },
+    {
+      "thing": "min-height",
+      "value": "44px",
+      "source": "property",
+      "on": "inputs"
+    },
+    {
+      "thing": "min-height",
+      "value": "44px",
+      "source": "property",
+      "on": "segmented-control"
+    },
+    {
+      "thing": "min-height",
+      "value": "44px",
+      "source": "property",
+      "on": "list-item"
+    },
+    {
+      "thing": "background-color",
+      "value": "var(--color-accent)",
+      "source": "property",
+      "on": "toggle-button",
+      "state": "isPressed"
+    },
+    {
+      "thing": "color",
+      "value": "var(--color-on-accent)",
+      "source": "property",
+      "on": "toggle-button",
+      "state": "isPressed"
+    },
+    {
+      "thing": "font",
+      "value": "\"Pretendard Variable\", system-ui, sans-serif",
+      "source": "dial",
+      "on": "body"
+    },
+    {
+      "thing": "font",
+      "value": "\"Pretendard Variable\", system-ui, sans-serif",
+      "source": "dial",
+      "on": "heading"
+    },
+    {
+      "thing": "neutral",
+      "value": "#8A7B6E",
+      "source": "dial"
+    },
+    {
+      "thing": "success",
+      "value": "#24946A",
+      "source": "dial"
+    },
+    {
+      "thing": "warning",
+      "value": "#C77700",
+      "source": "dial"
+    },
+    {
+      "thing": "danger",
+      "value": "#D92D20",
+      "source": "dial"
+    },
+    {
+      "thing": "--color-background-body",
+      "value": "#FBF6F0",
+      "source": "token",
+      "mode": "light"
+    },
+    {
+      "thing": "--color-background-card",
+      "value": "#FFFFFF",
+      "source": "token",
+      "mode": "light"
+    },
+    {
+      "thing": "--color-border",
+      "value": "#EFE5DA",
+      "source": "token",
+      "mode": "light"
+    },
+    {
+      "thing": "--radius-container",
+      "value": "24px",
+      "source": "token"
+    },
+    {
+      "thing": "--radius-element",
+      "value": "16px",
+      "source": "token"
+    },
+    {
+      "thing": "surfaces",
+      "value": "raised",
+      "source": "dial"
+    },
+    {
+      "thing": "info",
+      "value": "#6A4CF5",
+      "source": "dial"
+    }
+  ],
+  "lifted": [],
+  "palette": "e1e61803ea9f66fe38f83a4beb015c83bafb639b4447e8eb3f1f3da02daddcb8"
+}

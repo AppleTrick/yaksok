@@ -1,9 +1,14 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
+import { CloudSun, Moon, Pill, Plus, Sun } from 'lucide-react';
+import { VStack } from '@astryxdesign/core/VStack';
+import { HStack } from '@astryxdesign/core/HStack';
+import { ClickableCard } from '@astryxdesign/core/ClickableCard';
+import { Text } from '@astryxdesign/core/Text';
+import { SegmentedControl, SegmentedControlItem } from '@astryxdesign/core/SegmentedControl';
+import { EmptyState } from '@astryxdesign/core/EmptyState';
+import { Button } from '@astryxdesign/core/Button';
+import { Spinner } from '@astryxdesign/core/Spinner';
 import { MedicationItem } from '@/features/notification/types';
-import MySupplementCard from './MySupplementCard';
-import { Plus } from 'lucide-react';
-import { motion } from 'framer-motion';
-import '../styles.css';
 
 interface SupplementListProps {
     items: MedicationItem[];
@@ -11,131 +16,79 @@ interface SupplementListProps {
     onAddClick: () => void;
     activeTab: TabType;
     onTabChange: (tab: TabType) => void;
+    timeOf?: (item: MedicationItem) => string | null; // "09:00"
 }
+
+// 카드 그림 색: 이름으로 고정해 매번 같은 색이 나오게
+const TONES = ['orange', 'blue', 'yellow', 'green', 'purple', 'pink'];
+const toneOf = (name: string) => TONES[[...name].reduce((n, c) => n + c.charCodeAt(0), 0) % TONES.length];
+const slot = (t: string) => { const h = Number(t.slice(0, 2)); return h >= 18 ? { Icon: Moon, label: '저녁' } : h >= 12 ? { Icon: CloudSun, label: '점심' } : { Icon: Sun, label: '아침' }; };
 
 type TabType = 'taking' | 'stopped';
 
 const ITEMS_PER_PAGE = 10;
 
-export default function SupplementList({ items, onItemClick, onAddClick, activeTab, onTabChange }: SupplementListProps) {
+export default function SupplementList({ items, onItemClick, onAddClick, activeTab, onTabChange, timeOf }: SupplementListProps) {
     const [displayLimit, setDisplayLimit] = useState(ITEMS_PER_PAGE);
 
-    // 1. Filter items based on active tab
-    const filteredItems = useMemo(() => {
-        return items.filter(item => {
-            const status = item.status || 'taking'; // Default to taking
-            return status === activeTab;
-        });
-    }, [items, activeTab]);
-
-    // 2. Pagination (Infinite Scroll)
-    const displayedItems = useMemo(() => {
-        return filteredItems.slice(0, displayLimit);
-    }, [filteredItems, displayLimit]);
-
+    const filteredItems = useMemo(() => items.filter((item) => (item.status || 'taking') === activeTab), [items, activeTab]);
+    const displayedItems = useMemo(() => filteredItems.slice(0, displayLimit), [filteredItems, displayLimit]);
     const hasMore = displayedItems.length < filteredItems.length;
 
-    // 3. Observer for infinite scroll
+    // 끝까지 내리면 10개씩 더 보여 준다
     const observerTarget = useRef<HTMLDivElement>(null);
-
     useEffect(() => {
-        const observer = new IntersectionObserver(
-            (entries) => {
-                if (entries[0].isIntersecting && hasMore) {
-                    setDisplayLimit(prev => prev + ITEMS_PER_PAGE);
-                }
-            },
-            { threshold: 1.0 }
-        );
-
-        if (observerTarget.current) {
-            observer.observe(observerTarget.current);
-        }
-
+        const observer = new IntersectionObserver((entries) => {
+            if (entries[0].isIntersecting && hasMore) setDisplayLimit((prev) => prev + ITEMS_PER_PAGE);
+        }, { threshold: 1.0 });
+        if (observerTarget.current) observer.observe(observerTarget.current);
         return () => observer.disconnect();
     }, [hasMore]);
 
-    // Reset pagination when tab changes
-    useEffect(() => {
+    const changeTab = (tab: TabType) => {
         setDisplayLimit(ITEMS_PER_PAGE);
-    }, [activeTab]);
+        onTabChange(tab);
+    };
 
     return (
-        <div className="supplement-list-container">
-            {/* Tabs */}
-            <div className="status-tabs">
-                <button
-                    className={`status-tab ${activeTab === 'taking' ? 'active' : ''}`}
-                    onClick={() => onTabChange('taking')}
-                >
-                    복용 중
-                </button>
-                <button
-                    className={`status-tab ${activeTab === 'stopped' ? 'active' : ''}`}
-                    onClick={() => onTabChange('stopped')}
-                >
-                    복용 중단
-                </button>
-            </div>
+        <VStack gap={4}>
+            <SegmentedControl label="복용 상태" layout="fill" value={activeTab} onChange={(v) => changeTab(v as TabType)}>
+                <SegmentedControlItem value="taking" label={`복용 중 ${items.filter((i) => (i.status || 'taking') === 'taking').length}`} />
+                <SegmentedControlItem value="stopped" label={`쉬는 중 ${items.filter((i) => i.status === 'stopped').length}`} />
+            </SegmentedControl>
 
-            {/* List */}
-            <div className="list-content">
-                {displayedItems.length > 0 ? (
-                    displayedItems.map((item) => (
-                        <MySupplementCard
-                            key={item.id}
-                            item={item}
-                            onClick={onItemClick}
-                        />
-                    ))
-                ) : (
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="empty-state-animated"
-                    >
-                        <div className="floating-icon-wrapper">
-                            <span className="floating-icon">💊</span>
-                        </div>
-                        <div className="empty-content-wrapper">
-                            <div className="empty-text-group">
-                                <h3 className="empty-main-text">
-                                    {activeTab === 'taking'
-                                        ? '어떤 영양제를 드시고 계신가요?'
-                                        : '아직 중단한 영양제가 없네요'}
-                                </h3>
-                                <p className="empty-sub-text">
-                                    {activeTab === 'taking'
-                                        ? '매일 챙겨 먹는 영양제를 기록해 보세요.'
-                                        : '꾸준히 잘 챙겨 드시고 계신가 봐요!'}
-                                </p>
-                            </div>
+            {displayedItems.length > 0 ? (
+                // 내 약장: 2열 카드. 언제 먹는지를 카드에 바로 보여 준다
+                <div className="ms-grid">
+                    {displayedItems.map((item) => {
+                        const t = timeOf?.(item);
+                        const s = t ? slot(t) : null;
+                        return (
+                            <ClickableCard key={item.id} className="ms-card" label={`${item.nickname || item.name} 자세히`} onClick={() => onItemClick(item)} padding={4} elevation="low">
+                                <VStack gap={3} hAlign="start">
+                                    <span className={`ms-art ${toneOf(item.name)}`} aria-hidden="true"><Pill size={24} /></span>
+                                    <Text weight="bold" maxLines={2}>{item.nickname || item.name}</Text>
+                                    {s && <HStack gap={1} vAlign="center" className="ms-when"><s.Icon size={14} aria-hidden="true" /><Text size="sm" color="secondary" weight="semibold">{s.label} {t}</Text></HStack>}
+                                </VStack>
+                            </ClickableCard>
+                        );
+                    })}
+                    {activeTab === 'taking' && (
+                        <ClickableCard className="ms-card ms-add" label="영양제 추가" onClick={onAddClick} padding={4} variant="transparent">
+                            <VStack gap={1} hAlign="center" vAlign="center"><Plus size={22} aria-hidden="true" /><Text weight="semibold" color="secondary">직접 추가</Text></VStack>
+                        </ClickableCard>
+                    )}
+                </div>
+            ) : activeTab === 'taking' ? (
+                <EmptyState icon={<Pill size={32} />} title="어떤 영양제를 드시고 계신가요?" description="매일 챙겨 먹는 영양제를 기록해 보세요."
+                    actions={<Button variant="primary" icon={<Plus size={18} />} label="영양제 등록하기" onClick={onAddClick} />} />
+            ) : (
+                <EmptyState title="아직 중단한 영양제가 없어요" description="꾸준히 잘 챙겨 드시고 계신가 봐요!"
+                    actions={<Button label="복용 중인 영양제 보기" onClick={() => changeTab('taking')} />} />
+            )}
 
-                            {activeTab === 'taking' ? (
-                                <button className="empty-cta-btn primary" onClick={onAddClick}>
-                                    <Plus size={18} />
-                                    <span>영양제 등록하기</span>
-                                </button>
-                            ) : (
-                                <button
-                                    className="empty-cta-link"
-                                    onClick={() => onTabChange('taking')}
-                                >
-                                    현재 복용 중인 영양제 보러 가기
-                                </button>
-                            )}
-                        </div>
-                    </motion.div>
-                )}
+            {hasMore && <div ref={observerTarget} className="ms-more"><Spinner /></div>}
 
-                {/* Loader Target */}
-                {hasMore && <div ref={observerTarget} className="loading-trigger">Loading...</div>}
-            </div>
-
-            {/* FAB (Floating Action Button) */}
-            <button className="fab-button" onClick={onAddClick}>
-                <Plus size={24} />
-            </button>
-        </div>
+        </VStack>
     );
 }

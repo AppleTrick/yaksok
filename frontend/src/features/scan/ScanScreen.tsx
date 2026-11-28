@@ -1,7 +1,18 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { ArrowRight, Check, CircleHelp, RotateCcw, ScanLine, ScanText, Search, Sparkles, TriangleAlert, X } from 'lucide-react';
+import { Theme } from '@astryxdesign/core/theme';
+import { HStack } from '@astryxdesign/core/HStack';
+import { VStack } from '@astryxdesign/core/VStack';
+import { Text } from '@astryxdesign/core/Text';
+import { Card } from '@astryxdesign/core/Card';
+import { Button } from '@astryxdesign/core/Button';
+import { IconButton } from '@astryxdesign/core/IconButton';
+import { Banner } from '@astryxdesign/core/Banner';
+import { EmptyState } from '@astryxdesign/core/EmptyState';
+import { Badge } from '@astryxdesign/core/Badge';
+import { themes, defaultThemeSlug } from '@/astryx-themes';
+import { ArrowRight, Check, CircleHelp, RotateCcw, ScanLine, ScanText, Search, Sparkles, X } from 'lucide-react';
 import ScanStage, { COLORS, Phase, usePhases } from './ScanStage';
 import { Candidate, Found, ReportItem, ScanError, ScanResult, analyze } from './types';
 import './scan.css';
@@ -62,10 +73,12 @@ export default function ScanScreen({ src, onRetake, onReport }: {
     const title = analyzing ? 'AI 분석' : !result ? '사진 확인' : phase === 'done' ? '분석 결과' : 'AI 분석';
 
     return (
+        // 카메라·스캔은 항상 어두운 화면이다: 이 화면에만 어두운 Astryx 테마를 겹쳐 씌운다
+        <Theme theme={themes[defaultThemeSlug]} mode="dark">
         <div className="sc-page">
             <header className="sc-top">
-                <button aria-label="닫기" onClick={onRetake}><X size={22} /></button>
-                <strong>{title}</strong>
+                <IconButton variant="ghost" label="닫기" icon={<X size={22} />} onClick={onRetake} />
+                {phase === 'done' && result ? <span className="sc-ai">✦ AI 분석 완료 · {sec(result.totalMs)}</span> : <strong>{title}</strong>}
                 <span />
             </header>
 
@@ -85,24 +98,24 @@ export default function ScanScreen({ src, onRetake, onReport }: {
                 </ol>
             )}
 
-            {error && <div className="sc-error" role="alert"><TriangleAlert size={18} />{error}{wait > 0 && ` (${wait}초 뒤 다시)`}</div>}
+            {error && <div className="sc-pad"><Banner status="error" title={error} description={wait > 0 ? `${wait}초 뒤에 다시 시도할 수 있어요` : undefined} /></div>}
 
             {!result && (
                 <>
                     {!analyzing && <p className="sc-guide">이 사진으로 분석할까요? 제품 이름이 잘 보여야 정확해요.</p>}
-                    <div className="sc-actions">
-                        <button className="sc-btn" onClick={onRetake} disabled={analyzing}><RotateCcw size={18} /> 다시 찍기</button>
-                        <button className="sc-btn primary" onClick={start} disabled={analyzing || wait > 0}>
-                            <Sparkles size={18} /> {analyzing ? '분석 중' : '분석 시작'}
-                        </button>
-                    </div>
+                    <HStack className="sc-actions" gap={2}>
+                        <Button size="lg" width="100%" icon={<RotateCcw size={18} />} label="다시 찍기" onClick={onRetake} isDisabled={analyzing} />
+                        <Button variant="primary" size="lg" width="100%" icon={<Sparkles size={18} />} label="분석 시작" onClick={start} isLoading={analyzing} isDisabled={wait > 0} />
+                    </HStack>
                 </>
             )}
 
             {phase === 'done' && result && (
+                // 결과 확인은 아래에서 올라오는 밝은 시트 (엄지로 고른다)
+                <Theme theme={themes[defaultThemeSlug]} mode="light">
                 <section className="sc-result">
                     {result.products.length === 0 ? (
-                        <div className="sc-empty"><CircleHelp size={28} /><strong>영양제 병이나 상자를 찾지 못했어요</strong><p>알약만으로는 제품을 알 수 없어요. 이름이 보이는 병 앞면을 찍어 주세요.</p></div>
+                        <EmptyState isCompact icon={<CircleHelp size={28} />} title="영양제 병이나 상자를 찾지 못했어요" description="알약만으로는 제품을 알 수 없어요. 이름이 보이는 병 앞면을 찍어 주세요." />
                     ) : (
                         <>
                             <Summary result={result} items={items} />
@@ -121,15 +134,16 @@ export default function ScanScreen({ src, onRetake, onReport }: {
                             )}
                         </>
                     )}
-                    <div className="sc-actions">
-                        <button className="sc-btn" onClick={onRetake}><RotateCcw size={18} /> 다시 찍기</button>
-                        <button className="sc-btn primary" disabled={!items.length} onClick={() => onReport(items)}>
-                            리포트 보기{items.length > 0 && ` (${items.length})`} <ArrowRight size={18} />
-                        </button>
-                    </div>
+                    <HStack className="sc-actions" gap={2}>
+                        <Button size="lg" width="100%" icon={<RotateCcw size={18} />} label="다시 찍기" onClick={onRetake} />
+                        <Button variant="primary" size="lg" width="100%" label={`리포트 보기${items.length > 0 ? ` (${items.length})` : ''}`}
+                            endContent={<ArrowRight size={18} />} isDisabled={!items.length} onClick={() => onReport(items)} />
+                    </HStack>
                 </section>
+                </Theme>
             )}
         </div>
+        </Theme>
     );
 }
 
@@ -139,15 +153,26 @@ function Summary({ result, items }: { result: ScanResult; items: ReportItem[] })
     const warnings = items.reduce((n, x) => n + x.ingredients.filter((g) => g.status === 'warning').length, 0);
     return (
         <>
-            <div className="sc-summary-grid">
-                <div><b>{result.products.length}</b><span>찾은 제품</span></div>
-                <div><b>{ingredients}</b><span>확인된 성분</span></div>
-                <div className={warnings ? 'warn' : ''}><b>{warnings || <Check size={20} />}</b><span>{warnings ? '주의 성분' : '주의 성분 없음'}</span></div>
-            </div>
+            <HStack gap={2}>
+                <SummaryStat value={result.products.length} label="찾은 제품" />
+                <SummaryStat value={ingredients} label="확인된 성분" />
+                <SummaryStat value={warnings || <Check size={20} />} label={warnings ? '주의 성분' : '주의 성분 없음'} warn={!!warnings} />
+            </HStack>
             <p className="sc-summary">
                 {result.legacy ? '' : `글자 ${result.products.reduce((n, p) => n + p.texts.length, 0)}줄을 읽었어요 · `}전체 {sec(result.totalMs)}
             </p>
         </>
+    );
+}
+
+function SummaryStat({ value, label, warn }: { value: React.ReactNode; label: string; warn?: boolean }) {
+    return (
+        <Card className={`sc-stat ${warn ? 'warn' : ''}`} padding={3}>
+            <VStack gap={0.5} hAlign="center">
+                <Text size="2xl" weight="bold" hasTabularNumbers color="inherit">{value}</Text>
+                <Text size="sm" color="secondary" justify="center">{label}</Text>
+            </VStack>
+        </Card>
     );
 }
 
@@ -156,7 +181,7 @@ function Picker({ candidates, sure, legacy, picked, onPick }: {
     candidates: Candidate[]; sure: string | null; legacy: boolean; picked: string | null; onPick: (name: string | null) => void;
 }) {
     if (!candidates.length) {
-        return <div className="sc-empty"><CircleHelp size={28} /><strong>이 제품은 알 수 없어요</strong><p>병이나 상자에서 이름을 읽지 못했어요. 이름이 크게 보이게 다시 찍어 주세요.</p></div>;
+        return <EmptyState isCompact icon={<CircleHelp size={28} />} title="이 제품은 알 수 없어요" description="병이나 상자에서 이름을 읽지 못했어요. 이름이 크게 보이게 다시 찍어 주세요." />;
     }
     return (
         <>
@@ -166,8 +191,8 @@ function Picker({ candidates, sure, legacy, picked, onPick }: {
                     <li key={x.name}>
                         <button aria-pressed={picked === x.name} onClick={() => onPick(picked === x.name ? null : x.name)}>
                             <span className="sc-radio">{picked === x.name && <Check size={14} />}</span>
-                            <span className="sc-cand-name">{x.name}{sure === x.name && <em>유력</em>}</span>
-                            {x.score !== null && <span className="sc-score">{Math.round(x.score * 100)}</span>}
+                            <span className="sc-cand-name">{x.name}{sure === x.name && <em>✦ AI 유력 후보</em>}</span>
+                            {x.score !== null && <span className="sc-score"><small>일치</small>{Math.round(x.score * 100)}%</span>}
                         </button>
                     </li>
                 ))}

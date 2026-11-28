@@ -1,0 +1,13 @@
+/* 내 영양제 (방향 A): 약장 카드. 색은 Astryx 토큰 */
+.ms-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 150px), 1fr)); gap: 12px; }
+.ms-card { min-height: 168px; }
+.ms-art { width: 52px; height: 52px; border-radius: 18px; display: grid; place-items: center; }
+.ms-art.orange { background: var(--color-background-orange); color: var(--color-icon-orange); }
+.ms-art.blue { background: var(--color-background-blue); color: var(--color-icon-blue); }
+.ms-art.yellow { background: var(--color-background-yellow); color: var(--color-icon-yellow); }
+.ms-art.green { background: var(--color-background-green); color: var(--color-icon-green); }
+.ms-art.purple { background: var(--color-background-purple); color: var(--color-icon-purple); }
+.ms-art.pink { background: var(--color-background-pink); color: var(--color-icon-pink); }
+.ms-add { border: 2px dashed var(--color-border-emphasized); display: grid; place-items: center; color: var(--color-text-secondary); }
+.ms-more { display: grid; place-items: center; padding: var(--spacing-4, 16px); }
+.ms-when { color: var(--color-icon-secondary); }

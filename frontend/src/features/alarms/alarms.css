@@ -1,55 +1,17 @@
-.al-page { padding: 28px var(--page-x) calc(var(--tabbar-space) + 58px); display: flex; flex-direction: column; gap: 14px; }
-.al-header p { color: var(--text-muted); font-size: .95rem; min-height: 1.4em; }
-.al-header h1 { font-size: 1.9rem; font-weight: var(--fw-heavy); letter-spacing: -.02em; }
-.al-section { font-size: 1.05rem; font-weight: var(--fw-bold); margin-top: 12px; }
-.al-next { border-radius: var(--radius-2xl); padding: 22px; color: #fff; background: var(--gradient-hero); }
-.al-next span { font-size: var(--fs-sm); }
-.al-next strong { display: block; font-size: var(--fs-4xl); font-weight: var(--fw-heavy); letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
-.al-push { display: flex; gap: 14px; padding: 18px; border-radius: var(--radius-card); background: var(--surface-1); box-shadow: var(--shadow-premium); }
-.al-push-icon { flex: none; width: 42px; height: 42px; border-radius: var(--radius-control); display: grid; place-items: center; background: var(--tint); color: var(--primary-color); }
-.al-push-ok .al-push-icon { background: var(--color-success-bg); color: var(--color-success-fg); }
-.al-push-warn .al-push-icon { background: var(--color-warning-bg); color: var(--color-warning-fg); }
-.al-push-body { display: flex; flex-direction: column; gap: 4px; align-items: flex-start; }
-.al-push-body p { color: var(--text-muted); font-size: var(--fs-md); line-height: 1.5; }
-.al-push-body .al-btn { margin-top: 8px; }
-.al-list { list-style: none; display: flex; flex-direction: column; gap: 10px; }
-.al-list li { display: flex; align-items: center; gap: 12px; padding: 16px 18px; border-radius: var(--radius-card); background: var(--surface-1); box-shadow: var(--shadow-premium); }
-.al-list li.off .al-item { opacity: .5; }
-.al-item { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; text-align: left; background: none; border: 0; color: inherit; cursor: pointer; font: inherit; }
-.al-time { font-size: var(--fs-2xl); font-weight: var(--fw-heavy); letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
-.al-name { font-weight: var(--fw-semibold); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.al-meta { color: var(--text-muted); font-size: var(--fs-sm); }
-.al-switch { flex: none; width: 52px; height: 32px; border-radius: var(--radius-xl); border: 0; padding: 3px; background: var(--switch-off); cursor: pointer; transition: background .2s; }
-.al-switch span { display: block; width: 26px; height: 26px; border-radius: var(--radius-round); background: #fff; box-shadow: 0 1px 4px rgba(0, 0, 0, .25); transition: transform .2s; }
-.al-switch[aria-checked='true'] { background: var(--primary-color); }
-.al-switch[aria-checked='true'] span { transform: translateX(20px); }
-.al-quiet { padding: 18px; border-radius: var(--radius-card); background: var(--surface-1); box-shadow: var(--shadow-premium); }
-.al-quiet-row { display: flex; align-items: center; gap: 12px; }
-.al-quiet-row div { flex: 1; }
-.al-quiet-row p { color: var(--text-muted); font-size: var(--fs-sm); }
-.al-quiet-times { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 14px; color: var(--text-muted); font-size: var(--fs-md); }
-.al-quiet-times input, .al-sheet-time { border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 8px 10px; font: inherit; font-weight: var(--fw-bold); color: var(--foreground-color); background: var(--background-color); }
-.al-note { display: flex; align-items: center; gap: 6px; color: var(--text-muted); font-size: var(--fs-sm); }
-.al-error { display: flex; justify-content: space-between; gap: 12px; padding: 14px 16px; border-radius: var(--radius-control); background: var(--color-danger-bg); color: var(--color-danger-fg); font-size: var(--fs-md); }
-.al-error button { background: none; border: 0; color: inherit; font-weight: var(--fw-bold); cursor: pointer; white-space: nowrap; }
-.al-empty { display: flex; flex-direction: column; align-items: center; gap: 16px; padding: 34px 20px; border-radius: var(--radius-card); background: var(--surface-1); text-align: center; color: var(--text-muted); line-height: 1.6; }
-.al-skeleton { height: 88px; border-radius: var(--radius-card); background: var(--surface-1); opacity: .6; }
-.al-btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 44px; padding: 0 18px; border: 0; border-radius: var(--radius-control); font: inherit; font-weight: var(--fw-bold); cursor: pointer; }
-.al-btn-primary { background: var(--brand-strong); color: #fff; }
-.al-btn-danger { background: none; color: var(--color-danger); }
-.al-btn-wide { width: 100%; min-height: 52px; }
-.al-btn:disabled { opacity: .4; cursor: default; }
-.al-dim { position: fixed; inset: 0; z-index: var(--z-modal); background: var(--overlay); display: flex; align-items: flex-end; justify-content: center; }
-.al-sheet { width: 100%; max-width: var(--app-max); padding: 22px var(--page-x) calc(22px + var(--safe-bottom)); border-radius: var(--radius-sheet) 28px 0 0; background: var(--surface-1); display: flex; flex-direction: column; gap: 16px; max-height: calc(var(--screen-h) - 12px); overflow-y: auto; overscroll-behavior: contain; animation: al-up .25s ease-out; }
-@keyframes al-up { from { transform: translateY(40px); opacity: 0; } }
-.al-sheet-head { display: flex; justify-content: space-between; align-items: center; font-size: 1.15rem; }
-.al-sheet-head button { display: grid; place-items: center; width: 44px; height: 44px; border: 0; background: none; color: var(--text-muted); cursor: pointer; }
-.al-sheet-time { font-size: 2rem; text-align: center; padding: 14px; }
-.al-seg { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; padding: 4px; border-radius: var(--radius-xl); background: var(--background-color); }
-.al-seg button { min-height: 44px; border: 0; border-radius: var(--radius-md); background: none; color: var(--text-muted); font: inherit; font-weight: var(--fw-semibold); cursor: pointer; }
-.al-seg button[aria-pressed='true'] { background: var(--surface-1); color: var(--primary-color); box-shadow: var(--shadow-sm); }
-.al-days { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: clamp(3px, 1.5vw, 6px); }
-.al-days button { aspect-ratio: 1; min-width: 0; max-width: 52px; justify-self: center; width: 100%; border: 0; border-radius: var(--radius-round); background: var(--background-color); color: var(--text-muted); font: inherit; font-weight: var(--fw-bold); cursor: pointer; }
-.al-days button[aria-pressed='true'] { background: var(--brand-strong); color: #fff; }
-.al-days-text { text-align: center; color: var(--text-muted); font-size: var(--fs-md); }
-@media (prefers-reduced-motion: reduce) { .al-sheet { animation: none; } }
+/* 알림 (방향 A): Astryx 부품이 못 그리는 것만. 색은 Astryx 토큰 */
+.al-next { position: relative; overflow: hidden; background: var(--surface-ink); color: var(--on-ink); }
+.al-next::after { content: ''; position: absolute; right: -60px; top: -60px; width: 220px; height: 220px; border-radius: 50%; background: radial-gradient(circle, color-mix(in srgb, var(--color-accent) 60%, transparent), transparent 65%); pointer-events: none; }
+.al-next-cd { color: color-mix(in srgb, var(--color-accent) 45%, #fff); }
+.al-next-time { font-size: clamp(2.5rem, 13vw, 3.25rem); font-weight: 800; letter-spacing: -.04em; line-height: 1.05; }
+.al-next-who { opacity: .8; }
+
+/* 하루 줄기: 시간대 아이콘이 세로선으로 이어진다 */
+.al-rail { list-style: none; }
+.al-rail li { position: relative; padding-bottom: 12px; }
+.al-rail li::before { content: ''; position: absolute; left: 19px; top: 46px; bottom: 4px; width: 2px; background: var(--color-border); }
+.al-rail li.last::before { display: none; }
+.al-rail-icon { flex: none; width: 40px; height: 40px; border-radius: 14px; display: grid; place-items: center; }
+.al-rail-icon.morning { background: var(--color-background-yellow); color: var(--color-icon-yellow); }
+.al-rail-icon.lunch { background: var(--color-background-orange); color: var(--color-icon-orange); }
+.al-rail-icon.night { background: var(--color-background-purple); color: var(--color-icon-purple); }
+.al-card { flex: 1; min-width: 0; }

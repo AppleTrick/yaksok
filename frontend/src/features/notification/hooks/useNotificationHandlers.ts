@@ -30,7 +30,7 @@ export function useNotificationHandlers() {
     }, [toggleItemTaken]);
 
     /**
-     * 스누즈 핸들러 (5분 뒤 재알림)
+     * 스누즈 핸들러 (서버가 10분 뒤 다시 알린다)
      */
     const handleSnooze = useCallback(async (eventId: number) => {
         try {

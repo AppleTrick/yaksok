@@ -1,6 +1,9 @@
 'use client';
 
 import { useSyncExternalStore } from 'react';
+import { Banner } from '@astryxdesign/core/Banner';
+import { Badge } from '@astryxdesign/core/Badge';
+import { Button } from '@astryxdesign/core/Button';
 import { BellOff, BellRing, TriangleAlert } from 'lucide-react';
 import { pushConfigured } from '@/lib/firebase';
 import { useFCM } from '@/features/notification/hooks/useFCM';
@@ -23,26 +26,19 @@ export default function PushStatus() {
         return <Card tone="warn" icon={<BellOff size={20} />} title="알림이 차단되어 있어요" text="브라우저의 사이트 설정에서 알림을 허용해 주세요." />;
     }
     if (permission === 'granted' && fcmToken) {
-        return <Card tone="ok" icon={<BellRing size={20} />} title="푸시 알림이 켜져 있어요" text="앱을 닫아도 제시간에 알려 드려요." />;
+        return <Badge variant="success" label="● 푸시 켜짐" />;
     }
     return (
         <Card tone="info" icon={<BellRing size={20} />} title="앱을 닫아도 알림 받기" text="복용 시간을 놓치지 않게 알려 드려요.">
-            <button className="al-btn al-btn-primary" onClick={requestPermission}>알림 켜기</button>
+            <Button variant="primary" size="sm" label="알림 켜기" onClick={requestPermission} />
         </Card>
     );
 }
 
-function Card({ tone, icon, title, text, children }: {
-    tone: 'ok' | 'warn' | 'info'; icon: React.ReactNode; title: string; text: string; children?: React.ReactNode;
+// 상태 안내는 Astryx Banner로 그린다
+function Card({ tone, title, text, children }: {
+    tone: 'ok' | 'warn' | 'info'; icon?: React.ReactNode; title: string; text: string; children?: React.ReactNode;
 }) {
-    return (
-        <section className={`al-push al-push-${tone}`}>
-            <span className="al-push-icon">{icon}</span>
-            <div className="al-push-body">
-                <strong>{title}</strong>
-                <p>{text}</p>
-                {children}
-            </div>
-        </section>
-    );
+    const status = tone === 'ok' ? 'success' : tone === 'warn' ? 'warning' : 'info';
+    return <Banner status={status} title={title} description={text} endContent={children} />;
 }

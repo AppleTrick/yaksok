@@ -380,6 +380,7 @@ public class OcrAnalysisService {
                                         .myAmount(myAmount.setScale(2, RoundingMode.HALF_UP).toString())
                                         .totalAmount(totalAmount.setScale(2, RoundingMode.HALF_UP).toString())
                                         .status(status)
+                                        .maxAmount(maxIntake == null ? null : maxIntake.setScale(2, RoundingMode.HALF_UP).toString())
                                         .build());
                 }
 

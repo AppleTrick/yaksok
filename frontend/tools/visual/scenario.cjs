@@ -1,7 +1,7 @@
 // 화면 비교·크기 검사가 같이 쓰는 가짜 데이터와 화면 순서
 const path = require('path');
 const PHOTO = path.join(__dirname, '..', '..', '..', 'fastapi', 'Sample_Image', 'original.JPG');
-const ing = (s, my = '0.00') => [{ name: '비타민 C', amount: '1000.00', unit: 'mg', myAmount: my, totalAmount: String(1000 + Number(my)), status: s }, { name: '아연', amount: '8.50', unit: 'mg', myAmount: '0.00', totalAmount: '8.50', status: 'unknown' }];
+const ing = (s, my = '0.00') => [{ name: '비타민 C', amount: '1000.00', unit: 'mg', myAmount: my, totalAmount: String(1000 + Number(my)), status: s, maxAmount: '2000.00' }, { name: '아연', amount: '8.50', unit: 'mg', myAmount: '0.00', totalAmount: '8.50', status: 'unknown' }];
 const API = {
   '/api/v1/user/me': { name: '약속이' },
   '/api/v1/user/info': { userDataResponse: { email: 'demo@example.com', name: '약속이', ageGroup: 'TWENTY', gender: 'MALE' }, userDiseases: [{ id: 1, sickName: '고혈압' }], allDiseases: [{ id: 1, sickName: '고혈압' }, { id: 2, sickName: '당뇨' }], userProducts: [] },
@@ -39,7 +39,7 @@ async function walk(p, ctx, B, shot, log) {
       await go(u); await shot(n);
     }
     await go('/my-supplements'); await p.locator('text=메가도스C').first().click().catch(() => log.push('상세 못 엶')); await shot('supplement-detail', false);
-    await go('/reminders'); await p.locator('.al-item').first().click().catch(() => log.push('알림 수정 못 엶')); await shot('alarm-edit', false);
+    await go('/reminders'); await p.getByText(/메가도스C 비타민C 3000mg · 매일/).first().click().catch(() => log.push('알림 수정 못 엶')); await shot('alarm-edit', false);
     await go('/camera'); await shot('camera', false);
     await p.setInputFiles('input[type=file]', PHOTO); await shot('scan-review', false);
     await p.getByRole('button', { name: '분석 시작' }).click(); await p.locator('.sc-result').waitFor({ timeout: 10000 }).catch(() => log.push('결과 안 나옴')); await shot('scan-result');

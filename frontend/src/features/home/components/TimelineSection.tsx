@@ -1,4 +1,13 @@
-import { Sun, Moon, Check, Pill } from "lucide-react";
+import { Pill } from "lucide-react";
+import { VStack } from '@astryxdesign/core/VStack';
+import { HStack } from '@astryxdesign/core/HStack';
+import { Heading } from '@astryxdesign/core/Heading';
+import { Text } from '@astryxdesign/core/Text';
+import { Card } from '@astryxdesign/core/Card';
+import { List, ListItem } from '@astryxdesign/core/List';
+import { Badge } from '@astryxdesign/core/Badge';
+import { Button } from '@astryxdesign/core/Button';
+import { EmptyState } from '@astryxdesign/core/EmptyState';
 import { Schedule, isItemDue } from "@/features/notification/contexts/ScheduleContext";
 
 interface TimelineSectionProps {
@@ -7,80 +16,39 @@ interface TimelineSectionProps {
     onToggleItem: (scheduleId: string, itemId: string) => void;
 }
 
+const MEAL = { empty_stomach: '식전', post_meal: '식후', pre_sleep: '자기 전' } as const;
+
+// 오늘 일정 전체. 눌러서 먹음/안 먹음을 바꾼다 (방향 A: 시각이 앞, 상태 배지가 뒤)
 export default function TimelineSection({ today, schedules, onToggleItem }: TimelineSectionProps) {
-    const activeSchedules = schedules.filter(s => s.isActive);
+    const rows = today ? schedules
+        .filter((s) => s.isActive)
+        .sort((a, b) => a.rawTime.localeCompare(b.rawTime))
+        .flatMap((s) => s.items.filter((i) => isItemDue(i, today) && i.status !== 'stopped').map((item) => ({ s, item }))) : [];
 
-    if (!today || activeSchedules.length === 0) {
+    if (!rows.length) {
         return (
-            <section className="hm-empty">
-                <Pill size={36} aria-hidden="true" />
-                <strong>등록된 일정이 없습니다</strong>
-                <p>새로운 영양제를 등록하고<br />건강한 습관을 시작해보세요!</p>
-            </section>
+            <EmptyState icon={<Pill size={32} />} title="등록된 일정이 없어요" description="영양제를 찍어 등록하면 먹을 시간에 알려 드려요."
+                actions={<Button variant="primary" label="영양제 찍기" href="/camera" />} />
         );
     }
 
-    // Check if any schedule has due items to decide if we show "No schedule" message overall?
-    // The original code rendered the map directly. If no items match isItemDue, it returned null.
-    // If all return null, the container might be empty.
-
-    const renderedSchedules = activeSchedules.map(schedule => {
-        const dueItems = schedule.items.filter(item => isItemDue(item, today) && item.status !== 'stopped');
-        if (dueItems.length === 0) return null;
-
-        const hour = parseInt(schedule.rawTime.split(':')[0]);
-        const isNight = hour >= 18;
-        const isLunch = hour >= 12 && hour < 18;
-        const SlotIcon = isNight ? Moon : Sun;
-        const slotClass = isNight ? 'night' : (isLunch ? 'lunch' : 'morning');
-        const slotName = isNight ? '저녁' : (isLunch ? '점심' : '아침');
-
-        return (
-            <section key={schedule.id} className="hm-slot" aria-label={`${slotName} ${schedule.time}`}>
-                <div className="hm-slot-head">
-                    <span className={`hm-slot-icon ${slotClass}`} aria-hidden="true"><SlotIcon size={18} /></span>
-                    <div>
-                        <div className="hm-slot-title">{slotName}</div>
-                        <div className="hm-slot-time">{schedule.time}</div>
-                    </div>
-                </div>
-                <div className="hm-meds">
-                    {dueItems.map((item, idx) => (
-                        // 눌러서 먹음/안 먹음을 바꾼다. 버튼이라 키보드·화면 읽기에서도 쓸 수 있다
-                        <button
-                            type="button"
+    return (
+        <VStack gap={2}>
+            <HStack hAlign="between" vAlign="center"><Heading level={2}>오늘 일정</Heading><Text size="sm" color="secondary">눌러서 먹음 표시</Text></HStack>
+            <Card padding={1}>
+                <List hasDividers>
+                    {rows.map(({ s, item }, idx) => (
+                        <ListItem
                             key={`${item.id}-${idx}`}
-                            className="hm-med"
-                            aria-pressed={item.isTaken}
-                            onClick={() => onToggleItem(schedule.id, item.id)}
-                        >
-                            <span className="hm-med-check" aria-hidden="true">
-                                {item.isTaken ? <Check size={16} strokeWidth={3} /> : <Pill size={16} />}
-                            </span>
-                            <span className="hm-med-body">
-                                <span className="hm-med-name">{item.name}</span>
-                                {item.detail && <span className="hm-med-detail">{item.detail}</span>}
-                            </span>
-                            <span className="hm-med-state">{item.isTaken ? '먹었어요' : '먹기'}</span>
-                        </button>
+                            onClick={() => onToggleItem(s.id, item.id)}
+                            startContent={<Text className="hm-row-time" weight="bold" hasTabularNumbers color={item.isTaken ? 'secondary' : 'primary'}>{s.rawTime}</Text>}
+                            label={<Text weight="semibold" maxLines={1} color={item.isTaken ? 'secondary' : 'primary'}>{item.name}</Text>}
+                            description={`${MEAL[s.mealCategory] ?? ''}${item.detail ? ` · ${item.detail}` : ''}`}
+                            endContent={<Badge variant={item.isTaken ? 'success' : 'neutral'} label={item.isTaken ? '✓ 먹음' : '예정'} />}
+                        />
                     ))}
-                </div>
-            </section>
-        );
-    });
-
-    // Check if everything was null (no items due today)
-    const hasAnyContent = renderedSchedules.some(s => s !== null);
-
-    if (!hasAnyContent) {
-        return (
-            <section className="hm-empty">
-                <Sun size={40} aria-hidden="true" />
-                <strong>오늘 예정된 일정이 없어요</strong>
-                <p>편안한 하루 보내세요</p>
-            </section>
-        );
-    }
-
-    return <>{renderedSchedules}</>;
+                </List>
+            </Card>
+        </VStack>
+    );
 }

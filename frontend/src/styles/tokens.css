@@ -40,7 +40,7 @@
   --color-danger: #DC2626;
   --color-danger-fg: #B91C1C;
   --color-danger-bg: rgba(220, 38, 38, .1);
-  --color-neutral: #9CA3AF;
+  --color-gauge-mine: #9CA3AF;
   --overlay: rgba(0, 0, 0, .5);
 
   /* 입력칸: 회색 바탕 위에서도 칸이 보이게 */
@@ -48,6 +48,10 @@
   --field-border: #D5D9E0;
 
   /* 하루 시간대 (홈 복용 일정) */
+  /* 먹색 카드 (다음 알림): 밝은·어두운 화면 모두 진하게 */
+  --surface-ink: #1F1A17;
+  --on-ink: #FFFFFF;
+
   --slot-morning: linear-gradient(135deg, #FBBF24, #F59E0B);
   --slot-lunch: linear-gradient(135deg, #FB923C, #F97316);
   --slot-night: linear-gradient(135deg, #818CF8, #6366F1);
@@ -69,8 +73,8 @@
   --scan-text: #F4F4F6;
   --scan-text-sub: #A9ACB6;
   --scan-text-soft: #C9CBD2;
-  --scan-accent: #FF8A50;
-  --scan-accent-bg: #2A1C16;
+  --scan-accent: #A68BFF;   /* AI 신호 (방향 A: AI가 한 일은 보라) */
+  --scan-accent-bg: #231B3D;
   --scan-danger-bg: #3A1818;
   --scan-danger-fg: #FFB4B4;
   --scan-danger-strong: #FF9D9D;
@@ -86,9 +90,9 @@
   /* 화면 틀 (v2). 휴대폰 형태에 따라 아래 @media가 값을 바꾼다 */
   --app-max: 480px;                                   /* 앱 기둥 폭 */
   --page-x: clamp(14px, 5vw, 24px);                   /* 화면 양옆 여백 */
-  --tabbar-h: 72px;
+  --tabbar-h: 68px;
   --safe-bottom: env(safe-area-inset-bottom, 0px);
-  --tabbar-space: calc(var(--tabbar-h) + var(--safe-bottom));       /* 탭바가 차지하는 높이 */
+  --tabbar-space: calc(var(--tabbar-h) + var(--safe-bottom) + 12px);  /* 떠 있는 탭바가 차지하는 높이 (아래 12px 띄움) */
   --fixed-edge: max(0px, calc((100vw - var(--app-max)) / 2));      /* 고정 요소를 앱 기둥 안에 두는 여백 */
   --screen-h: 100vh;
 }
@@ -121,3 +125,49 @@
 @media (min-width: 700px) and (min-height: 600px) {
   :root { --app-max: 600px; }
 }
+
+/* ── Astryx 연결 (v2) ──────────────────────────────────────────────
+   색·모서리·글꼴·그림자는 Astryx 테마(src/themes/yaksok)가 정한다.
+   예전 이름은 아래에서 Astryx 토큰을 가리키게 해서, 아직 Astryx 부품으로 옮기지 않은 화면도
+   같은 팔레트와 어두운 모드를 따른다. 테마가 걸린 요소에 선언해야 모드가 바뀔 때 같이 바뀐다.
+   새 코드는 예전 이름 말고 Astryx 토큰(--color-*, --spacing-*, --radius-*)을 바로 쓴다. */
+[data-astryx-theme] {
+  --primary-color: var(--color-accent);
+  --color-brand: var(--color-accent);
+  --brand-strong: var(--color-accent);
+  --tint: var(--color-accent-muted);
+  --sub-background: var(--color-accent-muted);
+  --bg-base: var(--color-background-body);
+  --background-color: var(--color-background-body);
+  --bg-card: var(--color-background-card);
+  --surface-1: var(--color-background-card);
+  --surface-2: var(--color-background-card);
+  --text-main: var(--color-text-primary);
+  --foreground-color: var(--color-text-primary);
+  --text-muted: var(--color-text-secondary);
+  --border-color: var(--color-border);
+  --light-grey: var(--color-background-muted);
+  --field-bg: var(--color-background-surface);
+  --field-border: var(--color-border-emphasized);
+
+  --color-success-fg: var(--color-text-success);
+  --color-success-bg: var(--color-success-muted);
+  --color-positive: var(--color-success);
+  --color-warning-fg: var(--color-text-warning);
+  --color-warning-bg: var(--color-warning-muted);
+  --color-caution-fg: var(--color-text-accent);
+  --color-caution-bg: var(--color-accent-muted);
+  --color-danger: var(--color-error);
+  --color-danger-fg: var(--color-text-error);
+  --color-danger-bg: var(--color-error-muted);
+
+  --gradient-cta: var(--color-accent);   /* Astryx는 평평한 색을 쓴다 */
+  --gradient-hero: var(--color-accent);
+
+  --font-main: var(--font-family-body);
+  --radius-control: var(--radius-element);
+  --radius-card: var(--radius-container);
+  --shadow-sm: var(--shadow-low);
+  --shadow-premium: var(--shadow-low);
+}
+

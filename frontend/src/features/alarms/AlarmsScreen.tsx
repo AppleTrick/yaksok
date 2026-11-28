@@ -1,22 +1,47 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import Link from 'next/link';
-import { Camera, Clock, Moon, Trash2, X } from 'lucide-react';
+import { Camera, Clock, CloudSun, Moon, Sun, Trash2 } from 'lucide-react';
+import { VStack } from '@astryxdesign/core/VStack';
+import { HStack } from '@astryxdesign/core/HStack';
+import { Heading } from '@astryxdesign/core/Heading';
+import { Text } from '@astryxdesign/core/Text';
+import { Card } from '@astryxdesign/core/Card';
+import { ClickableCard } from '@astryxdesign/core/ClickableCard';
+import { Badge } from '@astryxdesign/core/Badge';
+import { Switch } from '@astryxdesign/core/Switch';
+import { Button } from '@astryxdesign/core/Button';
+import { Banner } from '@astryxdesign/core/Banner';
+import { Skeleton } from '@astryxdesign/core/Skeleton';
+import { EmptyState } from '@astryxdesign/core/EmptyState';
+import { BottomSheet } from '@astryxdesign/core/BottomSheet';
+import { TimeInput, type ISOTimeString } from '@astryxdesign/core/TimeInput';
+
+// 서버 시각(HH:MM)을 TimeInput 값으로
+const iso = (t: string) => t as ISOTimeString;
+import { SegmentedControl, SegmentedControlItem } from '@astryxdesign/core/SegmentedControl';
+import { ToggleButton, ToggleButtonGroup } from '@astryxdesign/core/ToggleButton';
+import { AlertDialog } from '@astryxdesign/core/AlertDialog';
 import PushStatus from './PushStatus';
 import {
-    Alarm, AlarmCategory, CATEGORY_LABEL, DAY_LABELS, QuietHours, deleteAlarm, describeDays, fetchAlarms, fetchQuietHours,
-    formatTime, parseDays, runsToday, saveAlarm, saveQuietHours, toggleAlarm,
+    Alarm, AlarmCategory, CATEGORY_LABEL, DAY_LABELS, deleteAlarm, describeDays, fetchAlarms, fetchQuietHours,
+    formatTime, parseDays, QuietHours, runsToday, saveAlarm, saveQuietHours, toggleAlarm,
 } from './api';
+import '@/features/page.css';
 import './alarms.css';
 
-function Switch({ on, label, onChange }: { on: boolean; label: string; onChange: () => void }) {
-    return (
-        <button type="button" role="switch" aria-checked={on} aria-label={label} className="al-switch" onClick={onChange}>
-            <span />
-        </button>
-    );
+/** 다음 알림까지 남은 시간을 사람 말로 */
+function until(hhmm: string, now: Date) {
+    const [h, m] = hhmm.split(':').map(Number);
+    const d = h * 60 + m - (now.getHours() * 60 + now.getMinutes());
+    if (d <= 0) return '곧';
+    return d >= 60 ? `${Math.floor(d / 60)}시간${d % 60 ? ` ${d % 60}분` : ''} 뒤` : `${d}분 뒤`;
 }
+
+const SLOT = (t: string | null) => {
+    const h = Number((t ?? '09').slice(0, 2));
+    return h >= 18 ? { Icon: Moon, cls: 'night' } : h >= 12 ? { Icon: CloudSun, cls: 'lunch' } : { Icon: Sun, cls: 'morning' };
+};
 
 export default function AlarmsScreen() {
     const [alarms, setAlarms] = useState<Alarm[] | null>(null);
@@ -57,77 +82,85 @@ export default function AlarmsScreen() {
         && a.intakeTime.slice(0, 5) > now.toTimeString().slice(0, 5));
 
     return (
-        <main className="al-page">
-            <header className="al-header">
-                <p>{now?.toLocaleDateString('ko-KR', { month: 'long', day: 'numeric', weekday: 'long' }) ?? ' '}</p>
-                <h1>알림</h1>
-            </header>
+        <VStack className="pg" gap={4} as="main">
+            <VStack gap={0.5} as="header">
+                <Text color="secondary">{now?.toLocaleDateString('ko-KR', { month: 'long', day: 'numeric', weekday: 'long' }) ?? ' '}</Text>
+                <Heading level={1}>알림</Heading>
+            </VStack>
 
-            {error && <div className="al-error" role="alert">{error}<button onClick={load}>다시 시도</button></div>}
+            {error && <Banner status="error" title={error} endContent={<Button size="sm" label="다시 시도" onClick={load} />} />}
 
-            {next && (
-                <section className="al-next">
-                    <span>오늘 다음 알림</span>
-                    <strong>{formatTime(next.intakeTime!)}</strong>
-                    <p>{next.nickname} · {CATEGORY_LABEL[next.category]}</p>
-                </section>
+            {next && now && (
+                <Card className="al-next">
+                    <VStack gap={1}>
+                        <Text className="al-next-cd" weight="bold" color="inherit">{until(next.intakeTime!, now)}</Text>
+                        <Text className="al-next-time" hasTabularNumbers color="inherit">{formatTime(next.intakeTime!)}</Text>
+                        <Text className="al-next-who" color="inherit">{next.nickname} · {CATEGORY_LABEL[next.category]}</Text>
+                    </VStack>
+                </Card>
             )}
 
-            <PushStatus />
+            <HStack gap={1.5} wrap="wrap">
+                <PushStatus />
+                {quiet?.enabled && <Badge variant="neutral" icon={<Moon size={12} />} label={`${(quiet.quietStart ?? '22:00').slice(0, 5)}–${(quiet.quietEnd ?? '07:00').slice(0, 5)} 조용히`} />}
+            </HStack>
 
-            <h2 className="al-section">복용 알림</h2>
-            {alarms === null && !error && <div className="al-skeleton" />}
+            <Heading level={2}>하루 일정</Heading>
+            {alarms === null && !error && <Skeleton height={160} />}
             {alarms?.length === 0 && (
-                <div className="al-empty">
-                    <p>아직 알림이 없어요.<br />영양제를 찍어 등록하면 알림이 만들어져요.</p>
-                    <Link href="/camera" className="al-btn al-btn-primary"><Camera size={18} /> 영양제 찍기</Link>
-                </div>
+                <EmptyState title="아직 알림이 없어요" description="영양제를 찍어 등록하면 알림이 만들어져요."
+                    actions={<Button variant="primary" icon={<Camera size={18} />} label="영양제 찍기" href="/camera" />} />
             )}
-            <ul className="al-list">
-                {sorted.map((a) => (
-                    <li key={a.id} className={a.enabled ? '' : 'off'}>
-                        <button className="al-item" onClick={() => setEditing(a)}>
-                            <span className="al-time">{a.intakeTime ? formatTime(a.intakeTime) : '시간 없음'}</span>
-                            <span className="al-name">{a.nickname}</span>
-                            <span className="al-meta">
-                                {describeDays(parseDays(a.daysOfWeek))} · {CATEGORY_LABEL[a.category]}{a.intaken ? ' · 오늘 먹음' : ''}
-                            </span>
-                        </button>
-                        <Switch on={a.enabled} label={`${a.nickname} 알림`} onChange={() => run(() => toggleAlarm(a.id))} />
-                    </li>
-                ))}
-            </ul>
+            {!!sorted.length && (
+                <VStack gap={0} as="ol" className="al-rail">
+                    {sorted.map((a, i) => {
+                        const { Icon, cls } = SLOT(a.intakeTime);
+                        return (
+                            <HStack key={a.id} as="li" gap={3} vAlign="stretch" className={i === sorted.length - 1 ? 'last' : ''}>
+                                <span className={`al-rail-icon ${cls}`} aria-hidden="true"><Icon size={19} /></span>
+                                <ClickableCard className="al-card" label={`${a.nickname} 알림 수정`} onClick={() => setEditing(a)} padding={4}>
+                                    <HStack hAlign="between" vAlign="center" gap={3}>
+                                        <VStack gap={0.5}>
+                                            <Text size="2xl" weight="bold" hasTabularNumbers color={a.enabled ? 'primary' : 'disabled'}>{a.intakeTime ? formatTime(a.intakeTime) : '시간 없음'}</Text>
+                                            <Text size="sm" color="secondary" maxLines={1}>{a.nickname} · {describeDays(parseDays(a.daysOfWeek))} · {CATEGORY_LABEL[a.category]}{a.intaken ? ' · 오늘 먹음' : ''}</Text>
+                                        </VStack>
+                                        <Switch label={`${a.nickname} 알림`} isLabelHidden value={a.enabled} onChange={() => run(() => toggleAlarm(a.id))} />
+                                    </HStack>
+                                </ClickableCard>
+                            </HStack>
+                        );
+                    })}
+                </VStack>
+            )}
 
             {quiet && (
                 <>
-                    <h2 className="al-section">방해금지</h2>
-                    <section className="al-quiet">
-                        <div className="al-quiet-row">
-                            <Moon size={20} />
-                            <div><strong>이 시간에는 울리지 않기</strong><p>끝나면 밀린 알림을 한 번에 알려 드려요</p></div>
-                            <Switch on={quiet.enabled} label="방해금지" onChange={() => run(() => saveQuietHours({ ...quiet, enabled: !quiet.enabled }))} />
-                        </div>
-                        {quiet.enabled && (
-                            <div className="al-quiet-times">
-                                <input type="time" aria-label="방해금지 시작" value={(quiet.quietStart ?? '22:00').slice(0, 5)}
-                                    onChange={(e) => e.target.value && run(() => saveQuietHours({ ...quiet, quietStart: `${e.target.value}:00` }))} />
-                                <span>부터</span>
-                                <input type="time" aria-label="방해금지 끝" value={(quiet.quietEnd ?? '07:00').slice(0, 5)}
-                                    onChange={(e) => e.target.value && run(() => saveQuietHours({ ...quiet, quietEnd: `${e.target.value}:00` }))} />
-                                <span>까지</span>
-                            </div>
-                        )}
-                    </section>
+                    <Heading level={2}>방해금지</Heading>
+                    <Card>
+                        <VStack gap={3}>
+                            <Switch label="이 시간에는 울리지 않기" description="끝나면 밀린 알림을 한 번에 알려 드려요" labelIcon={<Moon size={18} />}
+                                labelPosition="start" labelSpacing="spread" width="100%"
+                                value={quiet.enabled} onChange={() => run(() => saveQuietHours({ ...quiet, enabled: !quiet.enabled }))} />
+                            {quiet.enabled && (
+                                <HStack gap={2} vAlign="end">
+                                    <TimeInput label="시작" value={iso((quiet.quietStart ?? '22:00').slice(0, 5))}
+                                        onChange={(v) => v && run(() => saveQuietHours({ ...quiet, quietStart: `${v.slice(0, 5)}:00` }))} />
+                                    <TimeInput label="끝" value={iso((quiet.quietEnd ?? '07:00').slice(0, 5))}
+                                        onChange={(v) => v && run(() => saveQuietHours({ ...quiet, quietEnd: `${v.slice(0, 5)}:00` }))} />
+                                </HStack>
+                            )}
+                        </VStack>
+                    </Card>
                 </>
             )}
-            <p className="al-note"><Clock size={14} /> 안 드시면 10분 간격으로 세 번까지 알려 드려요.</p>
+            <HStack gap={1} vAlign="center"><Clock size={14} aria-hidden="true" /><Text color="secondary" size="sm">안 드시면 10분 간격으로 세 번까지 알려 드려요.</Text></HStack>
 
             {editing && (
                 <EditSheet alarm={editing} onClose={() => setEditing(null)}
                     onSave={(t, c, d) => { run(() => saveAlarm(editing, t, c, d)); setEditing(null); }}
                     onDelete={() => { run(() => deleteAlarm(editing.id)); setEditing(null); }} />
             )}
-        </main>
+        </VStack>
     );
 }
 
@@ -141,29 +174,26 @@ function EditSheet({ alarm, onClose, onSave, onDelete }: {
     const [category, setCategory] = useState(alarm.category);
     const [days, setDays] = useState(parseDays(alarm.daysOfWeek));
     const [confirming, setConfirming] = useState(false);
-    const flip = (d: number) => setDays((v) => (v.includes(d) ? v.filter((x) => x !== d) : [...v, d]));
 
     return (
-        <div className="al-dim" onClick={onClose}>
-            <div className="al-sheet" role="dialog" aria-modal="true" aria-label="알림 수정" onClick={(e) => e.stopPropagation()}>
-                <div className="al-sheet-head"><strong>{alarm.nickname}</strong><button aria-label="닫기" onClick={onClose}><X size={22} /></button></div>
-                <input className="al-sheet-time" type="time" aria-label="복용 시간" value={time} onChange={(e) => setTime(e.target.value)} />
-                <div className="al-seg" role="group" aria-label="먹는 때">
-                    {(Object.keys(CATEGORY_LABEL) as AlarmCategory[]).map((c) => (
-                        <button key={c} aria-pressed={c === category} onClick={() => setCategory(c)}>{CATEGORY_LABEL[c]}</button>
-                    ))}
-                </div>
-                <div className="al-days" role="group" aria-label="요일">
-                    {DAY_LABELS.map((label, i) => (
-                        <button key={label} aria-pressed={days.includes(i + 1)} onClick={() => flip(i + 1)}>{label}</button>
-                    ))}
-                </div>
-                <p className="al-days-text">{days.length ? describeDays(days) : '요일을 하나 이상 골라 주세요'}</p>
-                <button className="al-btn al-btn-primary al-btn-wide" disabled={!days.length || !time} onClick={() => onSave(time, category, days)}>저장</button>
-                <button className="al-btn al-btn-danger al-btn-wide" onClick={() => (confirming ? onDelete() : setConfirming(true))}>
-                    <Trash2 size={16} /> {confirming ? '한 번 더 누르면 지워져요' : '알림 지우기'}
-                </button>
-            </div>
-        </div>
+        <BottomSheet isOpen onOpenChange={(open) => !open && onClose()} label="알림 수정" height="hug" purpose="form">
+            <VStack gap={4} padding={4}>
+                <Heading level={2} maxLines={2}>{alarm.nickname}</Heading>
+                <TimeInput label="복용 시간" value={time ? iso(time) : undefined} onChange={(v) => setTime(v ? v.slice(0, 5) : '')} />
+                <SegmentedControl label="먹는 때" layout="fill" value={category} onChange={(v) => setCategory(v as AlarmCategory)}>
+                    {(Object.keys(CATEGORY_LABEL) as AlarmCategory[]).map((c) => <SegmentedControlItem key={c} value={c} label={CATEGORY_LABEL[c]} />)}
+                </SegmentedControl>
+                <VStack gap={1}>
+                    <ToggleButtonGroup label="요일" type="multiple" value={days.map(String)} onChange={(v: string | string[] | null) => setDays(((v as string[]) ?? []).map(Number))}>
+                        {DAY_LABELS.map((label, i) => <ToggleButton key={label} value={String(i + 1)} label={label} />)}
+                    </ToggleButtonGroup>
+                    <Text color={days.length ? 'secondary' : 'accent'} size="sm">{days.length ? describeDays(days) : '요일을 하나 이상 골라 주세요'}</Text>
+                </VStack>
+                <Button variant="primary" size="lg" width="100%" label="저장" isDisabled={!days.length || !time} onClick={() => onSave(time, category, days)} />
+                <Button variant="ghost" size="lg" width="100%" icon={<Trash2 size={16} />} label="알림 지우기" onClick={() => setConfirming(true)} />
+            </VStack>
+            <AlertDialog isOpen={confirming} onOpenChange={setConfirming} title="알림을 지울까요?" description="지운 알림은 되돌릴 수 없어요."
+                actionLabel="지우기" cancelLabel="취소" onAction={onDelete} />
+        </BottomSheet>
     );
 }

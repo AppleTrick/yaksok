@@ -157,7 +157,7 @@ export default function NotificationManagerEnhanced() {
                     zIndex: 2147483646,
                     animation: 'slideUp 0.3s ease-out'
                 }}>
-                    <p style={{ margin: 0, fontWeight: 600 }}>⏰ 5분 후에 다시 알려드릴게요</p>
+                    <p style={{ margin: 0, fontWeight: 600 }}>⏰ 10분 뒤에 다시 알려 드릴게요</p>
                     <button
                         onClick={dismissSnoozeBanner}
                         style={{
